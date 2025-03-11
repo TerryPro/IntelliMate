@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="status-bar text-gray-800">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <!-- 头部 -->
+        <div class="bg-primary-400 text-white p-5 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="my_assistant.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-home text-white"></i>
+                </a>
+                <h1 class="text-xl font-bold">图片管理</h1>
+            </div>
+            <div class="flex items-center">
+                <button class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-2">
+                    <i class="fas fa-search text-white"></i>
+                </button>
+                <button class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-plus text-white"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 内容区域 -->
+        <div class="p-5">
+            <!-- 统计信息 -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm mb-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full bg-primary-50 flex items-center justify-center text-primary-400 mr-4">
+                        <i class="fas fa-images text-xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm text-gray-500 mb-1">已使用空间</div>
+                        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-primary-400 rounded-full" style="width: 35%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs mt-1">
+                            <span class="text-gray-500">350MB</span>
+                            <span class="text-gray-500">1GB</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-3 text-center">
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-2xl font-bold text-gray-800">256</div>
+                        <div class="text-xs text-gray-500">总图片</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-2xl font-bold text-gray-800">12</div>
+                        <div class="text-xs text-gray-500">相册</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-2xl font-bold text-gray-800">28</div>
+                        <div class="text-xs text-gray-500">本月新增</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 分类标签 -->
+            <div class="mb-5 overflow-x-auto scrollbar-hide">
+                <div class="flex space-x-2 pb-2">
+                    <div class="bg-primary-400 text-white px-4 py-2 rounded-full whitespace-nowrap">
+                        全部图片
+                    </div>
+                    <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">
+                        最近添加
+                    </div>
+                    <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">
+                        收藏
+                    </div>
+                    <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">
+                        已分享
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 相册列表 -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">我的相册</h2>
+                    <a href="#" class="text-primary-400 text-sm flex items-center">
+                        <span>管理</span>
+                        <i class="fas fa-cog ml-1"></i>
+                    </a>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- 创建新相册 -->
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="aspect-square bg-gray-100 flex flex-col items-center justify-center">
+                            <div class="w-14 h-14 rounded-full bg-primary-50 flex items-center justify-center text-primary-400 mb-2">
+                                <i class="fas fa-plus text-xl"></i>
+                            </div>
+                            <div class="text-gray-500 text-sm">创建相册</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 旅行相册 -->
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="aspect-square bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1527631746610-bca00a040d60?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')">
+                            <div class="w-full h-full bg-black/30 p-3 flex flex-col justify-end">
+                                <div class="text-white font-medium">旅行</div>
+                                <div class="text-white/80 text-xs">86张照片</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 美食相册 -->
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="aspect-square bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')">
+                            <div class="w-full h-full bg-black/30 p-3 flex flex-col justify-end">
+                                <div class="text-white font-medium">美食</div>
+                                <div class="text-white/80 text-xs">42张照片</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 家人相册 -->
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="aspect-square bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1511895426328-dc8714191300?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')">
+                            <div class="w-full h-full bg-black/30 p-3 flex flex-col justify-end">
+                                <div class="text-white font-medium">家人</div>
+                                <div class="text-white/80 text-xs">128张照片</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 最近照片 -->
+            <div class="mb-10">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">最近照片</h2>
+                    <a href="#" class="text-primary-400 text-sm">查看全部</a>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1682687220063-4742bd7fd538?ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></div>
+                    <div class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1682687220208-22d7a2543e88?ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></div>
+                    <div class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1682687220923-c58b9a4592ea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></div>
+                    <div class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1695765386912-e419c3dd4921?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></div>
+                    <div class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1695765386912-e419c3dd4921?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></div>
+                    <div class="aspect-square bg-cover bg-center rounded-lg relative">
+                        <div class="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold rounded-lg">
+                            +42
+                        </div>
+                        <img src="https://images.unsplash.com/photo-1695765386912-e419c3dd4921?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" class="w-full h-full object-cover rounded-lg">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 浮动按钮 -->
+        <div class="fixed bottom-20 right-5 w-14 h-14 bg-primary-400 rounded-full shadow-lg flex items-center justify-center text-white text-xl">
+            <i class="fas fa-camera"></i>
+        </div>
+    </div>
+</body>
+</html> 

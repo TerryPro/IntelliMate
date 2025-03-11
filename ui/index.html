@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智伴APP原型</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        .page-section {
+            margin-bottom: 2rem;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #26b0a1;
+            border-bottom: 2px solid #3ecabb;
+            padding-bottom: 0.5rem;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">智伴APP原型设计</h1>
+        
+        <!-- 主页和登录 -->
+        <div class="page-section">
+            <h2 class="section-title">主页和登录</h2>
+            <div class="flex flex-wrap justify-center gap-8">
+                <!-- 登录/注册界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">登录</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="login.html" class="page-iframe" title="登录"></iframe>
+                    </div>
+                </div>
+
+                <!-- 我的助理界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">我的助理</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="my_assistant.html" class="page-iframe" title="我的助理"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 日程和任务管理 -->
+        <div class="page-section">
+            <h2 class="section-title">日程和任务管理</h2>
+            <div class="flex flex-wrap justify-center gap-8">
+                <!-- 日程管理界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">日程管理</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="schedule.html" class="page-iframe" title="日程管理"></iframe>
+                    </div>
+                </div>
+                
+                <!-- 添加日程界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">添加日程</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="add_schedule.html" class="page-iframe" title="添加日程"></iframe>
+                    </div>
+                </div>
+                
+                <!-- 任务清单界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">任务清单</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="tasks.html" class="page-iframe" title="任务清单"></iframe>
+                    </div>
+                </div>
+                
+                <!-- 添加任务界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">添加任务</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="add_task.html" class="page-iframe" title="添加任务"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 笔记和日常点滴 -->
+        <div class="page-section">
+            <h2 class="section-title">笔记和日常点滴</h2>
+            <div class="flex flex-wrap justify-center gap-8">
+                <!-- 日常点滴界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">日常点滴</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="daily_notes.html" class="page-iframe" title="日常点滴"></iframe>
+                    </div>
+                </div>
+                
+                <!-- 新增点滴界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">添加点滴</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="add_note.html" class="page-iframe" title="添加点滴"></iframe>
+                    </div>
+                </div>
+                
+                <!-- 笔记管理界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">笔记管理</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="note.html" class="page-iframe" title="笔记管理"></iframe>
+                    </div>
+                </div>
+                
+                <!-- 编写笔记界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">编写笔记</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="write_note.html" class="page-iframe" title="编写笔记"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 财务管理 -->
+        <div class="page-section">
+            <h2 class="section-title">财务管理</h2>
+            <div class="flex flex-wrap justify-center gap-8">
+                <!-- 财务管理界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">财务管理</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="finance.html" class="page-iframe" title="财务管理"></iframe>
+                    </div>
+                </div>
+                
+                <!-- 添加收支界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">添加收支</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="add_finance.html" class="page-iframe" title="添加收支"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 图片管理 -->
+        <div class="page-section">
+            <h2 class="section-title">图片管理</h2>
+            <div class="flex flex-wrap justify-center gap-8">
+                <!-- 图片管理界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">图片管理</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="photo_gallery.html" class="page-iframe" title="图片管理"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 目标管理 -->
+        <div class="page-section">
+            <h2 class="section-title">目标管理</h2>
+            <div class="flex flex-wrap justify-center gap-8">
+                <!-- 目标管理界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">目标管理</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="goals.html" class="page-iframe" title="目标管理"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 旅游管理 -->
+        <div class="page-section">
+            <h2 class="section-title">旅游管理</h2>
+            <div class="flex flex-wrap justify-center gap-8">
+                <!-- 旅游管理界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">旅游管理</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="travel.html" class="page-iframe" title="旅游管理"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 备忘管理 -->
+        <div class="page-section">
+            <h2 class="section-title">备忘管理</h2>
+            <div class="flex flex-wrap justify-center gap-8">
+                <!-- 备忘管理界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">备忘管理</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="memo.html" class="page-iframe" title="备忘管理"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 系统设置和个人信息 -->
+        <div class="page-section">
+            <h2 class="section-title">系统设置和个人信息</h2>
+            <div class="flex flex-wrap justify-center gap-8">
+                <!-- 设置界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">系统设置</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="settings.html" class="page-iframe" title="设置"></iframe>
+                    </div>
+                </div>
+                
+                <!-- 个人信息修改界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">个人信息</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="profile_edit.html" class="page-iframe" title="个人信息"></iframe>
+                    </div>
+                </div>
+                
+                <!-- 密码修改界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">修改密码</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="password_change.html" class="page-iframe" title="修改密码"></iframe>
+                    </div>
+                </div>
+                
+                <!-- 数据管理界面 -->
+                <div class="page-frame">
+                    <h2 class="page-title">数据管理</h2>
+                    <div class="phone-frame bg-gray-50">
+                        <iframe src="data_management.html" class="page-iframe" title="数据管理"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="text-center text-gray-500 mt-10 pb-6">
+            <p>个人助理APP原型设计 © 2023</p>
+        </footer>
+    </div>
+</body>
+</html>

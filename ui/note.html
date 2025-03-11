@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>笔记管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="status-bar text-gray-800">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <!-- 头部 -->
+        <div class="bg-primary-400 text-white p-5 flex justify-between items-center">
+            <h1 class="text-xl font-bold">笔记管理</h1>
+            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-primary-400 shadow-md">
+                <i class="fas fa-plus"></i>
+            </div>
+        </div>
+        
+        <!-- 搜索栏 -->
+        <div class="p-5">
+            <div class="bg-white rounded-lg flex items-center p-3 mb-5 shadow-sm">
+                <i class="fas fa-search text-gray-400 mr-3"></i>
+                <input type="text" placeholder="搜索笔记..." class="flex-1 outline-none text-gray-700">
+            </div>
+            
+            <!-- 分类标签 -->
+            <div class="flex overflow-x-auto scrollbar-hide gap-2 mb-5 pb-2">
+                <div class="bg-primary-400 text-white px-4 py-2 rounded-full whitespace-nowrap">全部笔记</div>
+                <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">工作</div>
+                <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">学习</div>
+                <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">生活</div>
+                <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">灵感</div>
+                <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">收藏</div>
+            </div>
+            
+            <!-- 最近编辑 -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-bold text-gray-800">最近编辑</h2>
+                    <a href="#" class="text-primary-400 text-sm">查看全部</a>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-white rounded-lg p-3 shadow-sm">
+                        <div class="flex items-center mb-2">
+                            <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-400 mr-2">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="text-sm font-medium text-gray-800 truncate">产品需求文档</div>
+                        </div>
+                        <div class="text-xs text-gray-500 mb-2">今天 14:30 更新</div>
+                        <div class="text-xs text-gray-600 line-clamp-2">整理了新版本的功能需求和界面设计方案，包括用户反馈的主要问题...</div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-3 shadow-sm">
+                        <div class="flex items-center mb-2">
+                            <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-400 mr-2">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div class="text-sm font-medium text-gray-800 truncate">API文档</div>
+                        </div>
+                        <div class="text-xs text-gray-500 mb-2">今天 10:15 更新</div>
+                        <div class="text-xs text-gray-600 line-clamp-2">更新了用户认证和数据同步相关的API接口文档，添加了错误处理...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 笔记列表 -->
+            <div>
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-bold text-gray-800">所有笔记</h2>
+                    <div class="flex items-center text-gray-500 text-sm">
+                        <span class="mr-2">排序</span>
+                        <i class="fas fa-sort-amount-down"></i>
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex-1">
+                                <h3 class="font-bold text-gray-800 mb-1">产品需求文档</h3>
+                                <div class="text-xs text-gray-500">今天 14:30</div>
+                            </div>
+                            <div class="text-gray-400">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-3 line-clamp-2">
+                            整理了新版本的功能需求和界面设计方案，包括用户反馈的主要问题和改进建议。需要在下周一的产品会议上讨论。
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <span class="bg-primary-100 text-primary-600 text-xs px-2 py-1 rounded mr-2">工作</span>
+                                <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">重要</span>
+                            </div>
+                            <div class="text-gray-400 text-xs">
+                                <i class="fas fa-paperclip mr-1"></i>
+                                <span>2</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex-1">
+                                <h3 class="font-bold text-gray-800 mb-1">API文档</h3>
+                                <div class="text-xs text-gray-500">今天 10:15</div>
+                            </div>
+                            <div class="text-gray-400">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-3 line-clamp-2">
+                            更新了用户认证和数据同步相关的API接口文档，添加了错误处理和请求示例。需要与后端团队确认实现细节。
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <span class="bg-primary-100 text-primary-600 text-xs px-2 py-1 rounded mr-2">工作</span>
+                                <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">技术</span>
+                            </div>
+                            <div class="text-gray-400 text-xs">
+                                <i class="fas fa-paperclip mr-1"></i>
+                                <span>1</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex-1">
+                                <h3 class="font-bold text-gray-800 mb-1">学习计划</h3>
+                                <div class="text-xs text-gray-500">昨天 18:45</div>
+                            </div>
+                            <div class="text-gray-400">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-3 line-clamp-2">
+                            制定了下个月的学习计划，包括Flutter进阶、设计模式和算法训练。每周至少投入10小时，周末重点攻克难点。
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <span class="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded mr-2">学习</span>
+                                <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">计划</span>
+                            </div>
+                            <div class="text-gray-400 text-xs">
+                                <i class="fas fa-paperclip mr-1"></i>
+                                <span>0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex-1">
+                                <h3 class="font-bold text-gray-800 mb-1">旅行清单</h3>
+                                <div class="text-xs text-gray-500">3天前</div>
+                            </div>
+                            <div class="text-gray-400">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-3 line-clamp-2">
+                            计划下个月的旅行，包括必备物品清单、景点规划和预算控制。需要提前预订酒店和交通工具。
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <span class="bg-green-100 text-green-600 text-xs px-2 py-1 rounded mr-2">生活</span>
+                                <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">旅行</span>
+                            </div>
+                            <div class="text-gray-400 text-xs">
+                                <i class="fas fa-paperclip mr-1"></i>
+                                <span>3</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 加载更多 -->
+                <div class="text-center text-primary-400 py-5">
+                    <span>加载更多</span>
+                    <i class="fas fa-chevron-down ml-1"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 新增笔记浮动按钮 -->
+        <div class="fixed bottom-20 right-5 w-14 h-14 bg-primary-400 rounded-full shadow-lg flex items-center justify-center text-white text-xl">
+            <i class="fas fa-pen"></i>
+        </div>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日程管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="status-bar text-gray-800">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <div class="bg-primary-400 text-white p-5 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="my_assistant.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-home text-white"></i>
+                </a>
+                <h1 class="text-xl font-bold">日程管理</h1>
+            </div>
+            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-primary-400 shadow-md">
+                <i class="fas fa-plus"></i>
+            </div>
+        </div>
+        
+        <div class="p-5">
+            <div class="flex justify-between items-center mb-5">
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-left text-gray-500"></i>
+                    <h2 class="mx-4 text-lg font-bold">2023年7月</h2>
+                    <i class="fas fa-chevron-right text-gray-500"></i>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-7 mb-5">
+                <div class="text-center text-gray-400 text-xs py-2">日</div>
+                <div class="text-center text-gray-400 text-xs py-2">一</div>
+                <div class="text-center text-gray-400 text-xs py-2">二</div>
+                <div class="text-center text-gray-400 text-xs py-2">三</div>
+                <div class="text-center text-gray-400 text-xs py-2">四</div>
+                <div class="text-center text-gray-400 text-xs py-2">五</div>
+                <div class="text-center text-gray-400 text-xs py-2">六</div>
+                
+                <div class="text-center py-2 text-gray-400">25</div>
+                <div class="text-center py-2 text-gray-400">26</div>
+                <div class="text-center py-2 text-gray-400">27</div>
+                <div class="text-center py-2 text-gray-400">28</div>
+                <div class="text-center py-2 text-gray-400">29</div>
+                <div class="text-center py-2 text-gray-400">30</div>
+                <div class="text-center py-2">1</div>
+                
+                <div class="text-center py-2">2</div>
+                <div class="text-center py-2">3</div>
+                <div class="text-center py-2">4</div>
+                <div class="text-center py-2">5</div>
+                <div class="text-center py-2">6</div>
+                <div class="text-center py-2">7</div>
+                <div class="text-center py-2">8</div>
+                
+                <div class="text-center py-2">9</div>
+                <div class="text-center py-2">10</div>
+                <div class="text-center py-2">11</div>
+                <div class="text-center py-2">12</div>
+                <div class="text-center py-2 relative">
+                    13
+                    <div class="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary-400 rounded-full"></div>
+                </div>
+                <div class="text-center py-2 relative">
+                    14
+                    <div class="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary-400 rounded-full"></div>
+                </div>
+                <div class="text-center py-2">15</div>
+                
+                <div class="text-center py-2">16</div>
+                <div class="text-center py-2 relative">
+                    17
+                    <div class="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary-400 rounded-full"></div>
+                </div>
+                <div class="text-center py-2">18</div>
+                <div class="text-center py-2 w-10 h-10 mx-auto flex items-center justify-center bg-primary-400 text-white rounded-full">19</div>
+                <div class="text-center py-2 relative">
+                    20
+                    <div class="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary-400 rounded-full"></div>
+                </div>
+                <div class="text-center py-2">21</div>
+                <div class="text-center py-2">22</div>
+                
+                <div class="text-center py-2">23</div>
+                <div class="text-center py-2">24</div>
+                <div class="text-center py-2">25</div>
+                <div class="text-center py-2">26</div>
+                <div class="text-center py-2">27</div>
+                <div class="text-center py-2">28</div>
+                <div class="text-center py-2">29</div>
+            </div>
+            
+            <div class="mt-5">
+                <div class="font-bold text-gray-800 mb-3">今天 · 7月19日</div>
+                
+                <div class="bg-white rounded-2xl p-4 shadow-sm border-l-4 border-primary-400 mb-3">
+                    <div class="text-primary-400 font-bold mb-1">09:00 - 10:30</div>
+                    <div class="font-bold text-gray-800 mb-1">团队周会</div>
+                    <div class="text-gray-500 text-sm flex items-center">
+                        <i class="fas fa-map-marker-alt mr-1"></i>
+                        线上会议
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-4 shadow-sm border-l-4 border-primary-400 mb-3">
+                    <div class="text-primary-400 font-bold mb-1">14:00 - 15:00</div>
+                    <div class="font-bold text-gray-800 mb-1">产品讨论会议</div>
+                    <div class="text-gray-500 text-sm flex items-center">
+                        <i class="fas fa-map-marker-alt mr-1"></i>
+                        会议室A
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-4 shadow-sm border-l-4 border-primary-400">
+                    <div class="text-primary-400 font-bold mb-1">18:30 - 20:00</div>
+                    <div class="font-bold text-gray-800 mb-1">健身</div>
+                    <div class="text-gray-500 text-sm flex items-center">
+                        <i class="fas fa-map-marker-alt mr-1"></i>
+                        健身中心
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

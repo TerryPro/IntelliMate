@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的助理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="status-bar text-gray-800">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <div class="bg-primary-400 text-white p-5 flex justify-between items-center">
+            <h1 class="text-xl font-bold">我的助理</h1>
+            <div class="w-10 h-10 bg-white rounded-full overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&q=80" alt="User" class="w-full h-full object-cover">
+            </div>
+        </div>
+        
+        <div class="p-5">
+            <h2 class="text-2xl font-bold text-gray-800 mb-5">你好，小明</h2>
+            
+            <div class="flex justify-between gap-4 mb-6">
+                <div class="flex-1 bg-white rounded-2xl p-4 shadow-sm">
+                    <h3 class="text-gray-500 text-sm mb-2">今日任务</h3>
+                    <div class="text-2xl font-bold text-gray-800">5</div>
+                </div>
+                <div class="flex-1 bg-white rounded-2xl p-4 shadow-sm">
+                    <h3 class="text-gray-500 text-sm mb-2">已完成</h3>
+                    <div class="text-2xl font-bold text-gray-800">2</div>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-lg font-bold text-gray-800">即将到来</span>
+                    <a href="#" class="text-primary-400 text-sm">查看全部</a>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-4 shadow-sm border-l-4 border-primary-400 mb-3">
+                    <div class="text-primary-400 font-bold mb-1">14:00 - 15:00</div>
+                    <div class="font-bold text-gray-800 mb-1">产品讨论会议</div>
+                    <div class="text-gray-500 text-sm flex items-center">
+                        <i class="fas fa-map-marker-alt mr-1"></i>
+                        会议室A
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-4 shadow-sm border-l-4 border-primary-400">
+                    <div class="text-primary-400 font-bold mb-1">18:30 - 20:00</div>
+                    <div class="font-bold text-gray-800 mb-1">健身</div>
+                    <div class="text-gray-500 text-sm flex items-center">
+                        <i class="fas fa-map-marker-alt mr-1"></i>
+                        健身中心
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 快捷操作 -->
+            <div class="mb-8">
+                <div class="text-lg font-bold text-gray-800 mb-4">快捷操作</div>
+                <div class="grid grid-cols-4 gap-3">
+                    <div class="bg-white rounded-2xl p-3 shadow-sm flex flex-col items-center">
+                        <i class="fas fa-plus text-2xl text-primary-400 mb-2"></i>
+                        <span class="text-xs text-gray-500 text-center">新建任务</span>
+                    </div>
+                    <div class="bg-white rounded-2xl p-3 shadow-sm flex flex-col items-center">
+                        <i class="fas fa-calendar-plus text-2xl text-primary-400 mb-2"></i>
+                        <span class="text-xs text-gray-500 text-center">添加日程</span>
+                    </div>
+                    <div class="bg-white rounded-2xl p-3 shadow-sm flex flex-col items-center">
+                        <i class="fas fa-sticky-note text-2xl text-primary-400 mb-2"></i>
+                        <span class="text-xs text-gray-500 text-center">写笔记</span>
+                    </div>
+                    <div class="bg-white rounded-2xl p-3 shadow-sm flex flex-col items-center">
+                        <i class="fas fa-bell text-2xl text-primary-400 mb-2"></i>
+                        <span class="text-xs text-gray-500 text-center">设置提醒</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 功能模块 -->
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-lg font-bold text-gray-800">功能模块</span>
+                    <a href="#" class="text-primary-400 text-sm flex items-center">
+                        <span>编辑</span>
+                        <i class="fas fa-edit ml-1"></i>
+                    </a>
+                </div>
+                
+                <!-- 功能模块网格 -->
+                <div class="grid grid-cols-2 gap-2 mb-6">
+                    <!-- 日程安排 -->
+                    <div class="bg-gradient-to-br from-blue-400 to-blue-500 rounded-2xl p-3 shadow-sm flex flex-col items-center text-white h-24">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-2">
+                            <i class="fas fa-calendar-alt text-xl"></i>
+                        </div>
+                        <span class="text-sm font-medium">日程安排</span>
+                    </div>
+                    
+                    <!-- 任务安排 -->
+                    <div class="bg-gradient-to-br from-green-400 to-green-500 rounded-2xl p-3 shadow-sm flex flex-col items-center text-white h-24">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-2">
+                            <i class="fas fa-tasks text-xl"></i>
+                        </div>
+                        <span class="text-sm font-medium">任务安排</span>
+                    </div>
+                    
+                    <!-- 日常点滴 -->
+                    <div class="bg-gradient-to-br from-purple-400 to-purple-500 rounded-2xl p-3 shadow-sm flex flex-col items-center text-white h-24">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-2">
+                            <i class="fas fa-pen-alt text-xl"></i>
+                        </div>
+                        <span class="text-sm font-medium">日常点滴</span>
+                    </div>
+                    
+                    <!-- 笔记管理 -->
+                    <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-2xl p-3 shadow-sm flex flex-col items-center text-white h-24">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-2">
+                            <i class="fas fa-book text-xl"></i>
+                        </div>
+                        <span class="text-sm font-medium">笔记管理</span>
+                    </div>
+                    
+                    <!-- 财务管理 -->
+                    <div class="bg-gradient-to-br from-red-400 to-red-500 rounded-2xl p-3 shadow-sm flex flex-col items-center text-white h-24">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-2">
+                            <i class="fas fa-wallet text-xl"></i>
+                        </div>
+                        <span class="text-sm font-medium">财务管理</span>
+                    </div>
+                    
+                    <!-- 系统设置 -->
+                    <div class="bg-gradient-to-br from-gray-400 to-gray-500 rounded-2xl p-3 shadow-sm flex flex-col items-center text-white h-24">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-2">
+                            <i class="fas fa-cog text-xl"></i>
+                        </div>
+                        <span class="text-sm font-medium">系统设置</span>
+                    </div>
+                    
+                    <!-- 图片管理 -->
+                    <div class="bg-gradient-to-br from-pink-400 to-pink-500 rounded-2xl p-3 shadow-sm flex flex-col items-center text-white h-24">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-2">
+                            <i class="fas fa-images text-xl"></i>
+                        </div>
+                        <span class="text-sm font-medium">图片管理</span>
+                    </div>
+                    
+                    <!-- 目标管理 -->
+                    <div class="bg-gradient-to-br from-indigo-400 to-indigo-500 rounded-2xl p-3 shadow-sm flex flex-col items-center text-white h-24">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-2">
+                            <i class="fas fa-bullseye text-xl"></i>
+                        </div>
+                        <span class="text-sm font-medium">目标管理</span>
+                    </div>
+                    
+                    <!-- 旅游管理 -->
+                    <div class="bg-gradient-to-br from-blue-300 to-blue-400 rounded-2xl p-3 shadow-sm flex flex-col items-center text-white h-24">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-2">
+                            <i class="fas fa-plane text-xl"></i>
+                        </div>
+                        <span class="text-sm font-medium">旅游管理</span>
+                    </div>
+                    
+                    <!-- 备忘管理 -->
+                    <div class="bg-gradient-to-br from-orange-400 to-orange-500 rounded-2xl p-3 shadow-sm flex flex-col items-center text-white h-24">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-2">
+                            <i class="fas fa-sticky-note text-xl"></i>
+                        </div>
+                        <span class="text-sm font-medium">备忘管理</span>
+                    </div>
+                </div>
+                
+                <!-- 更多功能提示 -->
+                <div class="bg-gray-100 rounded-2xl p-4 flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center text-primary-500 mr-3">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm font-medium text-gray-800">探索更多功能</div>
+                            <div class="text-xs text-gray-500">发现更多提升效率的工具</div>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

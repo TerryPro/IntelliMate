@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>目标管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="status-bar text-gray-800">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <!-- 头部 -->
+        <div class="bg-primary-400 text-white p-5 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="my_assistant.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-home text-white"></i>
+                </a>
+                <h1 class="text-xl font-bold">目标管理</h1>
+            </div>
+            <button class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                <i class="fas fa-plus text-white"></i>
+            </button>
+        </div>
+        
+        <!-- 内容区域 -->
+        <div class="p-5">
+            <!-- 目标概览 -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm mb-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">目标概览</h2>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="bg-primary-50 rounded-lg p-4">
+                        <div class="flex items-center mb-2">
+                            <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-500 mr-2">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="text-sm font-medium text-gray-800">已完成目标</div>
+                        </div>
+                        <div class="text-2xl font-bold text-primary-500">12</div>
+                    </div>
+                    <div class="bg-yellow-50 rounded-lg p-4">
+                        <div class="flex items-center mb-2">
+                            <div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500 mr-2">
+                                <i class="fas fa-spinner"></i>
+                            </div>
+                            <div class="text-sm font-medium text-gray-800">进行中</div>
+                        </div>
+                        <div class="text-2xl font-bold text-yellow-500">8</div>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <div class="flex-1">
+                        <div class="text-sm text-gray-500 mb-1">总体完成率</div>
+                        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-primary-400 rounded-full" style="width: 60%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs mt-1">
+                            <span class="text-primary-500 font-medium">60%</span>
+                            <span class="text-gray-500">目标: 100%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 时间周期选择 -->
+            <div class="mb-5 overflow-x-auto scrollbar-hide">
+                <div class="flex space-x-2 pb-2">
+                    <div class="bg-primary-400 text-white px-4 py-2 rounded-full whitespace-nowrap">
+                        全部
+                    </div>
+                    <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">
+                        本周
+                    </div>
+                    <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">
+                        本月
+                    </div>
+                    <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">
+                        本季度
+                    </div>
+                    <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">
+                        本年度
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 周目标 -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">周目标</h2>
+                    <a href="#" class="text-primary-400 text-sm">查看全部</a>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <div class="font-medium text-gray-800 mb-1">每天运动30分钟</div>
+                                <div class="text-xs text-gray-500">截止日期: 周日</div>
+                            </div>
+                            <div class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs font-medium">
+                                进行中
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-gray-500">进度</span>
+                                <span class="text-primary-500 font-medium">5/7天</span>
+                            </div>
+                            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-primary-400 rounded-full" style="width: 71.4%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <div class="font-medium text-gray-800 mb-1">阅读一本书</div>
+                                <div class="text-xs text-gray-500">截止日期: 周日</div>
+                            </div>
+                            <div class="bg-yellow-100 text-yellow-600 px-2 py-1 rounded text-xs font-medium">
+                                进行中
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-gray-500">进度</span>
+                                <span class="text-primary-500 font-medium">120/300页</span>
+                            </div>
+                            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-primary-400 rounded-full" style="width: 40%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 月目标 -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">月目标</h2>
+                    <a href="#" class="text-primary-400 text-sm">查看全部</a>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <div class="font-medium text-gray-800 mb-1">学习新技能</div>
+                                <div class="text-xs text-gray-500">截止日期: 7月31日</div>
+                            </div>
+                            <div class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs font-medium">
+                                进行中
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-gray-500">进度</span>
+                                <span class="text-primary-500 font-medium">3/5课程</span>
+                            </div>
+                            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-primary-400 rounded-full" style="width: 60%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <div class="font-medium text-gray-800 mb-1">存款5000元</div>
+                                <div class="text-xs text-gray-500">截止日期: 7月31日</div>
+                            </div>
+                            <div class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-medium">
+                                落后
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-gray-500">进度</span>
+                                <span class="text-primary-500 font-medium">2000/5000元</span>
+                            </div>
+                            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-primary-400 rounded-full" style="width: 40%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 年度目标 -->
+            <div class="mb-10">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">年度目标</h2>
+                    <a href="#" class="text-primary-400 text-sm">查看全部</a>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <div class="font-medium text-gray-800 mb-1">旅行3个城市</div>
+                                <div class="text-xs text-gray-500">截止日期: 12月31日</div>
+                            </div>
+                            <div class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs font-medium">
+                                进行中
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-gray-500">进度</span>
+                                <span class="text-primary-500 font-medium">2/3城市</span>
+                            </div>
+                            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-primary-400 rounded-full" style="width: 66.7%"></div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            已完成: 上海, 杭州
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <div class="font-medium text-gray-800 mb-1">减重10公斤</div>
+                                <div class="text-xs text-gray-500">截止日期: 12月31日</div>
+                            </div>
+                            <div class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs font-medium">
+                                进行中
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-gray-500">进度</span>
+                                <span class="text-primary-500 font-medium">6/10公斤</span>
+                            </div>
+                            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-primary-400 rounded-full" style="width: 60%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 浮动按钮 -->
+        <div class="fixed bottom-20 right-5 w-14 h-14 bg-primary-400 rounded-full shadow-lg flex items-center justify-center text-white text-xl">
+            <i class="fas fa-plus"></i>
+        </div>
+    </div>
+</body>
+</html> 

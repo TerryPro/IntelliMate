@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编写笔记</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="status-bar text-gray-800">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <!-- 头部 -->
+        <div class="bg-primary-400 text-white p-5 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="my_assistant.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-home text-white"></i>
+                </a>
+                <a href="note.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-arrow-left text-white"></i>
+                </a>
+                <h1 class="text-xl font-bold">编写笔记</h1>
+            </div>
+            <button class="px-4 py-1 bg-white text-primary-400 rounded-full font-medium">保存</button>
+        </div>
+        
+        <!-- 表单内容 -->
+        <div class="p-5">
+            <!-- 笔记标题 -->
+            <div class="mb-5">
+                <input type="text" placeholder="请输入标题..." class="w-full p-3 text-xl font-bold bg-transparent border-none outline-none text-gray-800">
+                <div class="h-px bg-gray-200 w-full"></div>
+            </div>
+            
+            <!-- 笔记分类 -->
+            <div class="mb-5 flex items-center">
+                <div class="flex items-center bg-primary-50 text-primary-500 px-3 py-1 rounded-full mr-3">
+                    <i class="fas fa-folder mr-1"></i>
+                    <span class="text-sm">工作笔记</span>
+                    <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                </div>
+                
+                <div class="flex items-center bg-gray-100 text-gray-500 px-3 py-1 rounded-full">
+                    <i class="fas fa-tag mr-1"></i>
+                    <span class="text-sm">添加标签</span>
+                    <i class="fas fa-plus ml-1 text-xs"></i>
+                </div>
+            </div>
+            
+            <!-- 编辑工具栏 -->
+            <div class="bg-white rounded-lg p-2 mb-4 flex items-center overflow-x-auto scrollbar-hide">
+                <button class="p-2 text-gray-600 hover:bg-gray-100 rounded">
+                    <i class="fas fa-bold"></i>
+                </button>
+                <button class="p-2 text-gray-600 hover:bg-gray-100 rounded">
+                    <i class="fas fa-italic"></i>
+                </button>
+                <button class="p-2 text-gray-600 hover:bg-gray-100 rounded">
+                    <i class="fas fa-underline"></i>
+                </button>
+                <div class="h-6 w-px bg-gray-200 mx-1"></div>
+                <button class="p-2 text-gray-600 hover:bg-gray-100 rounded">
+                    <i class="fas fa-list-ul"></i>
+                </button>
+                <button class="p-2 text-gray-600 hover:bg-gray-100 rounded">
+                    <i class="fas fa-list-ol"></i>
+                </button>
+                <button class="p-2 text-gray-600 hover:bg-gray-100 rounded">
+                    <i class="fas fa-tasks"></i>
+                </button>
+                <div class="h-6 w-px bg-gray-200 mx-1"></div>
+                <button class="p-2 text-gray-600 hover:bg-gray-100 rounded">
+                    <i class="fas fa-link"></i>
+                </button>
+                <button class="p-2 text-gray-600 hover:bg-gray-100 rounded">
+                    <i class="fas fa-image"></i>
+                </button>
+                <button class="p-2 text-gray-600 hover:bg-gray-100 rounded">
+                    <i class="fas fa-table"></i>
+                </button>
+                <button class="p-2 text-gray-600 hover:bg-gray-100 rounded">
+                    <i class="fas fa-code"></i>
+                </button>
+                <div class="h-6 w-px bg-gray-200 mx-1"></div>
+                <button class="p-2 text-gray-600 hover:bg-gray-100 rounded">
+                    <i class="fas fa-heading"></i>
+                </button>
+                <button class="p-2 text-gray-600 hover:bg-gray-100 rounded">
+                    <i class="fas fa-quote-right"></i>
+                </button>
+            </div>
+            
+            <!-- 笔记内容 -->
+            <div class="mb-5">
+                <textarea placeholder="开始编写笔记内容..." class="w-full p-3 bg-transparent border-none outline-none text-gray-700 min-h-[300px] text-base"></textarea>
+            </div>
+            
+            <!-- 附件区域 -->
+            <div class="mb-5">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-gray-700 font-medium">附件</h3>
+                    <span class="text-xs text-gray-500">0/5</span>
+                </div>
+                
+                <div class="grid grid-cols-4 gap-2">
+                    <div class="aspect-square bg-gray-100 rounded-lg flex flex-col items-center justify-center border border-dashed border-gray-300">
+                        <i class="fas fa-plus text-gray-400 mb-1"></i>
+                        <span class="text-xs text-gray-500">添加</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 底部选项 -->
+            <div class="bg-white rounded-lg p-4 mb-5">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-lock text-gray-500 mr-2"></i>
+                        <span class="text-gray-700">隐私设置</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-gray-500 mr-2">仅自己可见</span>
+                        <i class="fas fa-chevron-right text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center">
+                        <i class="fas fa-bell text-gray-500 mr-2"></i>
+                        <span class="text-gray-700">提醒</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-gray-500 mr-2">不提醒</span>
+                        <i class="fas fa-chevron-right text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 自动保存提示 -->
+            <div class="text-center text-xs text-gray-500 mb-10">
+                <p>笔记将自动保存至云端</p>
+                <p>上次保存时间：10:30</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加点滴</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="status-bar text-gray-800">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <div class="bg-primary-400 text-white p-5 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="my_assistant.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-home text-white"></i>
+                </a>
+                <a href="daily_notes.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-arrow-left text-white"></i>
+                </a>
+                <h1 class="text-xl font-bold">添加点滴</h1>
+            </div>
+            <button class="px-4 py-1 bg-white text-primary-400 rounded-full font-medium">发布</button>
+        </div>
+        
+        <div class="p-5">
+            <div class="mb-5">
+                <div class="flex items-center mb-3">
+                    <div class="w-10 h-10 rounded-full overflow-hidden mr-3">
+                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&q=80" alt="User" class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <div class="text-gray-800 font-medium">小明</div>
+                        <div class="text-xs text-gray-500">公开可见</div>
+                    </div>
+                </div>
+                
+                <textarea placeholder="分享你的想法..." class="w-full p-3 bg-transparent border-none outline-none text-gray-700 min-h-[150px] text-lg"></textarea>
+            </div>
+            
+            <!-- 附件预览区域 -->
+            <div class="grid grid-cols-3 gap-2 mb-5">
+                <div class="aspect-square bg-gray-200 rounded-lg overflow-hidden relative">
+                    <img src="https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Attachment" class="w-full h-full object-cover">
+                    <div class="absolute top-1 right-1 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center text-white">
+                        <i class="fas fa-times text-xs"></i>
+                    </div>
+                </div>
+                <div class="aspect-square bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 border-2 border-dashed border-gray-300">
+                    <i class="fas fa-plus"></i>
+                </div>
+            </div>
+            
+            <!-- 工具栏 -->
+            <div class="bg-white rounded-lg p-3 mb-5">
+                <div class="flex justify-between">
+                    <div class="flex space-x-5">
+                        <div class="text-gray-500 flex flex-col items-center">
+                            <i class="fas fa-camera text-xl"></i>
+                            <span class="text-xs mt-1">拍照</span>
+                        </div>
+                        <div class="text-gray-500 flex flex-col items-center">
+                            <i class="fas fa-image text-xl"></i>
+                            <span class="text-xs mt-1">相册</span>
+                        </div>
+                        <div class="text-gray-500 flex flex-col items-center">
+                            <i class="fas fa-video text-xl"></i>
+                            <span class="text-xs mt-1">视频</span>
+                        </div>
+                        <div class="text-gray-500 flex flex-col items-center">
+                            <i class="fas fa-paperclip text-xl"></i>
+                            <span class="text-xs mt-1">文件</span>
+                        </div>
+                    </div>
+                    <div class="text-gray-500 flex flex-col items-center">
+                        <i class="fas fa-ellipsis-h text-xl"></i>
+                        <span class="text-xs mt-1">更多</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 设置选项 -->
+            <div class="space-y-3">
+                <div class="bg-white rounded-lg p-4 flex justify-between items-center">
+                    <div class="flex items-center">
+                        <i class="fas fa-tag text-gray-500 mr-3"></i>
+                        <span class="text-gray-800">添加标签</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300"></i>
+                </div>
+                
+                <div class="bg-white rounded-lg p-4 flex justify-between items-center">
+                    <div class="flex items-center">
+                        <i class="fas fa-map-marker-alt text-gray-500 mr-3"></i>
+                        <span class="text-gray-800">所在位置</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300"></i>
+                </div>
+                
+                <div class="bg-white rounded-lg p-4 flex justify-between items-center">
+                    <div class="flex items-center">
+                        <i class="fas fa-lock text-gray-500 mr-3"></i>
+                        <span class="text-gray-800">谁可以看</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-gray-500 mr-2">公开</span>
+                        <i class="fas fa-chevron-right text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

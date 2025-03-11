@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="status-bar text-gray-800">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <!-- 头部 -->
+        <div class="bg-primary-400 text-white p-5 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="my_assistant.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-home text-white"></i>
+                </a>
+                <a href="settings.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-arrow-left text-white"></i>
+                </a>
+                <h1 class="text-xl font-bold">数据管理</h1>
+            </div>
+        </div>
+        
+        <!-- 内容 -->
+        <div class="p-5">
+            <!-- 数据概览 -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm mb-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">数据概览</h2>
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full bg-primary-50 flex items-center justify-center text-primary-400 mr-4">
+                        <i class="fas fa-database text-xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm text-gray-500 mb-1">已使用空间</div>
+                        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-primary-400 rounded-full" style="width: 45%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs mt-1">
+                            <span class="text-gray-500">45MB</span>
+                            <span class="text-gray-500">1GB</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-3 text-center">
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-2xl font-bold text-gray-800">24</div>
+                        <div class="text-xs text-gray-500">日程</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-2xl font-bold text-gray-800">36</div>
+                        <div class="text-xs text-gray-500">任务</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="text-2xl font-bold text-gray-800">12</div>
+                        <div class="text-xs text-gray-500">笔记</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 数据导出 -->
+            <div class="mb-6">
+                <div class="text-lg font-bold text-gray-800 mb-3">数据导出</div>
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 mr-3">
+                                    <i class="fas fa-file-export"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-800">导出全部数据</div>
+                                    <div class="text-xs text-gray-500">导出所有类型的数据</div>
+                                </div>
+                            </div>
+                            <button class="px-3 py-1 bg-primary-400 text-white rounded-full text-sm">导出</button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 border-b border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center text-green-500 mr-3">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-800">导出日程数据</div>
+                                    <div class="text-xs text-gray-500">仅导出日程相关数据</div>
+                                </div>
+                            </div>
+                            <button class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm">导出</button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 border-b border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500 mr-3">
+                                    <i class="fas fa-tasks"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-800">导出任务数据</div>
+                                    <div class="text-xs text-gray-500">仅导出任务相关数据</div>
+                                </div>
+                            </div>
+                            <button class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm">导出</button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-lg bg-yellow-50 flex items-center justify-center text-yellow-500 mr-3">
+                                    <i class="fas fa-sticky-note"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-800">导出笔记数据</div>
+                                    <div class="text-xs text-gray-500">仅导出笔记相关数据</div>
+                                </div>
+                            </div>
+                            <button class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm">导出</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 数据导入 -->
+            <div class="mb-6">
+                <div class="text-lg font-bold text-gray-800 mb-3">数据导入</div>
+                <div class="bg-white rounded-2xl p-5 shadow-sm">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                            <i class="fas fa-file-import"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-800">从文件导入</div>
+                            <div class="text-xs text-gray-500">支持JSON、CSV格式</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-5 flex flex-col items-center justify-center mb-4">
+                        <div class="w-12 h-12 rounded-full bg-primary-50 flex items-center justify-center text-primary-400 mb-2">
+                            <i class="fas fa-cloud-upload-alt text-xl"></i>
+                        </div>
+                        <div class="text-gray-700 font-medium mb-1">点击上传文件</div>
+                        <div class="text-xs text-gray-500">或拖拽文件到此处</div>
+                    </div>
+                    
+                    <div class="text-xs text-gray-500">
+                        <p class="mb-2">注意事项：</p>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>导入数据将与现有数据合并</li>
+                            <li>请确保导入文件格式正确</li>
+                            <li>导入前建议先备份现有数据</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 数据备份 -->
+            <div class="mb-10">
+                <div class="text-lg font-bold text-gray-800 mb-3">数据备份</div>
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                    <i class="fas fa-cloud"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-800">云端备份</div>
+                                    <div class="text-xs text-gray-500">自动同步到云端</div>
+                                </div>
+                            </div>
+                            <div class="relative inline-block w-12 h-6 rounded-full bg-primary-400">
+                                <div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 border-b border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                    <i class="fas fa-history"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-800">备份频率</div>
+                                    <div class="text-xs text-gray-500">每天自动备份</div>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-300"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                    <i class="fas fa-redo-alt"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-800">立即备份</div>
+                                    <div class="text-xs text-gray-500">上次备份：今天 08:30</div>
+                                </div>
+                            </div>
+                            <button class="px-3 py-1 bg-primary-400 text-white rounded-full text-sm">备份</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 数据恢复 -->
+            <div class="mb-10">
+                <div class="text-lg font-bold text-gray-800 mb-3">数据恢复</div>
+                <div class="bg-white rounded-2xl p-5 shadow-sm">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-500 mr-3">
+                            <i class="fas fa-trash-restore"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-800">从备份恢复</div>
+                            <div class="text-xs text-gray-500">从之前的备份中恢复数据</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="text-sm font-medium text-gray-800">今天 08:30</div>
+                            <button class="text-primary-400 text-xs">恢复</button>
+                        </div>
+                        <div class="text-xs text-gray-500">大小：45MB</div>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="text-sm font-medium text-gray-800">昨天 20:15</div>
+                            <button class="text-primary-400 text-xs">恢复</button>
+                        </div>
+                        <div class="text-xs text-gray-500">大小：44MB</div>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="text-sm font-medium text-gray-800">前天 19:30</div>
+                            <button class="text-primary-400 text-xs">恢复</button>
+                        </div>
+                        <div class="text-xs text-gray-500">大小：43MB</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

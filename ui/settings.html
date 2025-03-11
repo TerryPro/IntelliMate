@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设置</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="status-bar text-gray-800">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <div class="bg-primary-400 text-white p-5 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="my_assistant.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-home text-white"></i>
+                </a>
+                <h1 class="text-xl font-bold">系统设置</h1>
+            </div>
+            <div class="w-10 h-10 bg-white rounded-full overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&q=80" alt="Profile" class="w-full h-full object-cover">
+            </div>
+        </div>
+        
+        <!-- 用户信息卡片 -->
+        <div class="bg-white mx-5 mt-5 p-4 rounded-2xl shadow-sm">
+            <div class="flex items-center">
+                <div class="w-16 h-16 rounded-full overflow-hidden mr-4">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&q=80" alt="Profile" class="w-full h-full object-cover">
+                </div>
+                <div class="flex-1">
+                    <div class="text-xl font-bold text-gray-800">小明</div>
+                    <div class="text-sm text-gray-500">13800138000</div>
+                    <div class="text-xs text-gray-400 mt-1">提高效率，成就更好的自己</div>
+                </div>
+                <div class="text-primary-400">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="px-5 mt-6">
+            <!-- 基础设置 -->
+            <div class="mb-6">
+                <div class="text-sm text-gray-500 mb-2 px-1">基础设置</div>
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                    <div class="flex justify-between items-center p-4 border-b border-gray-100">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span class="text-gray-800">个人信息</span>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-300"></i>
+                    </div>
+                    
+                    <div class="flex justify-between items-center p-4 border-b border-gray-100">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <span class="text-gray-800">密码修改</span>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-300"></i>
+                    </div>
+                    
+                    <div class="flex justify-between items-center p-4">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <span class="text-gray-800">通知设置</span>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 数据管理 -->
+            <div class="mb-6">
+                <div class="text-sm text-gray-500 mb-2 px-1">数据管理</div>
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                    <div class="flex justify-between items-center p-4 border-b border-gray-100">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                <i class="fas fa-file-import"></i>
+                            </div>
+                            <span class="text-gray-800">数据导入导出</span>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-300"></i>
+                    </div>
+                    
+                    <div class="flex justify-between items-center p-4">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <span class="text-gray-800">数据备份</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-400 mr-2">自动备份已开启</span>
+                            <i class="fas fa-chevron-right text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 系统信息 -->
+            <div class="mb-6">
+                <div class="text-sm text-gray-500 mb-2 px-1">系统信息</div>
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                    <div class="flex justify-between items-center p-4 border-b border-gray-100">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <span class="text-gray-800">存储空间</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-400 mr-2">已用 45MB/1GB</span>
+                            <i class="fas fa-chevron-right text-gray-300"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center p-4 border-b border-gray-100">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                <i class="fas fa-trash-alt"></i>
+                            </div>
+                            <span class="text-gray-800">缓存管理</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-400 mr-2">12MB</span>
+                            <i class="fas fa-chevron-right text-gray-300"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center p-4">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <span class="text-gray-800">版本信息</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-400 mr-2">v2.1.0</span>
+                            <i class="fas fa-chevron-right text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 账号安全 -->
+            <div class="mb-10">
+                <div class="text-sm text-gray-500 mb-2 px-1">账号安全</div>
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                    <div class="flex justify-between items-center p-4 border-b border-gray-100">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <span class="text-gray-800">隐私设置</span>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-300"></i>
+                    </div>
+                    
+                    <div class="flex justify-between items-center p-4">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                <i class="fas fa-user-slash"></i>
+                            </div>
+                            <span class="text-gray-800">账号注销</span>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 退出登录按钮 -->
+            <button class="w-full py-4 bg-white text-red-500 font-bold rounded-2xl shadow-sm mb-10">
+                退出登录
+            </button>
+        </div>
+    </div>
+</body>
+</html> 

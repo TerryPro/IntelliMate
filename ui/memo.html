@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>备忘管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="status-bar text-gray-800">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <!-- 头部 -->
+        <div class="bg-primary-400 text-white p-5 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="my_assistant.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-home text-white"></i>
+                </a>
+                <h1 class="text-xl font-bold">备忘管理</h1>
+            </div>
+            <div class="flex items-center">
+                <button class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-2">
+                    <i class="fas fa-search text-white"></i>
+                </button>
+                <button class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-plus text-white"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 内容区域 -->
+        <div class="p-5">
+            <!-- 备忘统计 -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm mb-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">备忘统计</h2>
+                <div class="grid grid-cols-3 gap-3 text-center">
+                    <div class="bg-primary-50 rounded-lg p-3">
+                        <div class="text-2xl font-bold text-primary-500">24</div>
+                        <div class="text-xs text-gray-500">总备忘</div>
+                    </div>
+                    <div class="bg-yellow-50 rounded-lg p-3">
+                        <div class="text-2xl font-bold text-yellow-500">8</div>
+                        <div class="text-xs text-gray-500">重要事项</div>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-3">
+                        <div class="text-2xl font-bold text-green-500">16</div>
+                        <div class="text-xs text-gray-500">已完成</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 分类标签 -->
+            <div class="mb-5 overflow-x-auto scrollbar-hide">
+                <div class="flex space-x-2 pb-2">
+                    <div class="bg-primary-400 text-white px-4 py-2 rounded-full whitespace-nowrap">
+                        全部
+                    </div>
+                    <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">
+                        工作
+                    </div>
+                    <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">
+                        生活
+                    </div>
+                    <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">
+                        学习
+                    </div>
+                    <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">
+                        健康
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 置顶备忘 -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">置顶备忘</h2>
+                    <a href="#" class="text-primary-400 text-sm">管理</a>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="bg-yellow-50 rounded-lg p-4 shadow-sm border-l-4 border-yellow-400">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="font-medium text-gray-800">项目进度会议</div>
+                            <div class="flex items-center">
+                                <i class="fas fa-thumbtack text-yellow-500 mr-2"></i>
+                                <span class="bg-red-100 text-red-600 px-2 py-0.5 rounded text-xs font-medium">重要</span>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-3">
+                            与产品团队讨论新功能开发进度，准备演示文稿。
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <div class="text-gray-500">
+                                <i class="fas fa-calendar-alt mr-1"></i>
+                                <span>今天 14:30</span>
+                            </div>
+                            <div class="text-primary-500">
+                                <i class="fas fa-tag mr-1"></i>
+                                <span>工作</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-blue-50 rounded-lg p-4 shadow-sm border-l-4 border-blue-400">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="font-medium text-gray-800">缴纳物业费</div>
+                            <div class="flex items-center">
+                                <i class="fas fa-thumbtack text-yellow-500 mr-2"></i>
+                                <span class="bg-yellow-100 text-yellow-600 px-2 py-0.5 rounded text-xs font-medium">提醒</span>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-3">
+                            本月物业费需在25日前缴纳，金额：320元。
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <div class="text-gray-500">
+                                <i class="fas fa-calendar-alt mr-1"></i>
+                                <span>7月25日</span>
+                            </div>
+                            <div class="text-primary-500">
+                                <i class="fas fa-tag mr-1"></i>
+                                <span>生活</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 最近备忘 -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">最近备忘</h2>
+                    <a href="#" class="text-primary-400 text-sm">查看全部</a>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="font-medium text-gray-800">购买生日礼物</div>
+                            <span class="bg-green-100 text-green-600 px-2 py-0.5 rounded text-xs font-medium">一般</span>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-3">
+                            为妈妈购买生日礼物，考虑买一条围巾或者一套护肤品。
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <div class="text-gray-500">
+                                <i class="fas fa-calendar-alt mr-1"></i>
+                                <span>7月28日</span>
+                            </div>
+                            <div class="text-primary-500">
+                                <i class="fas fa-tag mr-1"></i>
+                                <span>生活</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="font-medium text-gray-800">预约体检</div>
+                            <span class="bg-yellow-100 text-yellow-600 px-2 py-0.5 rounded text-xs font-medium">提醒</span>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-3">
+                            联系医院预约年度体检，记得空腹。
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <div class="text-gray-500">
+                                <i class="fas fa-calendar-alt mr-1"></i>
+                                <span>8月5日</span>
+                            </div>
+                            <div class="text-primary-500">
+                                <i class="fas fa-tag mr-1"></i>
+                                <span>健康</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="font-medium text-gray-800">学习React课程</div>
+                            <span class="bg-green-100 text-green-600 px-2 py-0.5 rounded text-xs font-medium">一般</span>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-3">
+                            完成React基础课程第5-8章节的学习。
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <div class="text-gray-500">
+                                <i class="fas fa-calendar-alt mr-1"></i>
+                                <span>本周日前</span>
+                            </div>
+                            <div class="text-primary-500">
+                                <i class="fas fa-tag mr-1"></i>
+                                <span>学习</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 已完成备忘 -->
+            <div class="mb-10">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">已完成备忘</h2>
+                    <a href="#" class="text-primary-400 text-sm">查看全部</a>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="bg-gray-100 rounded-lg p-4 shadow-sm opacity-70">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="font-medium text-gray-600 line-through">缴纳水电费</div>
+                            <span class="bg-gray-200 text-gray-500 px-2 py-0.5 rounded text-xs font-medium">已完成</span>
+                        </div>
+                        <div class="text-sm text-gray-500 mb-3 line-through">
+                            本月水电费：水费78元，电费142元。
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <div class="text-gray-500">
+                                <i class="fas fa-calendar-alt mr-1"></i>
+                                <span>7月15日</span>
+                            </div>
+                            <div class="text-gray-500">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                <span>7月14日完成</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-100 rounded-lg p-4 shadow-sm opacity-70">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="font-medium text-gray-600 line-through">提交季度报告</div>
+                            <span class="bg-gray-200 text-gray-500 px-2 py-0.5 rounded text-xs font-medium">已完成</span>
+                        </div>
+                        <div class="text-sm text-gray-500 mb-3 line-through">
+                            整理Q2季度工作报告，发送给部门经理。
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <div class="text-gray-500">
+                                <i class="fas fa-calendar-alt mr-1"></i>
+                                <span>7月10日</span>
+                            </div>
+                            <div class="text-gray-500">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                <span>7月9日完成</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 浮动按钮 -->
+        <div class="fixed bottom-20 right-5 w-14 h-14 bg-primary-400 rounded-full shadow-lg flex items-center justify-center text-white text-xl">
+            <i class="fas fa-plus"></i>
+        </div>
+    </div>
+</body>
+</html> 

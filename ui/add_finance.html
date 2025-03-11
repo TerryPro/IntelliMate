@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加收支</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="status-bar text-gray-800">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <!-- 头部 -->
+        <div class="bg-primary-400 text-white p-5 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="my_assistant.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-home text-white"></i>
+                </a>
+                <a href="finance.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-arrow-left text-white"></i>
+                </a>
+                <h1 class="text-xl font-bold">添加收支</h1>
+            </div>
+            <button class="px-4 py-1 bg-white text-primary-400 rounded-full font-medium">保存</button>
+        </div>
+        
+        <!-- 表单内容 -->
+        <div class="p-5">
+            <!-- 收支类型选择 -->
+            <div class="mb-5">
+                <div class="flex bg-white rounded-lg overflow-hidden">
+                    <div class="flex-1 py-3 text-center bg-red-500 text-white font-medium">支出</div>
+                    <div class="flex-1 py-3 text-center text-gray-500 font-medium">收入</div>
+                </div>
+            </div>
+            
+            <!-- 金额输入 -->
+            <div class="mb-5 bg-white rounded-lg p-4">
+                <label class="block text-gray-500 text-sm mb-1">金额</label>
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold mr-2">¥</span>
+                    <input type="number" class="text-2xl font-bold flex-1 outline-none" placeholder="0.00">
+                </div>
+            </div>
+            
+            <!-- 分类选择 -->
+            <div class="mb-5">
+                <label class="block text-gray-700 font-medium mb-2">分类</label>
+                <div class="grid grid-cols-4 gap-3 mb-3">
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center text-red-500 mb-1">
+                            <i class="fas fa-utensils text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-700">餐饮</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 mb-1">
+                            <i class="fas fa-taxi text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-700">交通</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 mb-1">
+                            <i class="fas fa-shopping-bag text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-700">购物</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500 mb-1">
+                            <i class="fas fa-home text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-700">住房</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-4 gap-3">
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center text-green-500 mb-1">
+                            <i class="fas fa-heartbeat text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-700">医疗</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 mb-1">
+                            <i class="fas fa-gamepad text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-700">娱乐</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 mb-1">
+                            <i class="fas fa-tshirt text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-700">服饰</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 mb-1">
+                            <i class="fas fa-ellipsis-h text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-700">更多</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 日期选择 -->
+            <div class="mb-5">
+                <label class="block text-gray-700 font-medium mb-2">日期</label>
+                <div class="flex items-center bg-white border border-gray-200 rounded-lg p-3">
+                    <i class="fas fa-calendar-alt text-primary-400 mr-3"></i>
+                    <span class="flex-1 text-gray-800">2023年7月19日</span>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </div>
+            </div>
+            
+            <!-- 账户选择 -->
+            <div class="mb-5">
+                <label class="block text-gray-700 font-medium mb-2">账户</label>
+                <div class="flex items-center bg-white border border-gray-200 rounded-lg p-3">
+                    <i class="fas fa-credit-card text-primary-400 mr-3"></i>
+                    <span class="flex-1 text-gray-800">现金</span>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </div>
+            </div>
+            
+            <!-- 备注 -->
+            <div class="mb-10">
+                <label for="notes" class="block text-gray-700 font-medium mb-2">备注</label>
+                <textarea id="notes" placeholder="添加备注..." rows="3" class="w-full p-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-primary-400"></textarea>
+            </div>
+            
+            <!-- 添加照片 -->
+            <div class="mb-10">
+                <label class="block text-gray-700 font-medium mb-2">添加照片</label>
+                <div class="bg-white rounded-lg border border-dashed border-gray-300 p-5 flex flex-col items-center justify-center">
+                    <div class="w-12 h-12 rounded-full bg-primary-50 flex items-center justify-center text-primary-400 mb-2">
+                        <i class="fas fa-camera text-xl"></i>
+                    </div>
+                    <div class="text-gray-500 text-sm">添加收支凭证</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

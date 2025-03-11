@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日常点滴</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="status-bar text-gray-800">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <div class="bg-primary-400 text-white p-5 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="my_assistant.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-home text-white"></i>
+                </a>
+                <h1 class="text-xl font-bold">日常点滴</h1>
+            </div>
+            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-primary-400 shadow-md cursor-pointer">
+                <i class="fas fa-plus"></i>
+            </div>
+        </div>
+        
+        <div class="p-5">
+            <!-- 时间筛选 -->
+            <div class="flex overflow-x-auto scrollbar-hide gap-2 mb-5 pb-2">
+                <div class="bg-primary-400 text-white px-4 py-2 rounded-full whitespace-nowrap">全部</div>
+                <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">今天</div>
+                <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">本周</div>
+                <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">本月</div>
+            </div>
+            
+            <!-- 日历视图切换 -->
+            <div class="bg-white rounded-lg mb-5 overflow-hidden">
+                <div class="flex border-b">
+                    <div class="flex-1 py-2 text-center text-gray-600">日</div>
+                    <div class="flex-1 py-2 text-center bg-primary-400 text-white">周</div>
+                    <div class="flex-1 py-2 text-center text-gray-600">月</div>
+                </div>
+                <div class="p-3">
+                    <div class="flex justify-between items-center">
+                        <i class="fas fa-chevron-left text-gray-400"></i>
+                        <span class="font-medium text-gray-800">2023年7月第3周</span>
+                        <i class="fas fa-chevron-right text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 搜索框 -->
+            <div class="bg-gray-100 rounded-lg flex items-center p-3 mb-5">
+                <i class="fas fa-search text-gray-400 mr-3"></i>
+                <input type="text" placeholder="搜索笔记..." class="bg-transparent w-full outline-none text-gray-700">
+            </div>
+            
+            <!-- 快速记录区域 -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm mb-5">
+                <div class="flex items-center mb-3">
+                    <div class="w-10 h-10 rounded-full overflow-hidden mr-3">
+                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&q=80" alt="User" class="w-full h-full object-cover">
+                    </div>
+                    <div class="text-gray-800 font-medium">此刻有什么想法？</div>
+                </div>
+                <textarea placeholder="记录你的工作点滴..." class="w-full p-3 bg-gray-50 rounded-lg outline-none mb-3 text-gray-700 min-h-[80px]"></textarea>
+                <div class="flex justify-between items-center">
+                    <div class="flex space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 cursor-pointer">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 cursor-pointer">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 cursor-pointer">
+                            <i class="fas fa-paperclip"></i>
+                        </div>
+                    </div>
+                    <button class="px-4 py-2 bg-primary-400 text-white rounded-lg">发布</button>
+                </div>
+            </div>
+            
+            <!-- 日期分隔线 -->
+            <div class="flex items-center mb-4">
+                <div class="flex-grow h-px bg-gray-200"></div>
+                <div class="px-3 text-gray-500 text-sm font-medium">今天</div>
+                <div class="flex-grow h-px bg-gray-200"></div>
+            </div>
+            
+            <!-- 点滴内容列表 -->
+            <div class="space-y-4">
+                <!-- 带图片的点滴 -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm">
+                    <div class="flex items-start mb-3">
+                        <div class="w-10 h-10 rounded-full overflow-hidden mr-3">
+                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&q=80" alt="User" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-medium text-gray-800">小明</div>
+                            <div class="text-xs text-gray-500">今天 14:30</div>
+                        </div>
+                        <div class="text-gray-400">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </div>
+                    </div>
+                    <div class="text-gray-700 mb-3">
+                        完成了产品原型设计，团队对新的交互方式非常满意！这次改进应该能提升用户体验。
+                    </div>
+                    <div class="rounded-lg overflow-hidden mb-3">
+                        <img src="https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Design" class="w-full h-auto">
+                    </div>
+                    <div class="flex justify-between text-gray-500 text-sm">
+                        <div class="flex items-center">
+                            <i class="far fa-heart mr-1"></i>
+                            <span>5</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="far fa-comment mr-1"></i>
+                            <span>3</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="far fa-bookmark mr-1"></i>
+                            <span>收藏</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="far fa-share-square mr-1"></i>
+                            <span>分享</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 纯文字点滴 -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm">
+                    <div class="flex items-start mb-3">
+                        <div class="w-10 h-10 rounded-full overflow-hidden mr-3">
+                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&q=80" alt="User" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-medium text-gray-800">小明</div>
+                            <div class="text-xs text-gray-500">今天 11:15</div>
+                        </div>
+                        <div class="text-gray-400">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </div>
+                    </div>
+                    <div class="text-gray-700 mb-3">
+                        今天的会议很有成效，确定了下一阶段的开发计划。需要记住的关键点：
+                        <br>1. 优化用户注册流程
+                        <br>2. 改进数据分析图表
+                        <br>3. 修复已知的几个bug
+                    </div>
+                    <div class="flex justify-between text-gray-500 text-sm">
+                        <div class="flex items-center">
+                            <i class="far fa-heart mr-1"></i>
+                            <span>2</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="far fa-comment mr-1"></i>
+                            <span>1</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="far fa-bookmark mr-1"></i>
+                            <span>收藏</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="far fa-share-square mr-1"></i>
+                            <span>分享</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 日期分隔线 -->
+            <div class="flex items-center my-4">
+                <div class="flex-grow h-px bg-gray-200"></div>
+                <div class="px-3 text-gray-500 text-sm font-medium">昨天</div>
+                <div class="flex-grow h-px bg-gray-200"></div>
+            </div>
+            
+            <!-- 昨天的点滴 -->
+            <div class="space-y-4 mb-6">
+                <div class="bg-white rounded-2xl p-4 shadow-sm">
+                    <div class="flex items-start mb-3">
+                        <div class="w-10 h-10 rounded-full overflow-hidden mr-3">
+                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&q=80" alt="User" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-medium text-gray-800">小明</div>
+                            <div class="text-xs text-gray-500">昨天 16:45</div>
+                        </div>
+                        <div class="text-gray-400">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </div>
+                    </div>
+                    <div class="text-gray-700 mb-3">
+                        发现了一个提高代码效率的新方法，记录一下以免忘记：使用新的API可以减少30%的处理时间。
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg mb-3 font-mono text-sm text-gray-700">
+                        const result = await api.optimizedMethod(data);
+                        // 比原来的方法快30%
+                    </div>
+                    <div class="flex justify-between text-gray-500 text-sm">
+                        <div class="flex items-center">
+                            <i class="far fa-heart mr-1"></i>
+                            <span>8</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="far fa-comment mr-1"></i>
+                            <span>4</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="far fa-bookmark mr-1"></i>
+                            <span>收藏</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="far fa-share-square mr-1"></i>
+                            <span>分享</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 加载更多 -->
+            <div class="text-center text-primary-400 py-3 cursor-pointer">
+                <span>加载更多</span>
+                <i class="fas fa-chevron-down ml-1"></i>
+            </div>
+        </div>
+        
+        <!-- 新增记录浮动按钮 -->
+        <div class="fixed bottom-20 right-5 w-14 h-14 bg-primary-400 rounded-full shadow-lg flex items-center justify-center text-white text-xl">
+            <i class="fas fa-pen"></i>
+        </div>
+    </div>
+</body>
+</html> 

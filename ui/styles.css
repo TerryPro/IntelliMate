@@ -1,0 +1,231 @@
+/* 自定义滚动条 */
+.scrollbar-thin::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #3ecabb;
+    border-radius: 10px;
+}
+
+/* 隐藏滚动条但保持功能 */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* 手机屏幕模拟 */
+.phone-frame {
+    position: relative;
+    width: 360px;
+    height: 720px;
+    border: 10px solid #000;
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* 状态栏 */
+.status-bar {
+    height: 44px;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* 页面容器 */
+.page-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+}
+
+/* 页面框架 */
+.page-frame {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 页面标题 */
+.page-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #1f2937;
+}
+
+/* iframe样式 */
+.page-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* 底部导航栏 */
+.bottom-nav {
+    background-color: white;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+    border-top-left-radius: 1.5rem;
+    border-top-right-radius: 1.5rem;
+    display: flex;
+    justify-content: space-around;
+    padding: 1rem 0;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.nav-item.active {
+    color: #3ecabb;
+}
+
+.nav-item.inactive {
+    color: #9ca3af;
+}
+
+.nav-icon {
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.nav-text {
+    font-size: 0.75rem;
+}
+
+/* 通用卡片样式 */
+.card {
+    background-color: white;
+    border-radius: 1rem;
+    padding: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 表单元素样式 */
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 1rem;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #3ecabb;
+    box-shadow: 0 0 0 3px rgba(62, 202, 187, 0.1);
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #4b5563;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background-color: #3ecabb;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #26b0a1;
+}
+
+.btn-secondary {
+    background-color: #f3f4f6;
+    color: #4b5563;
+}
+
+.btn-secondary:hover {
+    background-color: #e5e7eb;
+}
+
+.btn-danger {
+    background-color: white;
+    color: #ef4444;
+}
+
+.btn-danger:hover {
+    background-color: #fee2e2;
+}
+
+/* 头部导航栏 */
+.header {
+    background-color: #3ecabb;
+    color: white;
+    padding: 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.header-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    overflow: hidden;
+    background-color: white;
+}
+
+/* 列表项样式 */
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.list-item:last-child {
+    border-bottom: none;
+}
+
+.list-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    background-color: #eefbfa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #3ecabb;
+    margin-right: 0.75rem;
+}
+
+/* 分组标题 */
+.group-title {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+    padding: 0 0.25rem;
+} 

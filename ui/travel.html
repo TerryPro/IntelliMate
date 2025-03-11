@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旅游管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="status-bar text-gray-800">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <!-- 头部 -->
+        <div class="bg-primary-400 text-white p-5 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="my_assistant.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-home text-white"></i>
+                </a>
+                <h1 class="text-xl font-bold">旅游管理</h1>
+            </div>
+            <button class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                <i class="fas fa-plus text-white"></i>
+            </button>
+        </div>
+        
+        <!-- 内容区域 -->
+        <div class="p-5">
+            <!-- 旅行统计 -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm mb-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">旅行统计</h2>
+                <div class="grid grid-cols-3 gap-3 text-center">
+                    <div class="bg-blue-50 rounded-lg p-3">
+                        <div class="text-2xl font-bold text-blue-500">8</div>
+                        <div class="text-xs text-gray-500">已去城市</div>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-3">
+                        <div class="text-2xl font-bold text-green-500">12</div>
+                        <div class="text-xs text-gray-500">旅行天数</div>
+                    </div>
+                    <div class="bg-purple-50 rounded-lg p-3">
+                        <div class="text-2xl font-bold text-purple-500">¥9,860</div>
+                        <div class="text-xs text-gray-500">总花费</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 旅行类型选择 -->
+            <div class="mb-5 overflow-x-auto scrollbar-hide">
+                <div class="flex space-x-2 pb-2">
+                    <div class="bg-primary-400 text-white px-4 py-2 rounded-full whitespace-nowrap">
+                        全部
+                    </div>
+                    <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">
+                        计划中
+                    </div>
+                    <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">
+                        进行中
+                    </div>
+                    <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">
+                        已完成
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 旅行列表 -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">我的旅行</h2>
+                    <a href="#" class="text-primary-400 text-sm flex items-center">
+                        <span>筛选</span>
+                        <i class="fas fa-filter ml-1"></i>
+                    </a>
+                </div>
+                
+                <!-- 进行中的旅行 -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-4">
+                    <div class="h-32 bg-cover bg-center relative" style="background-image: url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-4">
+                            <div class="bg-green-500 text-white text-xs font-medium px-2 py-1 rounded absolute top-4 right-4">
+                                进行中
+                            </div>
+                            <div class="text-white font-bold text-lg">云南之旅</div>
+                            <div class="text-white/80 text-xs">2023.07.15 - 2023.07.22</div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>
+                                <span class="text-gray-700">昆明 - 大理 - 丽江</span>
+                            </div>
+                            <div class="text-sm text-gray-500">8天7晚</div>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <div class="flex items-center">
+                                <i class="fas fa-user-friends text-gray-400 mr-1"></i>
+                                <span class="text-gray-600">3人</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-wallet text-gray-400 mr-1"></i>
+                                <span class="text-gray-600">预算: ¥6,000</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-camera text-gray-400 mr-1"></i>
+                                <span class="text-gray-600">36张照片</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 已完成的旅行 -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-4">
+                    <div class="h-32 bg-cover bg-center relative" style="background-image: url('https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-4">
+                            <div class="bg-blue-500 text-white text-xs font-medium px-2 py-1 rounded absolute top-4 right-4">
+                                已完成
+                            </div>
+                            <div class="text-white font-bold text-lg">上海周末游</div>
+                            <div class="text-white/80 text-xs">2023.06.24 - 2023.06.25</div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>
+                                <span class="text-gray-700">上海</span>
+                            </div>
+                            <div class="text-sm text-gray-500">2天1晚</div>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <div class="flex items-center">
+                                <i class="fas fa-user-friends text-gray-400 mr-1"></i>
+                                <span class="text-gray-600">2人</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-wallet text-gray-400 mr-1"></i>
+                                <span class="text-gray-600">花费: ¥1,860</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-camera text-gray-400 mr-1"></i>
+                                <span class="text-gray-600">48张照片</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 计划中的旅行 -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <div class="h-32 bg-cover bg-center relative" style="background-image: url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-4">
+                            <div class="bg-yellow-500 text-white text-xs font-medium px-2 py-1 rounded absolute top-4 right-4">
+                                计划中
+                            </div>
+                            <div class="text-white font-bold text-lg">北京之行</div>
+                            <div class="text-white/80 text-xs">2023.10.01 - 2023.10.07</div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>
+                                <span class="text-gray-700">北京</span>
+                            </div>
+                            <div class="text-sm text-gray-500">7天6晚</div>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <div class="flex items-center">
+                                <i class="fas fa-user-friends text-gray-400 mr-1"></i>
+                                <span class="text-gray-600">4人</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-wallet text-gray-400 mr-1"></i>
+                                <span class="text-gray-600">预算: ¥8,000</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-list-check text-gray-400 mr-1"></i>
+                                <span class="text-gray-600">待完成: 3项</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 旅行功能 -->
+            <div class="mb-10">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">旅行工具</h2>
+                <div class="grid grid-cols-4 gap-3">
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 mb-1">
+                            <i class="fas fa-route text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-700">行程规划</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center text-green-500 mb-1">
+                            <i class="fas fa-hotel text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-700">住宿管理</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500 mb-1">
+                            <i class="fas fa-book text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-700">旅行日志</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center text-red-500 mb-1">
+                            <i class="fas fa-coins text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-700">花费记录</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 mb-1">
+                            <i class="fas fa-suitcase-rolling text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-700">行李清单</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 mb-1">
+                            <i class="fas fa-ticket-alt text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-700">票务管理</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 mb-1">
+                            <i class="fas fa-map-marked-alt text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-700">景点收藏</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 mb-1">
+                            <i class="fas fa-ellipsis-h text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-700">更多</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 浮动按钮 -->
+        <div class="fixed bottom-20 right-5 w-14 h-14 bg-primary-400 rounded-full shadow-lg flex items-center justify-center text-white text-xl">
+            <i class="fas fa-plus"></i>
+        </div>
+    </div>
+</body>
+</html> 

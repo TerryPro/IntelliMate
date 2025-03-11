@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="status-bar text-gray-800">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <div class="h-full bg-primary-400 flex flex-col items-center px-8 py-16">
+            <div class="text-white text-6xl mb-12">
+                <i class="fas fa-book-reader"></i>
+            </div>
+            <div class="w-full mt-6">
+                <div class="relative mb-5">
+                    <i class="fas fa-user absolute left-4 top-1/2 transform -translate-y-1/2 text-white"></i>
+                    <input type="text" placeholder="请输入手机号" class="w-full py-4 pl-10 pr-4 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/70">
+                </div>
+                <div class="relative mb-5">
+                    <i class="fas fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-white"></i>
+                    <input type="password" placeholder="请输入密码" class="w-full py-4 pl-10 pr-4 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/70">
+                </div>
+                <button class="w-full py-4 bg-white text-primary-400 font-bold rounded-lg mb-5">登录</button>
+                <div class="flex justify-between text-white text-sm">
+                    <span>忘记密码?</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
