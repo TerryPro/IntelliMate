@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intellimate/dependency_injection.dart' as di;
+import 'dependency_injection.dart' as di;
 import 'package:intellimate/presentation/providers/note_provider.dart';
 import 'package:intellimate/presentation/pages/note_test_page.dart';
 import 'package:intellimate/app/theme/app_theme.dart';

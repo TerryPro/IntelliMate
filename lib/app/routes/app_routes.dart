@@ -21,6 +21,7 @@ import 'package:intellimate/presentation/screens/travel/travel_screen.dart';
 import 'package:intellimate/presentation/screens/travel/travel_detail_screen.dart';
 import 'package:intellimate/presentation/screens/memo/memo_screen.dart';
 import 'package:intellimate/presentation/screens/memo/add_memo_screen.dart';
+import 'package:intellimate/presentation/screens/memo/edit_memo_screen.dart';
 import 'package:intellimate/presentation/screens/settings/settings_screen.dart';
 import 'package:intellimate/presentation/screens/settings/profile_edit_screen.dart';
 import 'package:intellimate/presentation/screens/settings/password_change_screen.dart';
@@ -30,16 +31,16 @@ import 'package:intellimate/presentation/screens/placeholder_screen.dart';
 
 class AppRoutes {
   // 路由名称常量
-  static const String splash = '/splash';
+  static const String splash = '/';
   static const String login = '/login';
   static const String home = '/home';
   static const String assistant = '/assistant';
   static const String schedule = '/schedule';
-  static const String addSchedule = '/schedule/add';
+  static const String addSchedule = '/add_schedule';
   static const String task = '/task';
-  static const String addTask = '/task/add';
+  static const String addTask = '/add_task';
   static const String dailyNote = '/daily_note';
-  static const String addDailyNote = '/daily_note/add';
+  static const String addDailyNote = '/add_daily_note';
   static const String note = '/note';
   static const String writeNote = '/note/write';
   static const String finance = '/finance';
@@ -50,7 +51,8 @@ class AppRoutes {
   static const String travel = '/travel';
   static const String travelDetail = '/travel/detail';
   static const String memo = '/memo';
-  static const String addMemo = '/memo/add';
+  static const String addMemo = '/add_memo';
+  static const String editMemo = '/edit_memo';
   static const String settings = '/settings';
   static const String profileEdit = '/settings/profile';
   static const String passwordChange = '/settings/password';
@@ -74,18 +76,10 @@ class AppRoutes {
       assistant: (context) => const AssistantScreen(),
       // 日程管理模块
       schedule: (context) => const ScheduleScreen(),
-      addSchedule: (context) {
-        // 获取日程ID用于编辑现有日程
-        final scheduleId = ModalRoute.of(context)?.settings.arguments as String?;
-        return AddScheduleScreen(scheduleId: scheduleId);
-      },
+      addSchedule: (context) => const AddScheduleScreen(),
       // 任务管理模块
       task: (context) => const TaskScreen(),
-      addTask: (context) {
-        // 获取任务ID用于编辑现有任务
-        final taskId = ModalRoute.of(context)?.settings.arguments as String?;
-        return AddTaskScreen(taskId: taskId);
-      },
+      addTask: (context) => const AddTaskScreen(),
       // 其他模块使用临时占位页面
       dailyNote: (context) => const DailyNoteScreen(),
       addDailyNote: (context) => const AddDailyNoteScreen(),
@@ -105,10 +99,8 @@ class AppRoutes {
         return TravelDetailScreen(travel: travel);
       },
       memo: (context) => const MemoScreen(),
-      addMemo: (context) {
-        final memo = ModalRoute.of(context)?.settings.arguments as Memo?;
-        return AddMemoScreen(memo: memo);
-      },
+      addMemo: (context) => const AddMemoScreen(),
+      editMemo: (context) => const EditMemoScreen(),
       settings: (context) => const SettingsScreen(),
       profileEdit: (context) => const ProfileEditScreen(),
       passwordChange: (context) => const PasswordChangeScreen(),

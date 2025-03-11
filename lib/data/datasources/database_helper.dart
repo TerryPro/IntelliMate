@@ -108,6 +108,14 @@ class DatabaseHelper {
         print('日程表已存在');
       }
       
+      bool hasMemoTable = tableNames.contains(tableMemo);
+      if (!hasMemoTable) {
+        print('备忘表不存在，正在创建...');
+        await _createMemoTable(db);
+      } else {
+        print('备忘表已存在');
+      }
+      
       _initialized = true;
       print('数据库初始化完成');
     } catch (e) {
@@ -217,6 +225,31 @@ class DatabaseHelper {
     }
   }
 
+  // 创建备忘表
+  Future<void> _createMemoTable(Database db) async {
+    try {
+      await db.execute('''
+        CREATE TABLE $tableMemo (
+          id TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          content TEXT NOT NULL,
+          date INTEGER NOT NULL,
+          category TEXT,
+          priority TEXT NOT NULL,
+          is_pinned INTEGER NOT NULL DEFAULT 0,
+          is_completed INTEGER NOT NULL DEFAULT 0,
+          completed_at INTEGER,
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        )
+      ''');
+      print('备忘表创建成功');
+    } catch (e) {
+      print('创建备忘表失败: $e');
+      rethrow;
+    }
+  }
+
   // 数据库创建回调
   Future<void> _onCreate(Database db, int version) async {
     print('创建新数据库，版本: $version');
@@ -224,6 +257,7 @@ class DatabaseHelper {
     await _createTaskTable(db);
     await _createDailyNoteTable(db);
     await _createScheduleTable(db);
+    await _createMemoTable(db);
     // 创建其他表...
   }
 
