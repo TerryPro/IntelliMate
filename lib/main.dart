@@ -9,6 +9,7 @@ import 'package:intellimate/domain/repositories/user_repository.dart';
 import 'package:intellimate/presentation/providers/daily_note_provider.dart';
 import 'package:intellimate/presentation/providers/goal_provider.dart';
 import 'package:intellimate/presentation/providers/note_provider.dart';
+import 'package:intellimate/presentation/providers/schedule_provider.dart';
 import 'package:intellimate/presentation/providers/task_provider.dart';
 import 'package:intellimate/presentation/providers/user_provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -58,6 +59,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => sl<NoteProvider>()),
         ChangeNotifierProvider(create: (_) => sl<TaskProvider>()),
         ChangeNotifierProvider(create: (_) => sl<DailyNoteProvider>()),
+        ChangeNotifierProvider(create: (_) => sl<ScheduleProvider>()),
       ],
       child: MaterialApp(
         title: 'IntelliMate',

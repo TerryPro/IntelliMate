@@ -74,7 +74,11 @@ class AppRoutes {
       assistant: (context) => const AssistantScreen(),
       // 日程管理模块
       schedule: (context) => const ScheduleScreen(),
-      addSchedule: (context) => const AddScheduleScreen(),
+      addSchedule: (context) {
+        // 获取日程ID用于编辑现有日程
+        final scheduleId = ModalRoute.of(context)?.settings.arguments as String?;
+        return AddScheduleScreen(scheduleId: scheduleId);
+      },
       // 任务管理模块
       task: (context) => const TaskScreen(),
       addTask: (context) {

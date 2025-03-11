@@ -100,6 +100,14 @@ class DatabaseHelper {
         print('日常点滴表已存在');
       }
       
+      bool hasScheduleTable = tableNames.contains(tableSchedule);
+      if (!hasScheduleTable) {
+        print('日程表不存在，正在创建...');
+        await _createScheduleTable(db);
+      } else {
+        print('日程表已存在');
+      }
+      
       _initialized = true;
       print('数据库初始化完成');
     } catch (e) {
@@ -181,12 +189,41 @@ class DatabaseHelper {
     }
   }
 
+  // 创建日程表
+  Future<void> _createScheduleTable(Database db) async {
+    try {
+      await db.execute('''
+        CREATE TABLE $tableSchedule (
+          id TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          description TEXT,
+          start_time INTEGER NOT NULL,
+          end_time INTEGER NOT NULL,
+          location TEXT,
+          is_all_day INTEGER NOT NULL DEFAULT 0,
+          category TEXT,
+          is_repeated INTEGER NOT NULL DEFAULT 0,
+          repeat_type TEXT,
+          participants TEXT,
+          reminder TEXT,
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        )
+      ''');
+      print('日程表创建成功');
+    } catch (e) {
+      print('创建日程表失败: $e');
+      rethrow;
+    }
+  }
+
   // 数据库创建回调
   Future<void> _onCreate(Database db, int version) async {
     print('创建新数据库，版本: $version');
     await _createNoteTable(db);
     await _createTaskTable(db);
     await _createDailyNoteTable(db);
+    await _createScheduleTable(db);
     // 创建其他表...
   }
 

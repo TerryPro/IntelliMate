@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:intellimate/domain/entities/schedule.dart';
+import 'package:intellimate/presentation/providers/schedule_provider.dart';
+import 'package:provider/provider.dart';
 
 class AddScheduleScreen extends StatefulWidget {
-  const AddScheduleScreen({super.key});
+  final String? scheduleId; // 用于编辑现有日程
+  
+  const AddScheduleScreen({super.key, this.scheduleId});
 
   @override
   State<AddScheduleScreen> createState() => _AddScheduleScreenState();
@@ -33,12 +38,159 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
     {'name': '社交', 'icon': Icons.people, 'selected': false},
   ];
   
+  bool _isAllDay = false;
+  bool _isLoading = false;
+  String? _error;
+  Schedule? _existingSchedule;
+  
+  @override
+  void initState() {
+    super.initState();
+    if (widget.scheduleId != null) {
+      _loadExistingSchedule();
+    }
+  }
+  
+  // 加载现有日程
+  Future<void> _loadExistingSchedule() async {
+    final provider = Provider.of<ScheduleProvider>(context, listen: false);
+    
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    
+    try {
+      final schedule = await provider.getScheduleById(widget.scheduleId!);
+      
+      if (schedule != null) {
+        setState(() {
+          _existingSchedule = schedule;
+          _titleController.text = schedule.title;
+          _locationController.text = schedule.location ?? '';
+          _notesController.text = schedule.description ?? '';
+          _selectedDate = schedule.startTime;
+          _startTime = TimeOfDay(
+            hour: schedule.startTime.hour,
+            minute: schedule.startTime.minute,
+          );
+          _endTime = TimeOfDay(
+            hour: schedule.endTime.hour,
+            minute: schedule.endTime.minute,
+          );
+          _isAllDay = schedule.isAllDay;
+          _reminder = schedule.reminder;
+          _repeatOption = schedule.isRepeated ? schedule.repeatType : '不重复';
+          _selectedCategory = schedule.category ?? '工作';
+          
+          // 更新分类选择状态
+          for (var category in _categories) {
+            category['selected'] = category['name'] == _selectedCategory;
+          }
+        });
+      } else {
+        setState(() {
+          _error = '找不到指定的日程';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+  
   // 保存日程
-  void _saveSchedule() {
+  Future<void> _saveSchedule() async {
     if (_formKey.currentState!.validate()) {
-      // 这里应该保存日程到数据库
-      // 暂时只是返回上一页
-      Navigator.pop(context);
+      final provider = Provider.of<ScheduleProvider>(context, listen: false);
+      
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+      
+      try {
+        // 构建开始和结束时间
+        final startDateTime = DateTime(
+          _selectedDate.year,
+          _selectedDate.month,
+          _selectedDate.day,
+          _isAllDay ? 0 : _startTime.hour,
+          _isAllDay ? 0 : _startTime.minute,
+        );
+        
+        final endDateTime = DateTime(
+          _selectedDate.year,
+          _selectedDate.month,
+          _selectedDate.day,
+          _isAllDay ? 23 : _endTime.hour,
+          _isAllDay ? 59 : _endTime.minute,
+        );
+        
+        // 判断是创建还是更新
+        if (_existingSchedule != null) {
+          // 更新现有日程
+          final updatedSchedule = Schedule(
+            id: _existingSchedule!.id,
+            title: _titleController.text,
+            description: _notesController.text.isNotEmpty ? _notesController.text : null,
+            startTime: startDateTime,
+            endTime: endDateTime,
+            location: _locationController.text.isNotEmpty ? _locationController.text : null,
+            isAllDay: _isAllDay,
+            category: _selectedCategory,
+            isRepeated: _repeatOption != '不重复',
+            repeatType: _repeatOption != '不重复' ? _repeatOption : null,
+            reminder: _reminder,
+            createdAt: _existingSchedule!.createdAt,
+            updatedAt: DateTime.now(),
+          );
+          
+          final success = await provider.updateSchedule(updatedSchedule);
+          
+          if (success && mounted) {
+            Navigator.pop(context, true);
+          } else {
+            setState(() {
+              _error = '更新日程失败';
+              _isLoading = false;
+            });
+          }
+        } else {
+          // 创建新日程
+          final schedule = await provider.createSchedule(
+            title: _titleController.text,
+            description: _notesController.text.isNotEmpty ? _notesController.text : null,
+            startTime: startDateTime,
+            endTime: endDateTime,
+            location: _locationController.text.isNotEmpty ? _locationController.text : null,
+            isAllDay: _isAllDay,
+            category: _selectedCategory,
+            isRepeated: _repeatOption != '不重复',
+            repeatType: _repeatOption != '不重复' ? _repeatOption : null,
+            reminder: _reminder,
+          );
+          
+          if (schedule != null && mounted) {
+            Navigator.pop(context, true);
+          } else {
+            setState(() {
+              _error = '创建日程失败';
+              _isLoading = false;
+            });
+          }
+        }
+      } catch (e) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
   
@@ -134,60 +286,118 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: Column(
+      body: Stack(
         children: [
-          // 自定义顶部导航栏
-          _buildCustomAppBar(),
+          Column(
+            children: [
+              // 自定义顶部导航栏
+              _buildCustomAppBar(),
+              
+              // 表单内容
+              Expanded(
+                child: _isLoading && _existingSchedule == null
+                    ? const Center(child: CircularProgressIndicator())
+                    : SingleChildScrollView(
+                        padding: const EdgeInsets.all(20),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // 标题输入
+                              _buildTitleInput(),
+                              const SizedBox(height: 20),
+                              
+                              // 日期选择
+                              _buildDatePicker(),
+                              const SizedBox(height: 20),
+                              
+                              // 全天选项
+                              _buildAllDayOption(),
+                              const SizedBox(height: 20),
+                              
+                              // 时间选择
+                              if (!_isAllDay) _buildTimePicker(),
+                              if (!_isAllDay) const SizedBox(height: 20),
+                              
+                              // 地点输入
+                              _buildLocationInput(),
+                              const SizedBox(height: 20),
+                              
+                              // 分类选择
+                              _buildCategorySelector(),
+                              const SizedBox(height: 20),
+                              
+                              // 重复选项
+                              _buildRepeatOptions(),
+                              const SizedBox(height: 20),
+                              
+                              // 提醒选项
+                              _buildReminderOptions(),
+                              const SizedBox(height: 20),
+                              
+                              // 备注输入
+                              _buildNotesInput(),
+                              const SizedBox(height: 40),
+                              
+                              // 保存按钮
+                              _buildSaveButton(),
+                            ],
+                          ),
+                        ),
+                      ),
+              ),
+            ],
+          ),
           
-          // 表单内容
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 日程标题
-                    _buildTitleSection(),
-                    const SizedBox(height: 20),
-                    
-                    // 日期选择
-                    _buildDateSection(),
-                    const SizedBox(height: 20),
-                    
-                    // 时间选择
-                    _buildTimeSection(),
-                    const SizedBox(height: 20),
-                    
-                    // 地点
-                    _buildLocationSection(),
-                    const SizedBox(height: 20),
-                    
-                    // 提醒
-                    _buildReminderSection(),
-                    const SizedBox(height: 20),
-                    
-                    // 重复
-                    _buildRepeatSection(),
-                    const SizedBox(height: 20),
-                    
-                    // 备注
-                    _buildNotesSection(),
-                    const SizedBox(height: 20),
-                    
-                    // 日程类型
-                    _buildCategorySection(),
-                    const SizedBox(height: 20),
-                    
-                    // 参与者
-                    _buildParticipantsSection(),
-                    const SizedBox(height: 40),
-                  ],
+          // 加载指示器
+          if (_isLoading && _existingSchedule != null)
+            Container(
+              color: Colors.black.withOpacity(0.3),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+            
+          // 错误提示
+          if (_error != null)
+            Container(
+              color: Colors.black.withOpacity(0.3),
+              child: Center(
+                child: Container(
+                  margin: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                      const SizedBox(height: 16),
+                      Text(
+                        _error!,
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontSize: 16,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _error = null;
+                          });
+                        },
+                        child: const Text('确定'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -255,7 +465,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
   }
   
   // 构建标题部分
-  Widget _buildTitleSection() {
+  Widget _buildTitleInput() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -300,7 +510,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
   }
   
   // 构建日期部分
-  Widget _buildDateSection() {
+  Widget _buildDatePicker() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -351,8 +561,34 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
     );
   }
   
+  // 构建全天选项
+  Widget _buildAllDayOption() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '全天',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Switch(
+          value: _isAllDay,
+          onChanged: (value) {
+            setState(() {
+              _isAllDay = value;
+            });
+          },
+        ),
+      ],
+    );
+  }
+  
   // 构建时间部分
-  Widget _buildTimeSection() {
+  Widget _buildTimePicker() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -466,7 +702,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
   }
   
   // 构建地点部分
-  Widget _buildLocationSection() {
+  Widget _buildLocationInput() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -506,13 +742,13 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
     );
   }
   
-  // 构建提醒部分
-  Widget _buildReminderSection() {
+  // 构建日程类型部分
+  Widget _buildCategorySelector() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          '提醒',
+          '日程类型',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -520,73 +756,50 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        GestureDetector(
-          onTap: () {
-            // 显示提醒选项
-            showModalBottomSheet(
-              context: context,
-              builder: (context) {
-                return Container(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: _reminderOptions.map((option) {
-                      return ListTile(
-                        title: Text(option),
-                        trailing: option == _reminder
-                            ? const Icon(Icons.check, color: Color(0xFF3ECABB))
-                            : null,
-                        onTap: () {
-                          setState(() {
-                            _reminder = option;
-                          });
-                          Navigator.pop(context);
-                        },
-                      );
-                    }).toList(),
-                  ),
-                );
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: _categories.map((category) {
+            final bool isSelected = category['name'] == _selectedCategory;
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedCategory = category['name'];
+                });
               },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFF3ECABB) : Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      category['icon'],
+                      size: 16,
+                      color: isSelected ? Colors.white : Colors.grey.shade700,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      category['name'],
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : Colors.grey.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             );
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade200),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.notifications_outlined,
-                  color: Color(0xFF3ECABB),
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  _reminder ?? '选择提醒时间',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black87,
-                  ),
-                ),
-                const Spacer(),
-                const Icon(
-                  Icons.chevron_right,
-                  color: Colors.grey,
-                  size: 20,
-                ),
-              ],
-            ),
-          ),
+          }).toList(),
         ),
       ],
     );
   }
   
   // 构建重复部分
-  Widget _buildRepeatSection() {
+  Widget _buildRepeatOptions() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -664,8 +877,87 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
     );
   }
   
+  // 构建提醒部分
+  Widget _buildReminderOptions() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '提醒',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: () {
+            // 显示提醒选项
+            showModalBottomSheet(
+              context: context,
+              builder: (context) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: _reminderOptions.map((option) {
+                      return ListTile(
+                        title: Text(option),
+                        trailing: option == _reminder
+                            ? const Icon(Icons.check, color: Color(0xFF3ECABB))
+                            : null,
+                        onTap: () {
+                          setState(() {
+                            _reminder = option;
+                          });
+                          Navigator.pop(context);
+                        },
+                      );
+                    }).toList(),
+                  ),
+                );
+              },
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.notifications_outlined,
+                  color: Color(0xFF3ECABB),
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  _reminder ?? '选择提醒时间',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
+                ),
+                const Spacer(),
+                const Icon(
+                  Icons.chevron_right,
+                  color: Colors.grey,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+  
   // 构建备注部分
-  Widget _buildNotesSection() {
+  Widget _buildNotesInput() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -698,113 +990,25 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
     );
   }
   
-  // 构建日程类型部分
-  Widget _buildCategorySection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '日程类型',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
+  // 构建保存按钮
+  Widget _buildSaveButton() {
+    return ElevatedButton(
+      onPressed: _saveSchedule,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF3ECABB),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
         ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: _categories.map((category) {
-            final bool isSelected = category['name'] == _selectedCategory;
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedCategory = category['name'];
-                });
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF3ECABB) : Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      category['icon'],
-                      size: 16,
-                      color: isSelected ? Colors.white : Colors.grey.shade700,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      category['name'],
-                      style: TextStyle(
-                        color: isSelected ? Colors.white : Colors.grey.shade700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
+      ),
+      child: const Text(
+        '保存',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
         ),
-      ],
-    );
-  }
-  
-  // 构建参与者部分
-  Widget _buildParticipantsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '参与者',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: () {
-            // 显示添加参与者界面
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade200),
-            ),
-            child: const Row(
-              children: [
-                Icon(
-                  Icons.person_add,
-                  color: Color(0xFF3ECABB),
-                  size: 20,
-                ),
-                SizedBox(width: 12),
-                Text(
-                  '添加参与者',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-                Spacer(),
-                Icon(
-                  Icons.chevron_right,
-                  color: Colors.grey,
-                  size: 20,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 } 

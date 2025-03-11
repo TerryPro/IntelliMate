@@ -6,8 +6,14 @@ import 'package:uuid/uuid.dart';
 class ScheduleDataSource {
   final DatabaseHelper _databaseHelper = DatabaseHelper.instance;
 
+  // 确保数据库表已经初始化
+  Future<void> _ensureDatabaseInitialized() async {
+    await _databaseHelper.ensureInitialized();
+  }
+
   // 根据ID获取日程
   Future<ScheduleModel?> getScheduleById(String id) async {
+    await _ensureDatabaseInitialized(); // 确保表已创建
     final db = await _databaseHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       DatabaseHelper.tableSchedule,
@@ -21,6 +27,7 @@ class ScheduleDataSource {
 
   // 创建日程
   Future<ScheduleModel> createSchedule(ScheduleModel schedule) async {
+    await _ensureDatabaseInitialized(); // 确保表已创建
     final db = await _databaseHelper.database;
     
     // 生成新ID
@@ -44,6 +51,7 @@ class ScheduleDataSource {
 
   // 更新日程
   Future<int> updateSchedule(ScheduleModel schedule) async {
+    await _ensureDatabaseInitialized(); // 确保表已创建
     final db = await _databaseHelper.database;
     
     // 更新时间戳
@@ -62,6 +70,7 @@ class ScheduleDataSource {
 
   // 删除日程
   Future<int> deleteSchedule(String id) async {
+    await _ensureDatabaseInitialized(); // 确保表已创建
     final db = await _databaseHelper.database;
     
     return await db.delete(
@@ -78,6 +87,7 @@ class ScheduleDataSource {
     String? orderBy,
     bool descending = true,
   }) async {
+    await _ensureDatabaseInitialized(); // 确保表已创建
     final db = await _databaseHelper.database;
     
     final List<Map<String, dynamic>> maps = await db.query(
@@ -100,6 +110,7 @@ class ScheduleDataSource {
     String? category,
     bool? isRepeated,
   }) async {
+    await _ensureDatabaseInitialized(); // 确保表已创建
     final db = await _databaseHelper.database;
     
     // 构建WHERE子句和参数
@@ -145,6 +156,7 @@ class ScheduleDataSource {
     bool includeAllDay = true,
     String? category,
   }) async {
+    await _ensureDatabaseInitialized(); // 确保表已创建
     // 设置日期的开始时间（00:00:00）和结束时间（23:59:59）
     final DateTime startOfDay = DateTime(date.year, date.month, date.day);
     final DateTime endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
@@ -159,6 +171,7 @@ class ScheduleDataSource {
 
   // 搜索日程（根据标题或描述）
   Future<List<ScheduleModel>> searchSchedules(String query) async {
+    await _ensureDatabaseInitialized(); // 确保表已创建
     final db = await _databaseHelper.database;
     
     final List<Map<String, dynamic>> maps = await db.query(
@@ -175,6 +188,7 @@ class ScheduleDataSource {
 
   // 根据分类获取日程
   Future<List<ScheduleModel>> getSchedulesByCategory(String category) async {
+    await _ensureDatabaseInitialized(); // 确保表已创建
     final db = await _databaseHelper.database;
     
     final List<Map<String, dynamic>> maps = await db.query(
@@ -194,6 +208,7 @@ class ScheduleDataSource {
     bool includeAllDay = true,
     String? category,
   }) async {
+    await _ensureDatabaseInitialized(); // 确保表已创建
     return getSchedulesByDate(
       DateTime.now(),
       includeAllDay: includeAllDay,
@@ -206,6 +221,7 @@ class ScheduleDataSource {
     int limit = 10,
     String? category,
   }) async {
+    await _ensureDatabaseInitialized(); // 确保表已创建
     final db = await _databaseHelper.database;
     
     final DateTime now = DateTime.now();

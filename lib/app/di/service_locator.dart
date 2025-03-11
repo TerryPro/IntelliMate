@@ -2,16 +2,19 @@ import 'package:get_it/get_it.dart';
 import 'package:intellimate/data/datasources/daily_note_datasource.dart';
 import 'package:intellimate/data/datasources/goal_datasource.dart';
 import 'package:intellimate/data/datasources/note_datasource.dart';
+import 'package:intellimate/data/datasources/schedule_datasource.dart';
 import 'package:intellimate/data/datasources/task_datasource.dart';
 import 'package:intellimate/data/datasources/user_datasource.dart';
 import 'package:intellimate/data/repositories/daily_note_repository_impl.dart';
 import 'package:intellimate/data/repositories/goal_repository_impl.dart';
 import 'package:intellimate/data/repositories/note_repository_impl.dart';
+import 'package:intellimate/data/repositories/schedule_repository_impl.dart';
 import 'package:intellimate/data/repositories/task_repository_impl.dart';
 import 'package:intellimate/data/repositories/user_repository_impl.dart';
 import 'package:intellimate/domain/repositories/daily_note_repository.dart';
 import 'package:intellimate/domain/repositories/goal_repository.dart';
 import 'package:intellimate/domain/repositories/note_repository.dart';
+import 'package:intellimate/domain/repositories/schedule_repository.dart';
 import 'package:intellimate/domain/repositories/task_repository.dart';
 import 'package:intellimate/domain/repositories/user_repository.dart';
 import 'package:intellimate/domain/usecases/daily_note/create_daily_note.dart';
@@ -29,6 +32,17 @@ import 'package:intellimate/domain/usecases/note/get_all_notes.dart';
 import 'package:intellimate/domain/usecases/note/get_note_by_id.dart';
 import 'package:intellimate/domain/usecases/note/search_notes.dart';
 import 'package:intellimate/domain/usecases/note/update_note.dart';
+import 'package:intellimate/domain/usecases/schedule/create_schedule.dart';
+import 'package:intellimate/domain/usecases/schedule/delete_schedule.dart';
+import 'package:intellimate/domain/usecases/schedule/get_all_schedules.dart';
+import 'package:intellimate/domain/usecases/schedule/get_schedule_by_id.dart';
+import 'package:intellimate/domain/usecases/schedule/get_schedules_by_category.dart';
+import 'package:intellimate/domain/usecases/schedule/get_schedules_by_date.dart';
+import 'package:intellimate/domain/usecases/schedule/get_schedules_by_date_range.dart';
+import 'package:intellimate/domain/usecases/schedule/get_today_schedules.dart';
+import 'package:intellimate/domain/usecases/schedule/get_upcoming_schedules.dart';
+import 'package:intellimate/domain/usecases/schedule/search_schedules.dart';
+import 'package:intellimate/domain/usecases/schedule/update_schedule.dart';
 import 'package:intellimate/domain/usecases/task/create_task_usecase.dart';
 import 'package:intellimate/domain/usecases/task/delete_task_usecase.dart';
 import 'package:intellimate/domain/usecases/task/get_all_tasks_usecase.dart';
@@ -38,6 +52,7 @@ import 'package:intellimate/domain/usecases/task/update_task_usecase.dart';
 import 'package:intellimate/presentation/providers/daily_note_provider.dart';
 import 'package:intellimate/presentation/providers/goal_provider.dart';
 import 'package:intellimate/presentation/providers/note_provider.dart';
+import 'package:intellimate/presentation/providers/schedule_provider.dart';
 import 'package:intellimate/presentation/providers/task_provider.dart';
 
 final GetIt sl = GetIt.instance;
@@ -49,6 +64,7 @@ Future<void> setupServiceLocator() async {
   sl.registerLazySingleton<TaskDataSource>(() => TaskDataSourceImpl());
   sl.registerLazySingleton<UserDataSource>(() => UserDataSource());
   sl.registerLazySingleton<DailyNoteDataSource>(() => DailyNoteDataSourceImpl());
+  sl.registerLazySingleton<ScheduleDataSource>(() => ScheduleDataSource());
 
   // 仓库
   sl.registerLazySingleton<GoalRepository>(() => GoalRepositoryImpl(sl<GoalDataSource>()));
@@ -63,6 +79,9 @@ Future<void> setupServiceLocator() async {
   );
   sl.registerLazySingleton<DailyNoteRepository>(
     () => DailyNoteRepositoryImpl(sl<DailyNoteDataSource>()),
+  );
+  sl.registerLazySingleton<ScheduleRepository>(
+    () => ScheduleRepositoryImpl(sl<ScheduleDataSource>()),
   );
 
   // 笔记用例
@@ -92,6 +111,19 @@ Future<void> setupServiceLocator() async {
   sl.registerLazySingleton(() => GetPrivateDailyNotes(sl<DailyNoteRepository>()));
   sl.registerLazySingleton(() => GetDailyNotesWithCodeSnippets(sl<DailyNoteRepository>()));
 
+  // 日程用例
+  sl.registerLazySingleton(() => GetScheduleById(sl<ScheduleRepository>()));
+  sl.registerLazySingleton(() => CreateSchedule(sl<ScheduleRepository>()));
+  sl.registerLazySingleton(() => UpdateSchedule(sl<ScheduleRepository>()));
+  sl.registerLazySingleton(() => DeleteSchedule(sl<ScheduleRepository>()));
+  sl.registerLazySingleton(() => GetAllSchedules(sl<ScheduleRepository>()));
+  sl.registerLazySingleton(() => GetSchedulesByDateRange(sl<ScheduleRepository>()));
+  sl.registerLazySingleton(() => GetSchedulesByDate(sl<ScheduleRepository>()));
+  sl.registerLazySingleton(() => SearchSchedules(sl<ScheduleRepository>()));
+  sl.registerLazySingleton(() => GetSchedulesByCategory(sl<ScheduleRepository>()));
+  sl.registerLazySingleton(() => GetTodaySchedules(sl<ScheduleRepository>()));
+  sl.registerLazySingleton(() => GetUpcomingSchedules(sl<ScheduleRepository>()));
+
   // Provider
   sl.registerFactory(() => GoalProvider(sl<GoalRepository>()));
   sl.registerFactory(() => NoteProvider(
@@ -120,5 +152,18 @@ Future<void> setupServiceLocator() async {
     getPrivateDailyNotesUseCase: sl<GetPrivateDailyNotes>(),
     searchDailyNotesUseCase: sl<SearchDailyNotes>(),
     updateDailyNoteUseCase: sl<UpdateDailyNote>(),
+  ));
+  sl.registerFactory(() => ScheduleProvider(
+    getScheduleByIdUseCase: sl<GetScheduleById>(),
+    createScheduleUseCase: sl<CreateSchedule>(),
+    updateScheduleUseCase: sl<UpdateSchedule>(),
+    deleteScheduleUseCase: sl<DeleteSchedule>(),
+    getAllSchedulesUseCase: sl<GetAllSchedules>(),
+    getSchedulesByDateRangeUseCase: sl<GetSchedulesByDateRange>(),
+    getSchedulesByDateUseCase: sl<GetSchedulesByDate>(),
+    searchSchedulesUseCase: sl<SearchSchedules>(),
+    getSchedulesByCategoryUseCase: sl<GetSchedulesByCategory>(),
+    getTodaySchedulesUseCase: sl<GetTodaySchedules>(),
+    getUpcomingSchedulesUseCase: sl<GetUpcomingSchedules>(),
   ));
 }

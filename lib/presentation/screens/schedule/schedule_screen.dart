@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/domain/entities/schedule.dart';
+import 'package:intellimate/presentation/providers/schedule_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
@@ -17,75 +19,61 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   
-  // 模拟数据 - 日程列表
-  final Map<DateTime, List<Schedule>> _schedules = {
-    DateTime.now(): [
-      Schedule(
-        id: '1',
-        title: '团队周会',
-        startTime: DateTime.now().copyWith(hour: 9, minute: 0),
-        endTime: DateTime.now().copyWith(hour: 10, minute: 30),
-        location: '线上会议',
-        isAllDay: false,
-        isRepeated: false,
-        createdAt: DateTime.now().subtract(const Duration(days: 1)),
-        updatedAt: DateTime.now().subtract(const Duration(days: 1)),
-      ),
-      Schedule(
-        id: '2',
-        title: '产品讨论会议',
-        startTime: DateTime.now().copyWith(hour: 14, minute: 0),
-        endTime: DateTime.now().copyWith(hour: 15, minute: 0),
-        location: '会议室A',
-        isAllDay: false,
-        isRepeated: false,
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-        updatedAt: DateTime.now().subtract(const Duration(days: 2)),
-      ),
-      Schedule(
-        id: '3',
-        title: '健身',
-        startTime: DateTime.now().copyWith(hour: 18, minute: 30),
-        endTime: DateTime.now().copyWith(hour: 20, minute: 0),
-        location: '健身中心',
-        isAllDay: false,
-        isRepeated: false,
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-        updatedAt: DateTime.now().subtract(const Duration(days: 2)),
-      ),
-    ],
-    DateTime.now().add(const Duration(days: 1)): [
-      Schedule(
-        id: '4',
-        title: '项目评审',
-        startTime: DateTime.now().add(const Duration(days: 1)).copyWith(hour: 13, minute: 0),
-        endTime: DateTime.now().add(const Duration(days: 1)).copyWith(hour: 14, minute: 30),
-        location: '会议室B',
-        isAllDay: false,
-        isRepeated: false,
-        createdAt: DateTime.now().subtract(const Duration(days: 3)),
-        updatedAt: DateTime.now().subtract(const Duration(days: 3)),
-      ),
-    ],
-    DateTime.now().add(const Duration(days: 3)): [
-      Schedule(
-        id: '5',
-        title: '客户会面',
-        startTime: DateTime.now().add(const Duration(days: 3)).copyWith(hour: 10, minute: 0),
-        endTime: DateTime.now().add(const Duration(days: 3)).copyWith(hour: 11, minute: 0),
-        location: '咖啡厅',
-        isAllDay: false,
-        isRepeated: false,
-        createdAt: DateTime.now().subtract(const Duration(days: 4)),
-        updatedAt: DateTime.now().subtract(const Duration(days: 4)),
-      ),
-    ],
-  };
+  // 存储日程数据
+  Map<DateTime, List<Schedule>> _schedules = {};
+  bool _isLoading = false;
+  String? _error;
   
   @override
   void initState() {
     super.initState();
     _selectedDay = _focusedDay;
+    _loadSchedules();
+  }
+  
+  // 加载日程数据
+  Future<void> _loadSchedules() async {
+    final provider = Provider.of<ScheduleProvider>(context, listen: false);
+    
+    // 获取当月的开始和结束日期
+    final firstDay = DateTime(_focusedDay.year, _focusedDay.month, 1);
+    final lastDay = DateTime(_focusedDay.year, _focusedDay.month + 1, 0);
+    
+    try {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+      
+      // 获取当月的所有日程
+      final schedules = await provider.getSchedulesByDateRange(firstDay, lastDay);
+      
+      // 按日期分组
+      final Map<DateTime, List<Schedule>> groupedSchedules = {};
+      for (final schedule in schedules) {
+        final date = DateTime(
+          schedule.startTime.year,
+          schedule.startTime.month,
+          schedule.startTime.day,
+        );
+        
+        if (groupedSchedules[date] == null) {
+          groupedSchedules[date] = [];
+        }
+        
+        groupedSchedules[date]!.add(schedule);
+      }
+      
+      setState(() {
+        _schedules = groupedSchedules;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
   }
   
   // 获取指定日期的日程
@@ -225,6 +213,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   onTap: () {
                     setState(() {
                       _focusedDay = DateTime(_focusedDay.year, _focusedDay.month - 1, 1);
+                      _loadSchedules(); // 加载上个月的日程
                     });
                   },
                   child: const Icon(Icons.chevron_left, color: Colors.grey),
@@ -242,6 +231,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   onTap: () {
                     setState(() {
                       _focusedDay = DateTime(_focusedDay.year, _focusedDay.month + 1, 1);
+                      _loadSchedules(); // 加载下个月的日程
                     });
                   },
                   child: const Icon(Icons.chevron_right, color: Colors.grey),
@@ -407,7 +397,43 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   
   // 构建日程列表
   Widget _buildScheduleList() {
-    final schedules = _getSchedulesForDay(_selectedDay!);
+    final schedules = _getSchedulesForDay(_selectedDay ?? _focusedDay);
+    
+    if (_isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(20),
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
+    if (_error != null) {
+      return Padding(
+        padding: const EdgeInsets.all(20),
+        child: Center(
+          child: Column(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 48),
+              const SizedBox(height: 16),
+              Text(
+                '加载日程失败: $_error',
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontSize: 16,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadSchedules,
+                child: const Text('重试'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     
     if (schedules.isEmpty) {
       return const Padding(
@@ -437,71 +463,86 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     final startTimeFormat = DateFormat('HH:mm');
     final endTimeFormat = DateFormat('HH:mm');
     
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.blackWithOpacity05,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-        border: const Border(
-          left: BorderSide(
-            color: Color(0xFF3ECABB),
-            width: 4,
-          ),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 时间
-            Text(
-              '${startTimeFormat.format(schedule.startTime)} - ${endTimeFormat.format(schedule.endTime)}',
-              style: const TextStyle(
-                color: Color(0xFF3ECABB),
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 4),
-            
-            // 标题
-            Text(
-              schedule.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 4),
-            
-            // 位置
-            Row(
-              children: [
-                const Icon(
-                  Icons.location_on_outlined,
-                  size: 14,
-                  color: Colors.grey,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  schedule.location ?? '无地点',
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
+    return GestureDetector(
+      onTap: () {
+        // 导航到编辑日程界面
+        Navigator.pushNamed(
+          context,
+          AppRoutes.addSchedule,
+          arguments: schedule.id,
+        ).then((result) {
+          if (result == true) {
+            // 如果编辑成功，重新加载日程
+            _loadSchedules();
+          }
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+              color: AppColors.blackWithOpacity05,
+              blurRadius: 4,
+              offset: Offset(0, 2),
             ),
           ],
+          border: const Border(
+            left: BorderSide(
+              color: Color(0xFF3ECABB),
+              width: 4,
+            ),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 时间
+              Text(
+                '${startTimeFormat.format(schedule.startTime)} - ${endTimeFormat.format(schedule.endTime)}',
+                style: const TextStyle(
+                  color: Color(0xFF3ECABB),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 4),
+              
+              // 标题
+              Text(
+                schedule.title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 4),
+              
+              // 位置
+              Row(
+                children: [
+                  const Icon(
+                    Icons.location_on_outlined,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    schedule.location ?? '无地点',
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
