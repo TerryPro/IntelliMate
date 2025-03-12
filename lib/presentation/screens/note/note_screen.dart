@@ -89,7 +89,7 @@ class _NoteScreenState extends State<NoteScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('删除笔记'),
-        content: const Text('确定要删除这个笔记吗？此操作不可撤销。'),
+        content: const Text('确定要删除这个笔记吗？此操作不可撤销?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -149,7 +149,7 @@ class _NoteScreenState extends State<NoteScreen> {
           // 自定义顶部导航栏
           _buildCustomAppBar(),
           
-          // 搜索栏
+          // 搜索
           _buildSearchBar(),
           
           // 分类标签
@@ -168,7 +168,7 @@ class _NoteScreenState extends State<NoteScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('出错了: ${noteProvider.error}'),
+                        Text('出错? ${noteProvider.error}'),
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: _loadNotes,
@@ -182,22 +182,22 @@ class _NoteScreenState extends State<NoteScreen> {
                 final notes = noteProvider.notes;
                 
                 if (notes.isEmpty) {
-                  return Center(
+                  return const Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.note_alt_outlined,
                           size: 64,
                           color: Colors.grey,
                         ),
-                        const SizedBox(height: 16),
-                        const Text(
+                        SizedBox(height: 16),
+                        Text(
                           '没有笔记',
                           style: TextStyle(fontSize: 18),
                         ),
-                        const SizedBox(height: 8),
-                        const Text(
+                        SizedBox(height: 8),
+                        Text(
                           '点击下方按钮创建新笔记',
                           style: TextStyle(color: Colors.grey),
                         ),
@@ -213,15 +213,10 @@ class _NoteScreenState extends State<NoteScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _createNewNote,
-        backgroundColor: const Color(0xFF3ECABB),
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
     );
   }
   
-  // 构建自定义顶部导航栏 - 与task_screen.dart风格一致
+  // 构建自定义顶部导航栏
   Widget _buildCustomAppBar() {
     return Container(
       padding: EdgeInsets.only(
@@ -278,7 +273,7 @@ class _NoteScreenState extends State<NoteScreen> {
                   content: TextField(
                     controller: _searchController,
                     decoration: const InputDecoration(
-                      hintText: '输入关键词',
+                      hintText: '输入关键?',
                       prefixIcon: Icon(Icons.search),
                     ),
                   ),
@@ -304,7 +299,7 @@ class _NoteScreenState extends State<NoteScreen> {
     );
   }
   
-  // 构建搜索栏
+  // 构建搜索
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -409,7 +404,7 @@ class _NoteScreenState extends State<NoteScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 标题和收藏图标
+            // 标题和收藏图
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -489,7 +484,7 @@ class _NoteScreenState extends State<NoteScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '更新于 ${_formatDate(note.updatedAt)}',
+                  '更新?${_formatDate(note.updatedAt)}',
                   style: TextStyle(
                     color: Colors.grey.shade500,
                     fontSize: 12,

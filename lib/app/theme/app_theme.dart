@@ -258,8 +258,10 @@ class AppTheme {
     );
   }
   
-  // 获取模块渐变色
+  /// 获取模块渐变色
   static List<Color> getModuleGradient(String moduleKey) {
-    return moduleColors[moduleKey] ?? [primaryColor, primaryDarkColor];
+    return moduleColors.containsKey(moduleKey) 
+      ? moduleColors[moduleKey]!
+      : [primaryColor, primaryDarkColor]; // 默认渐变
   }
 } 

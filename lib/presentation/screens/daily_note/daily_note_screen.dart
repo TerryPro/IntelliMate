@@ -220,12 +220,6 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
           ),
         ],
       ),
-      // 新增记录浮动按钮
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addDailyNote,
-        backgroundColor: const Color(0xFF3ECABB),
-        child: const Icon(Icons.edit, color: Colors.white),
-      ),
     );
   }
   
@@ -279,23 +273,16 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
             width: 40,
             height: 40,
             decoration: const BoxDecoration(
-              color: Colors.white,
+              color: AppColors.whiteWithOpacity20,
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4,
-                  offset: Offset(0, 2),
-                ),
-              ],
             ),
             child: IconButton(
               icon: const Icon(
-                Icons.add,
-                color: Color(0xFF3ECABB),
+                Icons.refresh,
+                color: Colors.white,
                 size: 20,
               ),
-              onPressed: _addDailyNote,
+              onPressed: _loadDailyNotes,
             ),
           ),
         ],
@@ -730,13 +717,6 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        note.author ?? '用户',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      Text(
                         timeFormat.format(note.createdAt),
                         style: TextStyle(
                           color: Colors.grey.shade600,
@@ -745,13 +725,6 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
                       ),
                     ],
                   ),
-                ),
-                // 更多操作按钮
-                IconButton(
-                  icon: const Icon(Icons.more_horiz, color: Colors.grey),
-                  onPressed: () {
-                    // 显示更多操作菜单
-                  },
                 ),
               ],
             ),
@@ -840,68 +813,47 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
                 ),
               ),
             ),
-          
-          // 底部操作栏
+            
+          // 底部操作栏 - 修改为编辑和删除功能
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Row(
-                  children: [
-                    // 点赞按钮
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.thumb_up_outlined, size: 18, color: Colors.grey),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: () {
-                            // 点赞功能
-                          },
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          note.likes.toString(),
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
+                // 编辑按钮
+                GestureDetector(
+                  onTap: () => _editDailyNote(note),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      shape: BoxShape.circle,
                     ),
-                    const SizedBox(width: 16),
-                    // 评论按钮
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.chat_bubble_outline, size: 18, color: Colors.grey),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: () {
-                            // 评论功能
-                          },
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          note.comments.toString(),
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
+                    child: Icon(
+                      Icons.edit,
+                      size: 20,
+                      color: Colors.grey.shade500,
                     ),
-                  ],
+                  ),
                 ),
-                // 分享按钮
-                IconButton(
-                  icon: const Icon(Icons.share_outlined, size: 18, color: Colors.grey),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  onPressed: () {
-                    // 分享功能
-                  },
+                const SizedBox(width: 12),
+                // 删除按钮
+                GestureDetector(
+                  onTap: () => _showDeleteConfirmation(note),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.delete,
+                      size: 20,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -954,6 +906,136 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
       return '昨天';
     } else {
       return DateFormat('MM-dd').format(date);
+    }
+  }
+
+  // 显示点滴操作选项
+  void _showNoteOptions(DailyNote note) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.edit, color: Color(0xFF3ECABB)),
+                title: const Text('编辑点滴'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _editDailyNote(note);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('删除点滴', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showDeleteConfirmation(note);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.cancel, color: Colors.grey),
+                title: const Text('取消'),
+                onTap: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // 编辑日常点滴
+  void _editDailyNote(DailyNote note) async {
+    final result = await Navigator.pushNamed(
+      context, 
+      AppRoutes.addDailyNote,
+      arguments: note,
+    );
+    
+    if (result == true && mounted) {
+      _loadDailyNotes();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('点滴已更新'),
+          backgroundColor: Color(0xFF3ECABB),
+        ),
+      );
+    }
+  }
+  
+  // 显示删除确认对话框
+  void _showDeleteConfirmation(DailyNote note) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('确认删除'),
+        content: const Text('确定要删除这条点滴吗？此操作不可恢复。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteDailyNote(note.id);
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // 删除日常点滴
+  Future<void> _deleteDailyNote(String id) async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+      
+      final success = await Provider.of<DailyNoteProvider>(context, listen: false).deleteDailyNote(id);
+      
+      if (success && mounted) {
+        _loadDailyNotes();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('点滴已删除'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('删除失败，请重试'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('删除失败: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 } 

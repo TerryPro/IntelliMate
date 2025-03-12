@@ -7,9 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class WriteNoteScreen extends StatefulWidget {
-  const WriteNoteScreen({super.key, this.note});
-
-  final Note? note;
+  const WriteNoteScreen({super.key});
 
   @override
   State<WriteNoteScreen> createState() => _WriteNoteScreenState();
@@ -25,6 +23,7 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
   bool _isLoading = false;
   String? _error;
   bool _isEditing = false;
+  Note? _note;
   
   // 附件列表
   final List<String> _attachments = [];
@@ -39,18 +38,27 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
   void initState() {
     super.initState();
     
-    // 如果是编辑现有笔记，则填充数据
-    if (widget.note != null) {
-      _isEditing = true;
-      _titleController.text = widget.note!.title;
-      _contentController.text = widget.note!.content;
-      if (widget.note!.category != null) {
-        _selectedCategory = widget.note!.category!;
-      }
-      if (widget.note!.tags != null) {
-        _selectedTags = List.from(widget.note!.tags!);
-      }
-      _isFavorite = widget.note!.isFavorite;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initNoteData();
+    });
+  }
+  
+  void _initNoteData() {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is Note) {
+      _note = args;
+      setState(() {
+        _isEditing = true;
+        _titleController.text = _note!.title;
+        _contentController.text = _note!.content;
+        if (_note!.category != null) {
+          _selectedCategory = _note!.category!;
+        }
+        if (_note!.tags != null) {
+          _selectedTags = List.from(_note!.tags!);
+        }
+        _isFavorite = _note!.isFavorite;
+      });
     }
   }
   
@@ -61,9 +69,7 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
     super.dispose();
   }
   
-  // 保存笔记
   Future<void> _saveNote() async {
-    // 基本验证
     if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('请输入标题')),
@@ -86,16 +92,15 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
     try {
       final noteProvider = Provider.of<NoteProvider>(context, listen: false);
       
-      if (_isEditing && widget.note != null) {
-        // 更新现有笔记
+      if (_isEditing && _note != null) {
         final updatedNote = Note(
-          id: widget.note!.id,
+          id: _note!.id,
           title: _titleController.text.trim(),
           content: _contentController.text.trim(),
           category: _selectedCategory,
           tags: _selectedTags.isEmpty ? null : _selectedTags,
           isFavorite: _isFavorite,
-          createdAt: widget.note!.createdAt,
+          createdAt: _note!.createdAt,
           updatedAt: DateTime.now(),
         );
         
@@ -107,9 +112,8 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
           Navigator.pop(context, true);
         }
       } else {
-        // 创建新笔记
         final newNote = Note(
-          id: '', // ID会在仓库中生成
+          id: '',
           title: _titleController.text.trim(),
           content: _contentController.text.trim(),
           category: _selectedCategory,
@@ -141,7 +145,6 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
     }
   }
   
-  // 添加标签
   void _addTag() {
     showDialog(
       context: context,
@@ -186,10 +189,7 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
     );
   }
   
-  // 添加附件
   void _addAttachment() {
-    // 这里应该调用文件选择器
-    // 暂时只是显示一个提示
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('添加附件功能尚未实现'),
@@ -197,14 +197,12 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
     );
   }
   
-  // 切换隐私设置
   void _togglePrivacy() {
     setState(() {
       _isFavorite = !_isFavorite;
     });
   }
   
-  // 切换提醒设置
   void _toggleReminder() {
     setState(() {
       // 提醒设置逻辑
@@ -217,35 +215,26 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
       backgroundColor: Colors.grey[50],
       body: Column(
         children: [
-          // 自定义顶部导航栏
           _buildCustomAppBar(),
           
-          // 主体内容
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 笔记标题
                   _buildTitleInput(),
                   
-                  // 笔记分类
                   _buildCategorySelector(),
                   
-                  // 编辑工具栏
                   _buildEditToolbar(),
                   
-                  // 笔记内容
                   _buildContentInput(),
                   
-                  // 附件区域
                   _buildAttachmentArea(),
                   
-                  // 底部选项
                   _buildBottomOptions(),
                   
-                  // 自动保存提示
                   _buildAutoSaveHint(),
                 ],
               ),
@@ -256,7 +245,6 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
     );
   }
   
-  // 构建自定义顶部导航栏
   Widget _buildCustomAppBar() {
     return Container(
       padding: EdgeInsets.only(
@@ -311,9 +299,9 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                '编写笔记',
-                style: TextStyle(
+              Text(
+                _isEditing ? '编辑笔记' : '新建笔记',
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -344,7 +332,6 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
     );
   }
   
-  // 构建标题输入
   Widget _buildTitleInput() {
     return Column(
       children: [
@@ -371,16 +358,13 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
     );
   }
   
-  // 构建分类选择器
   Widget _buildCategorySelector() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(
         children: [
-          // 分类选择
           GestureDetector(
             onTap: () {
-              // 显示分类选择对话框
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
@@ -438,7 +422,6 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
           
           const SizedBox(width: 12),
           
-          // 标签添加
           GestureDetector(
             onTap: _addTag,
             child: Container(
@@ -477,7 +460,6 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
     );
   }
   
-  // 构建编辑工具栏
   Widget _buildEditToolbar() {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -518,7 +500,6 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
     );
   }
   
-  // 构建工具栏按钮
   Widget _buildToolbarButton(IconData icon) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -535,7 +516,6 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
     );
   }
   
-  // 构建工具栏分隔线
   Widget _buildToolbarDivider() {
     return Container(
       height: 24,
@@ -545,7 +525,6 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
     );
   }
   
-  // 构建内容输入
   Widget _buildContentInput() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -567,7 +546,6 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
     );
   }
   
-  // 构建附件区域
   Widget _buildAttachmentArea() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -601,7 +579,6 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             children: [
-              // 添加附件按钮
               GestureDetector(
                 onTap: _addAttachment,
                 child: Container(
@@ -639,7 +616,6 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
     );
   }
   
-  // 构建底部选项
   Widget _buildBottomOptions() {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
@@ -657,7 +633,6 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
       ),
       child: Column(
         children: [
-          // 隐私设置
           GestureDetector(
             onTap: _togglePrivacy,
             child: Padding(
@@ -702,7 +677,6 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
             ),
           ),
           
-          // 提醒
           GestureDetector(
             onTap: _toggleReminder,
             child: Row(
@@ -748,7 +722,6 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
     );
   }
   
-  // 构建自动保存提示
   Widget _buildAutoSaveHint() {
     final now = DateFormat('HH:mm').format(DateTime.now());
     

@@ -21,6 +21,8 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
   bool _isPrivate = false;
   final List<String> _selectedImages = [];
   bool _isLoading = false;
+  DailyNote? _editingNote;
+  bool _isEditMode = false;
   
   // 模拟图片列表
   final List<String> _availableImages = [
@@ -32,6 +34,37 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
   
   // 天气选项
   final List<String> _weathers = ['晴', '多云', '阴', '雨', '雪'];
+  
+  @override
+  void initState() {
+    super.initState();
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      
+      if (args is DailyNote) {
+        setState(() {
+          _editingNote = args;
+          _isEditMode = true;
+          
+          _contentController.text = args.content;
+          if (args.location != null) {
+            _locationController.text = args.location!;
+          }
+          if (args.mood != null) {
+            _mood = args.mood!;
+          }
+          if (args.weather != null) {
+            _weather = args.weather!;
+          }
+          _isPrivate = args.isPrivate;
+          if (args.images != null && args.images!.isNotEmpty) {
+            _selectedImages.addAll(args.images!);
+          }
+        });
+      }
+    });
+  }
   
   @override
   void dispose() {
@@ -59,17 +92,46 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
     try {
       final dailyNoteProvider = Provider.of<DailyNoteProvider>(context, listen: false);
       
-      final dailyNote = await dailyNoteProvider.createDailyNote(
-        content: _contentController.text,
-        author: '用户',
-        images: _selectedImages.isNotEmpty ? _selectedImages : null,
-        location: _locationController.text.isNotEmpty ? _locationController.text : null,
-        mood: _mood,
-        weather: _weather,
-        isPrivate: _isPrivate,
-      );
+      DailyNote? dailyNote;
       
-      if (dailyNote != null && mounted) {
+      // 根据是否为编辑模式执行不同操作
+      if (_isEditMode && _editingNote != null) {
+        // 更新已有点滴 - 创建新的DailyNote对象保留原始ID和时间戳
+        final updatedNote = DailyNote(
+          id: _editingNote!.id,
+          content: _contentController.text,
+          author: _editingNote!.author,
+          images: _selectedImages.isNotEmpty ? _selectedImages : null,
+          location: _locationController.text.isNotEmpty ? _locationController.text : null,
+          mood: _editingNote!.mood, // 保留原有的心情值
+          weather: _editingNote!.weather, // 保留原有的天气值
+          isPrivate: _editingNote!.isPrivate, // 保留原有的隐私设置
+          likes: _editingNote!.likes,
+          comments: _editingNote!.comments,
+          codeSnippet: _editingNote!.codeSnippet,
+          createdAt: _editingNote!.createdAt,
+          updatedAt: DateTime.now(), // 更新时间戳
+        );
+        
+        final success = await dailyNoteProvider.updateDailyNote(updatedNote);
+        if (success) {
+          dailyNote = updatedNote;
+        }
+      } else {
+        // 创建新点滴
+        dailyNote = await dailyNoteProvider.createDailyNote(
+          content: _contentController.text,
+          author: '用户',
+          images: _selectedImages.isNotEmpty ? _selectedImages : null,
+          location: _locationController.text.isNotEmpty ? _locationController.text : null,
+          // 移除心情、天气和隐私设置相关参数，使用默认值
+          // mood: _mood,
+          // weather: _weather,
+          // isPrivate: _isPrivate,
+        );
+      }
+      
+      if ((dailyNote != null || _isEditMode) && mounted) {
         Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -141,18 +203,16 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
                       
                       // 位置输入
                       _buildLocationInput(),
-                      const SizedBox(height: 20),
-                      
+                      // 以下部分暂时移除
+                      // const SizedBox(height: 20),
                       // 心情选择
-                      _buildMoodSelector(),
-                      const SizedBox(height: 20),
-                      
+                      // _buildMoodSelector(),
+                      // const SizedBox(height: 20),
                       // 天气选择
-                      _buildWeatherSelector(),
-                      const SizedBox(height: 20),
-                      
+                      // _buildWeatherSelector(),
+                      // const SizedBox(height: 20),
                       // 隐私设置
-                      _buildPrivacyToggle(),
+                      // _buildPrivacyToggle(),
                     ],
                   ),
                 ),
@@ -178,84 +238,64 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
     return Container(
       padding: EdgeInsets.only(
         top: MediaQuery.of(context).padding.top,
-        left: 16,
-        right: 16,
-        bottom: 16,
+        left: 20,
+        right: 20,
       ),
-      decoration: const BoxDecoration(
-        color: Color(0xFF3ECABB),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 10,
+            spreadRadius: 0,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.home);
-                },
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(
-                    color: AppColors.whiteWithOpacity20,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.home,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(
-                    color: AppColors.whiteWithOpacity20,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                '添加点滴',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+          // 取消按钮
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.grey.shade700,
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(40, 40),
+            ),
+            child: const Text('取消'),
           ),
-          ElevatedButton(
+          
+          // 标题
+          Text(
+            _isEditMode ? '编辑点滴' : '新建点滴',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          
+          // 发布按钮
+          TextButton(
             onPressed: _saveDailyNote,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
+            style: TextButton.styleFrom(
               foregroundColor: const Color(0xFF3ECABB),
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(40, 40),
             ),
-            child: const Text(
-              '发布',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: _isLoading
+                ? Container(
+                    width: 20,
+                    height: 20,
+                    margin: const EdgeInsets.symmetric(horizontal: 10),
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3ECABB)),
+                    ),
+                  )
+                : const Text('发布'),
           ),
         ],
       ),
@@ -404,211 +444,6 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
           color: Colors.black87,
         ),
         textAlign: TextAlign.right,
-      ),
-    );
-  }
-  
-  // 构建心情选择
-  Widget _buildMoodSelector() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.blackWithOpacity05,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 心情选择
-          const Text(
-            '今天的心情',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 12),
-          
-          // 心情选项
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _moods.map((mood) => _buildMoodOption(mood)).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  // 构建天气选择
-  Widget _buildWeatherSelector() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.blackWithOpacity05,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 天气选择
-          const Text(
-            '今天的天气',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 12),
-          
-          // 天气选项
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _weathers.map((weather) => _buildWeatherOption(weather)).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  // 构建隐私设置
-  Widget _buildPrivacyToggle() {
-    return Column(
-      children: [
-        // 谁可以看
-        _buildSettingItem(
-          icon: Icons.lock,
-          title: '谁可以看',
-          trailing: Row(
-            children: [
-              Text(
-                _isPrivate ? '仅自己' : '公开',
-                style: TextStyle(
-                  color: Colors.grey.shade500,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right,
-                color: Colors.grey.shade300,
-                size: 20,
-              ),
-            ],
-          ),
-          onTap: () {
-            setState(() {
-              _isPrivate = !_isPrivate;
-            });
-          },
-        ),
-      ],
-    );
-  }
-  
-  // 构建心情选项
-  Widget _buildMoodOption(String mood) {
-    final isSelected = _mood == mood;
-    
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _mood = mood;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF3ECABB) : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          mood,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey.shade700,
-            fontSize: 14,
-          ),
-        ),
-      ),
-    );
-  }
-  
-  // 构建天气选项
-  Widget _buildWeatherOption(String weather) {
-    final isSelected = _weather == weather;
-    
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _weather = weather;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF3ECABB) : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          weather,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey.shade700,
-            fontSize: 14,
-          ),
-        ),
-      ),
-    );
-  }
-  
-  // 构建设置项
-  Widget _buildSettingItem({
-    required IconData icon,
-    required String title,
-    Widget? trailing,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: Colors.grey.shade500,
-              size: 20,
-            ),
-            const SizedBox(width: 12),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-              ),
-            ),
-            const Spacer(),
-            if (trailing != null) trailing,
-          ],
-        ),
       ),
     );
   }

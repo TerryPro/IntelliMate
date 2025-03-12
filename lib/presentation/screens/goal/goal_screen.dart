@@ -3,6 +3,7 @@ import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
 import 'package:intellimate/domain/entities/goal.dart';
 import 'package:intellimate/presentation/providers/goal_provider.dart';
+import 'package:intellimate/presentation/screens/goal/edit_goal_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -27,7 +28,15 @@ class _GoalScreenState extends State<GoalScreen> {
   
   // 编辑目标
   void _editGoal(Goal goal) {
-    _showEditGoalDialog(context, goal);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditGoalScreen(goal: goal),
+      ),
+    ).then((_) {
+      // 刷新数据
+      Provider.of<GoalProvider>(context, listen: false).loadGoals();
+    });
   }
 
   // 删除目标

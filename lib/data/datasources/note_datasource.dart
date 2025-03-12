@@ -65,7 +65,6 @@ class NoteDataSourceImpl extends NoteDataSource {
     String? orderBy,
     bool descending = true,
   }) async {
-    print('NoteDataSourceImpl: 获取所有笔记');
     await _ensureDatabaseReady();
     final db = await _databaseHelper.database;
     
@@ -77,12 +76,10 @@ class NoteDataSourceImpl extends NoteDataSource {
         orderBy: orderBy ?? 'created_at ${descending ? 'DESC' : 'ASC'}',
       );
       
-      print('NoteDataSourceImpl: 查询成功，获取到 ${maps.length} 条记录');
       return List.generate(maps.length, (i) {
         return NoteModel.fromMap(maps[i]);
       });
     } catch (e) {
-      print('NoteDataSourceImpl: 查询失败: $e');
       rethrow;
     }
   }
@@ -90,7 +87,6 @@ class NoteDataSourceImpl extends NoteDataSource {
   /// 根据ID获取笔记
   @override
   Future<NoteModel?> getNoteById(String id) async {
-    print('NoteDataSourceImpl: 获取笔记，ID: $id');
     await _ensureDatabaseReady();
     final db = await _databaseHelper.database;
     
@@ -102,14 +98,11 @@ class NoteDataSourceImpl extends NoteDataSource {
       );
 
       if (maps.isEmpty) {
-        print('NoteDataSourceImpl: 未找到笔记，ID: $id');
         return null;
       }
       
-      print('NoteDataSourceImpl: 找到笔记，ID: $id');
       return NoteModel.fromMap(maps.first);
     } catch (e) {
-      print('NoteDataSourceImpl: 获取笔记失败: $e');
       rethrow;
     }
   }
@@ -117,26 +110,20 @@ class NoteDataSourceImpl extends NoteDataSource {
   /// 创建笔记
   @override
   Future<NoteModel> createNote(NoteModel note) async {
-    print('NoteDataSource: 开始创建笔记');
     await _ensureDatabaseReady();
     final db = await _databaseHelper.database;
-    print('NoteDataSource: 数据库连接成功');
     
     // 生成新ID
     final String id = const Uuid().v4();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    print('NoteDataSource: 生成ID $id 和时间戳 $timestamp');
     
     final NoteModel newNote = note.copyWith(
       id: id,
       createdAt: DateTime.fromMillisecondsSinceEpoch(timestamp),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(timestamp),
     );
-    print('NoteDataSource: 创建新笔记对象: ${newNote.title}');
     
     try {
-      print('NoteDataSource: 准备插入数据库，表名: ${DatabaseHelper.tableNote}');
-      print('NoteDataSource: 数据内容: ${newNote.toMap()}');
       
       final result = await db.insert(
         DatabaseHelper.tableNote,
@@ -144,7 +131,6 @@ class NoteDataSourceImpl extends NoteDataSource {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
       
-      print('NoteDataSource: 数据库插入成功，结果: $result');
       
       // 验证笔记是否真的保存了
       final verifyResult = await db.query(
@@ -153,16 +139,12 @@ class NoteDataSourceImpl extends NoteDataSource {
         whereArgs: [id],
       );
       
-      print('NoteDataSource: 验证结果 - 找到 ${verifyResult.length} 条记录');
       if (verifyResult.isNotEmpty) {
-        print('NoteDataSource: 验证成功 - 找到匹配记录');
       } else {
-        print('NoteDataSource: 验证失败 - 未找到匹配记录！');
       }
       
       return newNote;
     } catch (e) {
-      print('NoteDataSource: 插入失败: $e');
       rethrow;
     }
   }
@@ -170,7 +152,6 @@ class NoteDataSourceImpl extends NoteDataSource {
   /// 更新笔记
   @override
   Future<int> updateNote(NoteModel note) async {
-    print('NoteDataSourceImpl: 更新笔记，ID: ${note.id}');
     await _ensureDatabaseReady();
     final db = await _databaseHelper.database;
     
@@ -188,10 +169,8 @@ class NoteDataSourceImpl extends NoteDataSource {
         whereArgs: [note.id],
       );
       
-      print('NoteDataSourceImpl: 更新笔记成功，受影响行数: $result');
       return result;
     } catch (e) {
-      print('NoteDataSourceImpl: 更新笔记失败: $e');
       rethrow;
     }
   }
@@ -199,7 +178,6 @@ class NoteDataSourceImpl extends NoteDataSource {
   /// 删除笔记
   @override
   Future<int> deleteNote(String id) async {
-    print('NoteDataSourceImpl: 删除笔记，ID: $id');
     await _ensureDatabaseReady();
     final db = await _databaseHelper.database;
     
@@ -210,10 +188,8 @@ class NoteDataSourceImpl extends NoteDataSource {
         whereArgs: [id],
       );
       
-      print('NoteDataSourceImpl: 删除笔记成功，受影响行数: $result');
       return result;
     } catch (e) {
-      print('NoteDataSourceImpl: 删除笔记失败: $e');
       rethrow;
     }
   }
@@ -221,7 +197,6 @@ class NoteDataSourceImpl extends NoteDataSource {
   /// 搜索笔记
   @override
   Future<List<NoteModel>> searchNotes(String query) async {
-    print('NoteDataSourceImpl: 搜索笔记，关键词: $query');
     await _ensureDatabaseReady();
     final db = await _databaseHelper.database;
     
@@ -233,12 +208,10 @@ class NoteDataSourceImpl extends NoteDataSource {
         orderBy: 'created_at DESC',
       );
       
-      print('NoteDataSourceImpl: 搜索成功，获取到 ${maps.length} 条记录');
       return List.generate(maps.length, (i) {
         return NoteModel.fromMap(maps[i]);
       });
     } catch (e) {
-      print('NoteDataSourceImpl: 搜索失败: $e');
       rethrow;
     }
   }
@@ -246,14 +219,12 @@ class NoteDataSourceImpl extends NoteDataSource {
   /// 获取收藏的笔记
   @override
   Future<List<NoteModel>> getFavoriteNotes() async {
-    print('NoteDataSourceImpl: 获取收藏笔记');
     return getNotesByCondition(isFavorite: true);
   }
 
   /// 根据分类获取笔记
   @override
   Future<List<NoteModel>> getNotesByCategory(String category) async {
-    print('NoteDataSourceImpl: 获取分类笔记，分类: $category');
     return getNotesByCondition(category: category);
   }
 
@@ -270,7 +241,6 @@ class NoteDataSourceImpl extends NoteDataSource {
     String? orderBy,
     bool descending = true,
   }) async {
-    print('NoteDataSourceImpl: 根据条件获取笔记');
     await _ensureDatabaseReady();
     final db = await _databaseHelper.database;
     
@@ -319,12 +289,10 @@ class NoteDataSourceImpl extends NoteDataSource {
         orderBy: orderBy ?? 'created_at ${descending ? 'DESC' : 'ASC'}',
       );
       
-      print('NoteDataSourceImpl: 条件查询成功，获取到 ${maps.length} 条记录');
       return List.generate(maps.length, (i) {
         return NoteModel.fromMap(maps[i]);
       });
     } catch (e) {
-      print('NoteDataSourceImpl: 条件查询失败: $e');
       rethrow;
     }
   }

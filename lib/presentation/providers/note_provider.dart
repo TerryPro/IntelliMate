@@ -43,7 +43,6 @@ class NoteProvider extends ChangeNotifier {
 
   // 获取所有笔记
   Future<void> getAllNotes() async {
-    print('NoteProvider: 开始获取所有笔记');
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -51,10 +50,8 @@ class NoteProvider extends ChangeNotifier {
     try {
       final result = await getAllNotesUseCase.execute();
       _notes = result;
-      print('NoteProvider: 获取到 ${_notes.length} 条笔记');
     } catch (e) {
       _error = e.toString();
-      print('NoteProvider: 获取笔记失败: $_error');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -63,7 +60,6 @@ class NoteProvider extends ChangeNotifier {
 
   // 根据ID获取笔记
   Future<Note?> getNoteById(String id) async {
-    print('NoteProvider: 开始获取笔记，ID: $id');
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -71,11 +67,9 @@ class NoteProvider extends ChangeNotifier {
     try {
       final result = await getNoteByIdUseCase.execute(id);
       _selectedNote = result;
-      print('NoteProvider: 获取到笔记: ${_selectedNote?.title}');
       return result;
     } catch (e) {
       _error = e.toString();
-      print('NoteProvider: 获取笔记失败: $_error');
       return null;
     } finally {
       _isLoading = false;
@@ -85,18 +79,15 @@ class NoteProvider extends ChangeNotifier {
 
   // 创建笔记
   Future<void> createNote(Note note) async {
-    print('NoteProvider: 开始创建笔记: ${note.title}');
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
       await createNoteUseCase.execute(note);
-      print('NoteProvider: 笔记创建成功');
       await getAllNotes(); // 重新加载笔记列表
     } catch (e) {
       _error = e.toString();
-      print('NoteProvider: 笔记创建失败: $_error');
       _isLoading = false;
       notifyListeners();
       throw e; // 向上传播错误以便UI处理
@@ -105,7 +96,6 @@ class NoteProvider extends ChangeNotifier {
 
   // 更新笔记
   Future<void> updateNote(Note note) async {
-    print('NoteProvider: 开始更新笔记，ID: ${note.id}');
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -120,10 +110,8 @@ class NoteProvider extends ChangeNotifier {
       if (_selectedNote?.id == note.id) {
         _selectedNote = note;
       }
-      print('NoteProvider: 笔记更新成功');
     } catch (e) {
       _error = e.toString();
-      print('NoteProvider: 笔记更新失败: $_error');
       throw e;
     } finally {
       _isLoading = false;
@@ -133,7 +121,6 @@ class NoteProvider extends ChangeNotifier {
 
   // 删除笔记
   Future<void> deleteNote(String id) async {
-    print('NoteProvider: 开始删除笔记，ID: $id');
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -145,10 +132,8 @@ class NoteProvider extends ChangeNotifier {
       if (_selectedNote?.id == id) {
         _selectedNote = null;
       }
-      print('NoteProvider: 笔记删除成功');
     } catch (e) {
       _error = e.toString();
-      print('NoteProvider: 笔记删除失败: $_error');
       throw e;
     } finally {
       _isLoading = false;
@@ -158,7 +143,6 @@ class NoteProvider extends ChangeNotifier {
 
   // 搜索笔记
   Future<void> searchNotes(String query) async {
-    print('NoteProvider: 开始搜索笔记，关键词: $query');
     if (query.isEmpty) {
       return getAllNotes();
     }
@@ -170,10 +154,8 @@ class NoteProvider extends ChangeNotifier {
     try {
       final result = await searchNotesUseCase.execute(query);
       _notes = result;
-      print('NoteProvider: 搜索到 ${_notes.length} 条笔记');
     } catch (e) {
       _error = e.toString();
-      print('NoteProvider: 搜索失败: $_error');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -192,7 +174,6 @@ class NoteProvider extends ChangeNotifier {
     String? orderBy,
     bool descending = true,
   }) async {
-    print('NoteProvider: 开始按条件获取笔记');
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -260,10 +241,8 @@ class NoteProvider extends ChangeNotifier {
         _notes = _notes.sublist(0, limit);
       }
       
-      print('NoteProvider: 按条件获取到 ${_notes.length} 条笔记');
     } catch (e) {
       _error = e.toString();
-      print('NoteProvider: 按条件获取笔记失败: $_error');
     } finally {
       _isLoading = false;
       notifyListeners();

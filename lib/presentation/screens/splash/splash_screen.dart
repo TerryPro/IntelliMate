@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intellimate/app/routes/app_routes.dart';
-import 'package:intellimate/app/theme/app_theme.dart';
+import 'package:intellimate/app/theme/app_colors.dart';
+import 'package:intellimate/presentation/providers/password_provider.dart';
+import 'package:intellimate/presentation/providers/user_provider.dart';
+import 'package:provider/provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -44,10 +47,32 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     // 启动动画
     _animationController.forward();
     
-    // 延迟2.5秒后跳转到登录页面
+    // 延迟2.5秒后检查登录状态
     Timer(const Duration(milliseconds: 2500), () {
-      Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+      _checkLoginStatus();
     });
+  }
+  
+  // 检查登录状态
+  Future<void> _checkLoginStatus() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
+    
+    // 检查是否已设置密码
+    final hasPassword = passwordProvider.hasPassword;
+    
+    // 检查是否已登录
+    final isLoggedIn = userProvider.isLoggedIn;
+    
+    if (mounted) {
+      if (!hasPassword || !isLoggedIn) {
+        // 如果没有设置密码或未登录，跳转到登录页面
+        Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+      } else {
+        // 已登录且已设置密码，跳转到主页
+        Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+      }
+    }
   }
 
   @override
@@ -59,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.primaryColor,
+      backgroundColor: AppColors.primary,
       body: Center(
         child: AnimatedBuilder(
           animation: _animationController,
@@ -80,7 +105,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         borderRadius: BorderRadius.circular(30),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
+                            color: Colors.black.withOpacity(0.1),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
@@ -90,7 +115,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         child: Icon(
                           Icons.assistant_rounded,
                           size: 80,
-                          color: AppTheme.primaryColor,
+                          color: AppColors.primary,
                         ),
                       ),
                     ),

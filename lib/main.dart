@@ -7,9 +7,11 @@ import 'package:intellimate/app/theme/app_theme.dart';
 import 'package:intellimate/domain/repositories/goal_repository.dart';
 import 'package:intellimate/domain/repositories/user_repository.dart';
 import 'package:intellimate/presentation/providers/daily_note_provider.dart';
+import 'package:intellimate/presentation/providers/finance_provider.dart';
 import 'package:intellimate/presentation/providers/goal_provider.dart';
 import 'package:intellimate/presentation/providers/memo_provider.dart';
 import 'package:intellimate/presentation/providers/note_provider.dart';
+import 'package:intellimate/presentation/providers/password_provider.dart';
 import 'package:intellimate/presentation/providers/schedule_provider.dart';
 import 'package:intellimate/presentation/providers/task_provider.dart';
 import 'package:intellimate/presentation/providers/user_provider.dart';
@@ -62,6 +64,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => sl<DailyNoteProvider>()),
         ChangeNotifierProvider(create: (_) => sl<ScheduleProvider>()),
         ChangeNotifierProvider(create: (_) => sl<MemoProvider>()),
+        ChangeNotifierProvider(create: (_) => FinanceProvider()),
+        ChangeNotifierProvider(create: (_) => PasswordProvider()),
       ],
       child: MaterialApp(
         title: 'IntelliMate',

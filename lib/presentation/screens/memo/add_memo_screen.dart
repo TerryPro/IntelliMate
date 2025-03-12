@@ -5,6 +5,7 @@ import 'package:intellimate/domain/entities/memo.dart';
 import 'package:intl/intl.dart';
 import 'package:intellimate/presentation/providers/memo_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class AddMemoScreen extends StatefulWidget {
   const AddMemoScreen({super.key, this.memo});
@@ -23,7 +24,7 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
   String _selectedPriority = '中';
-  String? _selectedCategory;
+  String _selectedCategory = '工作';
   bool _isCompleted = false;
   bool _isPinned = false;
   bool _isLoading = false;
@@ -32,7 +33,7 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
   final List<String> _priorities = ['高', '中', '低'];
   
   // 分类选项
-  final List<String> _categories = ['工作', '学习', '生活', '其他'];
+  final List<String> _categories = ['工作', '学习', '生活', '健康', '其他'];
   
   @override
   void initState() {
@@ -45,7 +46,7 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
       _selectedDate = widget.memo!.date;
       _selectedTime = TimeOfDay.fromDateTime(widget.memo!.date);
       _selectedPriority = widget.memo!.priority;
-      _selectedCategory = widget.memo!.category;
+      _selectedCategory = widget.memo!.category ?? '工作';
       _isCompleted = widget.memo!.isCompleted;
       _isPinned = widget.memo!.isPinned;
     }
@@ -69,14 +70,25 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
 
     try {
       final memoProvider = Provider.of<MemoProvider>(context, listen: false);
+      
+      // 合并日期和时间
+      final dateTime = DateTime(
+        _selectedDate.year,
+        _selectedDate.month,
+        _selectedDate.day,
+        _selectedTime.hour,
+        _selectedTime.minute,
+      );
+      
       final success = await memoProvider.createMemo(
         title: _titleController.text,
         content: _contentController.text,
-        category: _selectedCategory!,
+        date: dateTime,
+        category: _selectedCategory,
         priority: _selectedPriority,
-        isCompleted: _isCompleted,
         isPinned: _isPinned,
-        date: DateTime.now(),
+        isCompleted: _isCompleted,
+        completedAt: _isCompleted ? DateTime.now() : null,
       );
 
       if (success != null && mounted) {
@@ -108,6 +120,7 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
       initialDate: _selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
+      locale: const Locale('zh'),
     );
     
     if (picked != null && picked != _selectedDate) {
@@ -137,47 +150,58 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
       backgroundColor: Colors.grey[50],
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 自定义顶部导航栏
-                    _buildCustomAppBar(),
-                    
-                    // 主体内容
-                    Expanded(
+          : Column(
+              children: [
+                // 自定义顶部导航栏
+                _buildCustomAppBar(),
+                
+                // 主体内容
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Form(
+                      key: _formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // 标题输入
                           _buildTitleInput(),
                           
+                          const SizedBox(height: 24),
+                          
                           // 内容输入
                           _buildContentInput(),
+                          
+                          const SizedBox(height: 24),
                           
                           // 日期时间选择
                           _buildDateTimeSelector(),
                           
+                          const SizedBox(height: 24),
+                          
                           // 优先级选择
                           _buildPrioritySelector(),
+                          
+                          const SizedBox(height: 24),
                           
                           // 分类选择
                           _buildCategorySelector(),
                           
-                          // 已完成选项
-                          _buildCompletedOption(),
+                          const SizedBox(height: 24),
                           
-                          // 置顶选项
-                          _buildPinnedOption(),
+                          // 额外选项
+                          _buildExtraOptions(),
+                          
+                          const SizedBox(height: 40),
+                          
+                          // 保存按钮
+                          _buildSaveButton(),
                         ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
     );
   }
@@ -201,18 +225,18 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
             children: [
               GestureDetector(
                 onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.home);
+                  Navigator.pushReplacementNamed(context, AppRoutes.home);
                 },
                 child: Container(
                   width: 32,
                   height: 32,
-                  decoration: const BoxDecoration(
-                    color: AppColors.whiteWithOpacity20,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.home,
-                    color: AppColors.white,
+                    color: Colors.white,
                     size: 18,
                   ),
                 ),
@@ -225,13 +249,13 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
                 child: Container(
                   width: 32,
                   height: 32,
-                  decoration: const BoxDecoration(
-                    color: AppColors.whiteWithOpacity20,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.arrow_back,
-                    color: AppColors.white,
+                    color: Colors.white,
                     size: 18,
                   ),
                 ),
@@ -248,152 +272,78 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
             ],
           ),
           ElevatedButton(
-            onPressed: _isLoading ? null : _saveMemo,
-            style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(Colors.white),
-              foregroundColor: WidgetStateProperty.all(const Color(0xFF3ECABB)),
-              elevation: WidgetStateProperty.all(0),
-              padding: WidgetStateProperty.all(
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            onPressed: _saveMemo,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
               ),
-              shape: WidgetStateProperty.all(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
-            child: const Text(
-              '保存',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: const Text('保存'),
           ),
         ],
       ),
     );
   }
-  
+
   // 构建标题输入
   Widget _buildTitleInput() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.blackWithOpacity05,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
+    return TextFormField(
+      controller: _titleController,
+      decoration: InputDecoration(
+        labelText: '标题',
+        hintText: '请输入备忘标题',
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.all(16),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '标题',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextFormField(
-            controller: _titleController,
-            decoration: const InputDecoration(
-              hintText: '请输入备忘录标题',
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return '请输入标题';
-              }
-              return null;
-            },
-          ),
-        ],
-      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return '请输入标题';
+        }
+        return null;
+      },
     );
   }
-  
+
   // 构建内容输入
   Widget _buildContentInput() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.blackWithOpacity05,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
+    return TextFormField(
+      controller: _contentController,
+      decoration: InputDecoration(
+        labelText: '内容',
+        hintText: '请输入备忘内容',
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.all(16),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '内容',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextFormField(
-            controller: _contentController,
-            maxLines: 5,
-            decoration: const InputDecoration(
-              hintText: '请输入备忘录内容',
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.all(16),
-            ),
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return '请输入内容';
-              }
-              return null;
-            },
-          ),
-        ],
-      ),
+      maxLines: 6,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return '请输入内容';
+        }
+        return null;
+      },
     );
   }
-  
+
   // 构建日期时间选择器
   Widget _buildDateTimeSelector() {
-    final dateFormat = DateFormat('yyyy年MM月dd日');
-    
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.blackWithOpacity05,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -402,36 +352,29 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
             '日期和时间',
             style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
+              fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
-                child: GestureDetector(
+                child: InkWell(
                   onTap: _selectDate,
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: Colors.grey[300]!),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Icon(
-                          Icons.calendar_today,
-                          color: Colors.grey.shade600,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
                         Text(
-                          dateFormat.format(_selectedDate),
-                          style: TextStyle(
-                            color: Colors.grey.shade700,
-                          ),
+                          DateFormat('yyyy年MM月dd日').format(_selectedDate),
+                          style: const TextStyle(fontSize: 16),
                         ),
+                        const Icon(Icons.calendar_today, size: 18),
                       ],
                     ),
                   ),
@@ -439,28 +382,22 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: GestureDetector(
+                child: InkWell(
                   onTap: _selectTime,
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: Colors.grey[300]!),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Icon(
-                          Icons.access_time,
-                          color: Colors.grey.shade600,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
                         Text(
-                          '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}',
-                          style: TextStyle(
-                            color: Colors.grey.shade700,
-                          ),
+                          _selectedTime.format(context),
+                          style: const TextStyle(fontSize: 16),
                         ),
+                        const Icon(Icons.access_time, size: 18),
                       ],
                     ),
                   ),
@@ -472,22 +409,14 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
       ),
     );
   }
-  
+
   // 构建优先级选择器
   Widget _buildPrioritySelector() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.blackWithOpacity05,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -496,39 +425,58 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
             '优先级',
             style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
+              fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
+          Row(
             children: _priorities.map((priority) {
-              Color chipColor;
+              final isSelected = priority == _selectedPriority;
+              Color color;
+              Color textColor;
+              
               switch (priority) {
                 case '高':
-                  chipColor = Colors.red.shade100;
+                  color = isSelected ? const Color(0xFFDC2626) : const Color(0xFFFEE2E2);
+                  textColor = isSelected ? Colors.white : const Color(0xFFDC2626);
                   break;
                 case '中':
-                  chipColor = Colors.orange.shade100;
+                  color = isSelected ? const Color(0xFFD97706) : const Color(0xFFFEF3C7);
+                  textColor = isSelected ? Colors.white : const Color(0xFFD97706);
                   break;
                 case '低':
-                default:
-                  chipColor = Colors.green.shade100;
+                  color = isSelected ? const Color(0xFF16A34A) : const Color(0xFFDCFCE7);
+                  textColor = isSelected ? Colors.white : const Color(0xFF16A34A);
                   break;
+                default:
+                  color = isSelected ? Colors.grey[600]! : Colors.grey[200]!;
+                  textColor = isSelected ? Colors.white : Colors.grey[600]!;
               }
               
-              return ChoiceChip(
-                label: Text(priority),
-                selected: _selectedPriority == priority,
-                selectedColor: chipColor,
-                onSelected: (selected) {
-                  if (selected) {
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () {
                     setState(() {
                       _selectedPriority = priority;
                     });
-                  }
-                },
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      priority,
+                      style: TextStyle(
+                        color: textColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
               );
             }).toList(),
           ),
@@ -536,22 +484,14 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
       ),
     );
   }
-  
+
   // 构建分类选择器
   Widget _buildCategorySelector() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.blackWithOpacity05,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -560,24 +500,34 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
             '分类',
             style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
+              fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 16),
           Wrap(
-            spacing: 8,
+            spacing: 10,
+            runSpacing: 10,
             children: _categories.map((category) {
-              return ChoiceChip(
-                label: Text(category),
-                selected: _selectedCategory == category,
-                onSelected: (selected) {
-                  if (selected) {
-                    setState(() {
-                      _selectedCategory = category;
-                    });
-                  }
+              final isSelected = category == _selectedCategory;
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedCategory = category;
+                  });
                 },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.primary : Colors.grey[200],
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    category,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.grey[700],
+                    ),
+                  ),
+                ),
               );
             }).toList(),
           ),
@@ -585,87 +535,67 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
       ),
     );
   }
-  
-  // 构建已完成选项
-  Widget _buildCompletedOption() {
+
+  // 构建额外选项
+  Widget _buildExtraOptions() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.blackWithOpacity05,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
         children: [
-          const Text(
-            '已完成',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-            ),
+          SwitchListTile(
+            title: const Text('置顶备忘'),
+            subtitle: const Text('将备忘显示在置顶区域'),
+            secondary: const Icon(Icons.push_pin),
+            value: _isPinned,
+            activeColor: AppColors.primary,
+            onChanged: (bool value) {
+              setState(() {
+                _isPinned = value;
+              });
+            },
           ),
-          Switch(
+          const Divider(),
+          SwitchListTile(
+            title: const Text('标记为已完成'),
+            subtitle: const Text('将备忘标记为已完成状态'),
+            secondary: const Icon(Icons.check_circle),
             value: _isCompleted,
-            onChanged: (value) {
+            activeColor: AppColors.primary,
+            onChanged: (bool value) {
               setState(() {
                 _isCompleted = value;
               });
             },
-            activeColor: const Color(0xFF3ECABB),
-            activeTrackColor: const Color(0xFFD5F5F2),
           ),
         ],
       ),
     );
   }
-  
-  // 构建置顶选项
-  Widget _buildPinnedOption() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 40),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.blackWithOpacity05,
-            blurRadius: 4,
-            offset: Offset(0, 2),
+
+  // 构建保存按钮
+  Widget _buildSaveButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: _saveMemo,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
           ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            '置顶备忘录',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-            ),
+        ),
+        child: const Text(
+          '保存备忘',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
           ),
-          Switch(
-            value: _isPinned,
-            onChanged: (value) {
-              setState(() {
-                _isPinned = value;
-              });
-            },
-            activeColor: const Color(0xFF3ECABB),
-            activeTrackColor: const Color(0xFFD5F5F2),
-          ),
-        ],
+        ),
       ),
     );
   }

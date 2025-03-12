@@ -38,8 +38,6 @@ class DatabaseHelper {
     final String databasesPath = await getDatabasesPath();
     final String path = join(databasesPath, _databaseName);
 
-    print('初始化数据库: $path');
-    print('当前平台: ${Platform.operatingSystem}');
 
     try {
       // 打开数据库，如果不存在则创建
@@ -50,10 +48,8 @@ class DatabaseHelper {
         onUpgrade: _onUpgrade,
       );
       
-      print('数据库初始化成功');
       return db;
     } catch (e) {
-      print('数据库初始化失败: $e');
       rethrow;
     }
   }
@@ -61,65 +57,56 @@ class DatabaseHelper {
   // 确保数据库已初始化并包含所有表
   Future<void> ensureInitialized() async {
     if (_initialized) {
-      print('数据库已经初始化过，跳过');
       return;
     }
     
     try {
       final db = await database;
-      print('检查数据库是否包含所有表');
       
       // 检查表是否存在
       final tables = await db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'");
       final tableNames = tables.map((t) => t['name'] as String).toList();
       
-      print('数据库中的表: $tableNames');
       
       // 检查特定表是否存在
       bool hasNoteTable = tableNames.contains(tableNote);
       if (!hasNoteTable) {
-        print('笔记表不存在，正在创建...');
         await _createNoteTable(db);
       } else {
-        print('笔记表已存在');
       }
       
       bool hasTaskTable = tableNames.contains(tableTask);
       if (!hasTaskTable) {
-        print('任务表不存在，正在创建...');
         await _createTaskTable(db);
       } else {
-        print('任务表已存在');
       }
       
       bool hasDailyNoteTable = tableNames.contains(tableDailyNote);
       if (!hasDailyNoteTable) {
-        print('日常点滴表不存在，正在创建...');
         await _createDailyNoteTable(db);
       } else {
-        print('日常点滴表已存在');
       }
       
       bool hasScheduleTable = tableNames.contains(tableSchedule);
       if (!hasScheduleTable) {
-        print('日程表不存在，正在创建...');
         await _createScheduleTable(db);
       } else {
-        print('日程表已存在');
       }
       
       bool hasMemoTable = tableNames.contains(tableMemo);
       if (!hasMemoTable) {
-        print('备忘表不存在，正在创建...');
         await _createMemoTable(db);
       } else {
-        print('备忘表已存在');
+      }
+      
+      bool hasFinanceTable = tableNames.contains(tableFinance);
+      if (!hasFinanceTable) {
+        await _createFinanceTable(db);
+      } else {
       }
       
       _initialized = true;
-      print('数据库初始化完成');
     } catch (e) {
-      print('确保数据库初始化时出错: $e');
       _initialized = false;
       rethrow;
     }
@@ -140,9 +127,7 @@ class DatabaseHelper {
           updated_at INTEGER NOT NULL
         )
       ''');
-      print('笔记表创建成功');
     } catch (e) {
-      print('创建笔记表失败: $e');
       rethrow;
     }
   }
@@ -163,9 +148,7 @@ class DatabaseHelper {
           updated_at INTEGER NOT NULL
         )
       ''');
-      print('任务表创建成功');
     } catch (e) {
-      print('创建任务表失败: $e');
       rethrow;
     }
   }
@@ -190,9 +173,7 @@ class DatabaseHelper {
           updated_at INTEGER NOT NULL
         )
       ''');
-      print('日常点滴表创建成功');
     } catch (e) {
-      print('创建日常点滴表失败: $e');
       rethrow;
     }
   }
@@ -218,9 +199,7 @@ class DatabaseHelper {
           updated_at INTEGER NOT NULL
         )
       ''');
-      print('日程表创建成功');
     } catch (e) {
-      print('创建日程表失败: $e');
       rethrow;
     }
   }
@@ -243,27 +222,45 @@ class DatabaseHelper {
           updated_at INTEGER NOT NULL
         )
       ''');
-      print('备忘表创建成功');
     } catch (e) {
-      print('创建备忘表失败: $e');
+      rethrow;
+    }
+  }
+
+  // 创建财务表
+  Future<void> _createFinanceTable(Database db) async {
+    try {
+      await db.execute('''
+        CREATE TABLE $tableFinance (
+          id TEXT PRIMARY KEY,
+          amount REAL NOT NULL,
+          type TEXT NOT NULL,
+          category TEXT NOT NULL,
+          description TEXT,
+          date INTEGER NOT NULL,
+          payment_method TEXT,
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        )
+      ''');
+    } catch (e) {
       rethrow;
     }
   }
 
   // 数据库创建回调
   Future<void> _onCreate(Database db, int version) async {
-    print('创建新数据库，版本: $version');
     await _createNoteTable(db);
     await _createTaskTable(db);
     await _createDailyNoteTable(db);
     await _createScheduleTable(db);
     await _createMemoTable(db);
+    await _createFinanceTable(db);
     // 创建其他表...
   }
 
   // 数据库升级回调
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    print('升级数据库，从版本 $oldVersion 到 $newVersion');
     // 处理数据库升级逻辑
   }
 

@@ -15,7 +15,7 @@ class ModuleCard extends StatelessWidget {
     required this.title,
     required this.icon,
     required this.onTap,
-    this.height = 120,
+    this.height = 96,
     this.width = double.infinity,
   });
 
@@ -37,7 +37,7 @@ class ModuleCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: gradientColors[0].withValues(alpha: 0.3),
+              color: gradientColors[0].withOpacity(0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -50,7 +50,7 @@ class ModuleCard extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: Colors.white.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Icon(

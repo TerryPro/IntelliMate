@@ -139,14 +139,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
         ],
       ),
       
-      // 浮动按钮
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.camera_alt, color: Colors.white),
-        onPressed: () {
-          // 拍照功能
-        },
-      ),
+      // 删除浮动按钮部分
     );
   }
   

@@ -124,19 +124,8 @@ class _TravelScreenState extends State<TravelScreen> {
     return Scaffold(
       body: Column(
         children: [
-          // 自定义AppBar
-          AppBarWidget(
-            title: '旅游管理',
-            backgroundColor: AppColors.primary,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.add, color: Colors.white),
-                onPressed: () {
-                  // 添加旅行
-                },
-              ),
-            ],
-          ),
+          // 自定义顶部导航栏
+          _buildCustomAppBar(),
           
           // 内容区域
           Expanded(
@@ -167,14 +156,107 @@ class _TravelScreenState extends State<TravelScreen> {
           ),
         ],
       ),
-      
-      // 浮动按钮
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
-        onPressed: () {
-          // 添加旅行
-        },
+    );
+  }
+  
+  // 构建自定义顶部导航栏
+  Widget _buildCustomAppBar() {
+    return Container(
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top,
+        left: 16,
+        right: 16,
+        bottom: 16,
+      ),
+      decoration: const BoxDecoration(
+        color: Color(0xFF3ECABB),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, 'appRoutes.home');
+                },
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.home,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                '旅游管理',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  // 刷新旅游数据
+                  setState(() {
+                    // 刷新逻辑
+                  });
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.refresh,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.add,
+                    color: Color(0xFF3ECABB),
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    // 添加旅行
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

@@ -110,14 +110,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, AppRoutes.addSchedule);
-        },
-        backgroundColor: const Color(0xFF3ECABB),
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
     );
   }
   

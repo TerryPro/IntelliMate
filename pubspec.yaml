@@ -42,7 +42,7 @@ dependencies:
   sqflite: ^2.3.0
   sqflite_common_ffi: ^2.3.0
   path: ^1.8.3
-  shared_preferences: ^2.2.2
+  shared_preferences: ^2.5.2
   
   # UI组件
   flutter_svg: ^2.0.9
@@ -62,8 +62,9 @@ dependencies:
   
   # 权限管理
   permission_handler: ^11.0.1
-  font_awesome_flutter: ^10.8.0
+  font_awesome_flutter: ^10.6.0
   get_it: ^8.0.3
+  flutter_secure_storage: ^9.2.4
 
 dev_dependencies:
   flutter_test:

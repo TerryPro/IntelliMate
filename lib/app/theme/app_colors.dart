@@ -1,5 +1,23 @@
 import 'package:flutter/material.dart';
 
+/// Color类扩展方法
+extension ColorExtension on Color {
+  /// 用于替代withOpacity，但允许更多自定义参数
+  Color withValues({
+    double? red,
+    double? green,
+    double? blue,
+    double? alpha,
+  }) {
+    return Color.fromRGBO(
+      red?.toInt() ?? this.red,
+      green?.toInt() ?? this.green,
+      blue?.toInt() ?? this.blue,
+      alpha != null ? alpha / 255 : opacity,
+    );
+  }
+}
+
 /// 应用颜色工具类
 class AppColors {
   // 主题颜色
@@ -35,11 +53,11 @@ class AppColors {
   
   // 获取颜色的透明度变体
   static Color getColorWithOpacity(Color color, double opacity) {
-    return color.withValues(
-      red: color.r.toDouble(),
-      green: color.g.toDouble(),
-      blue: color.b.toDouble(),
-      alpha: (opacity * 255).toDouble(),
+    return Color.fromRGBO(
+      color.red,
+      color.green, 
+      color.blue,
+      opacity,
     );
   }
 } 

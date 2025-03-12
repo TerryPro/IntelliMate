@@ -16,23 +16,19 @@ final serviceLocator = GetIt.instance;
 
 // 初始化依赖注入
 Future<void> init() async {
-  print('开始初始化依赖注入...');
 
   // 确保数据库已初始化
   await DatabaseHelper.instance.ensureInitialized();
-  print('数据库已初始化');
 
   // 数据源
   serviceLocator.registerLazySingleton<NoteDataSource>(
     () => NoteDataSourceImpl(),
   );
-  print('注册NoteDataSource完成');
 
   // 存储库
   serviceLocator.registerLazySingleton<NoteRepository>(
     () => NoteRepositoryImpl(dataSource: serviceLocator()),
   );
-  print('注册NoteRepository完成');
 
   // 用例
   serviceLocator.registerLazySingleton(() => GetAllNotes(serviceLocator()));
@@ -41,7 +37,6 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => UpdateNote(serviceLocator()));
   serviceLocator.registerLazySingleton(() => DeleteNote(serviceLocator()));
   serviceLocator.registerLazySingleton(() => SearchNotes(serviceLocator()));
-  print('注册用例完成');
 
   // 提供者
   serviceLocator.registerFactory(() => NoteProvider(
@@ -52,7 +47,5 @@ Future<void> init() async {
         deleteNote: serviceLocator(),
         searchNotes: serviceLocator(),
       ));
-  print('注册NoteProvider完成');
 
-  print('依赖注入初始化完成');
 } 

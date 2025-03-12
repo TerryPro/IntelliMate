@@ -32,9 +32,9 @@ class BottomNavBar extends StatelessWidget {
             children: [
               _buildNavItem(0, Icons.home_outlined, Icons.home, '首页'),
               _buildNavItem(1, Icons.water_drop_outlined, Icons.water_drop, '点滴'),
-              _buildNavItem(2, Icons.note_alt_outlined, Icons.note_alt, '笔记'),
-              _buildNavItem(3, Icons.calendar_today_outlined, Icons.calendar_today, '日常'),
-              _buildNavItem(4, Icons.task_alt_outlined, Icons.task_alt, '任务'),
+              _buildNavItem(2, Icons.calendar_today_outlined, Icons.calendar_today, '日常'),
+              _buildNavItem(3, Icons.task_alt_outlined, Icons.task_alt, '任务'),
+              _buildNavItem(4, Icons.note_alt_outlined, Icons.note_alt, '备忘'),
             ],
           ),
         ),

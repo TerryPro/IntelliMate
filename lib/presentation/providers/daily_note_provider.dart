@@ -55,17 +55,14 @@ class DailyNoteProvider extends ChangeNotifier {
 
   // 获取所有日常点滴
   Future<void> getAllDailyNotes() async {
-    print('DailyNoteProvider: 开始获取所有日常点滴');
     _setLoading(true);
     _clearError();
 
     try {
       final result = await _getAllDailyNotesUseCase.execute();
       _dailyNotes = result;
-      print('DailyNoteProvider: 获取到 ${_dailyNotes.length} 条日常点滴');
     } catch (e) {
       _setError('获取日常点滴失败: $e');
-      print('DailyNoteProvider: 获取日常点滴失败: $_error');
     } finally {
       _setLoading(false);
     }
@@ -73,18 +70,15 @@ class DailyNoteProvider extends ChangeNotifier {
 
   // 根据ID获取日常点滴
   Future<DailyNote?> getDailyNoteById(String id) async {
-    print('DailyNoteProvider: 开始获取日常点滴，ID: $id');
     _setLoading(true);
     _clearError();
 
     try {
       final result = await _getDailyNoteByIdUseCase.execute(id);
       _selectedDailyNote = result;
-      print('DailyNoteProvider: 获取到日常点滴: ${_selectedDailyNote?.content.substring(0, _selectedDailyNote!.content.length > 20 ? 20 : _selectedDailyNote!.content.length)}...');
       return result;
     } catch (e) {
       _setError('获取日常点滴失败: $e');
-      print('DailyNoteProvider: 获取日常点滴失败: $_error');
       return null;
     } finally {
       _setLoading(false);
@@ -102,7 +96,6 @@ class DailyNoteProvider extends ChangeNotifier {
     bool isPrivate = false,
     String? codeSnippet,
   }) async {
-    print('DailyNoteProvider: 开始创建日常点滴');
     _setLoading(true);
     _clearError();
 
@@ -128,12 +121,10 @@ class DailyNoteProvider extends ChangeNotifier {
 
       final createdDailyNote = await _createDailyNoteUseCase.execute(dailyNote);
       _dailyNotes.insert(0, createdDailyNote);
-      print('DailyNoteProvider: 日常点滴创建成功，ID: ${createdDailyNote.id}');
       notifyListeners();
       return createdDailyNote;
     } catch (e) {
       _setError('创建日常点滴失败: $e');
-      print('DailyNoteProvider: 创建日常点滴失败: $_error');
       return null;
     } finally {
       _setLoading(false);
@@ -142,7 +133,6 @@ class DailyNoteProvider extends ChangeNotifier {
 
   // 更新日常点滴
   Future<bool> updateDailyNote(DailyNote dailyNote) async {
-    print('DailyNoteProvider: 开始更新日常点滴，ID: ${dailyNote.id}');
     _setLoading(true);
     _clearError();
 
@@ -154,14 +144,11 @@ class DailyNoteProvider extends ChangeNotifier {
           _dailyNotes[index] = dailyNote;
           notifyListeners();
         }
-        print('DailyNoteProvider: 日常点滴更新成功');
       } else {
-        print('DailyNoteProvider: 日常点滴更新失败');
       }
       return success;
     } catch (e) {
       _setError('更新日常点滴失败: $e');
-      print('DailyNoteProvider: 更新日常点滴失败: $_error');
       return false;
     } finally {
       _setLoading(false);
@@ -170,7 +157,6 @@ class DailyNoteProvider extends ChangeNotifier {
 
   // 删除日常点滴
   Future<bool> deleteDailyNote(String id) async {
-    print('DailyNoteProvider: 开始删除日常点滴，ID: $id');
     _setLoading(true);
     _clearError();
 
@@ -179,14 +165,11 @@ class DailyNoteProvider extends ChangeNotifier {
       if (success) {
         _dailyNotes.removeWhere((note) => note.id == id);
         notifyListeners();
-        print('DailyNoteProvider: 日常点滴删除成功');
       } else {
-        print('DailyNoteProvider: 日常点滴删除失败');
       }
       return success;
     } catch (e) {
       _setError('删除日常点滴失败: $e');
-      print('DailyNoteProvider: 删除日常点滴失败: $_error');
       return false;
     } finally {
       _setLoading(false);
@@ -195,17 +178,14 @@ class DailyNoteProvider extends ChangeNotifier {
 
   // 搜索日常点滴
   Future<List<DailyNote>> searchDailyNotes(String query) async {
-    print('DailyNoteProvider: 开始搜索日常点滴，关键词: $query');
     _setLoading(true);
     _clearError();
 
     try {
       final results = await _searchDailyNotesUseCase.execute(query);
-      print('DailyNoteProvider: 搜索到 ${results.length} 条日常点滴');
       return results;
     } catch (e) {
       _setError('搜索日常点滴失败: $e');
-      print('DailyNoteProvider: 搜索日常点滴失败: $_error');
       return [];
     } finally {
       _setLoading(false);
@@ -214,17 +194,14 @@ class DailyNoteProvider extends ChangeNotifier {
 
   // 获取私密日常点滴
   Future<List<DailyNote>> getPrivateDailyNotes() async {
-    print('DailyNoteProvider: 开始获取私密日常点滴');
     _setLoading(true);
     _clearError();
 
     try {
       final results = await _getPrivateDailyNotesUseCase.execute();
-      print('DailyNoteProvider: 获取到 ${results.length} 条私密日常点滴');
       return results;
     } catch (e) {
       _setError('获取私密日常点滴失败: $e');
-      print('DailyNoteProvider: 获取私密日常点滴失败: $_error');
       return [];
     } finally {
       _setLoading(false);
@@ -233,17 +210,14 @@ class DailyNoteProvider extends ChangeNotifier {
 
   // 获取包含代码片段的日常点滴
   Future<List<DailyNote>> getDailyNotesWithCodeSnippets() async {
-    print('DailyNoteProvider: 开始获取包含代码片段的日常点滴');
     _setLoading(true);
     _clearError();
 
     try {
       final results = await _getDailyNotesWithCodeSnippetsUseCase.execute();
-      print('DailyNoteProvider: 获取到 ${results.length} 条包含代码片段的日常点滴');
       return results;
     } catch (e) {
       _setError('获取包含代码片段的日常点滴失败: $e');
-      print('DailyNoteProvider: 获取包含代码片段的日常点滴失败: $_error');
       return [];
     } finally {
       _setLoading(false);
@@ -262,7 +236,6 @@ class DailyNoteProvider extends ChangeNotifier {
     String? orderBy,
     bool descending = true,
   }) async {
-    print('DailyNoteProvider: 开始根据条件获取日常点滴');
     _setLoading(true);
     _clearError();
 
@@ -278,11 +251,9 @@ class DailyNoteProvider extends ChangeNotifier {
         orderBy: orderBy,
         descending: descending,
       );
-      print('DailyNoteProvider: 获取到 ${results.length} 条符合条件的日常点滴');
       return results;
     } catch (e) {
       _setError('根据条件获取日常点滴失败: $e');
-      print('DailyNoteProvider: 根据条件获取日常点滴失败: $_error');
       return [];
     } finally {
       _setLoading(false);
@@ -291,7 +262,6 @@ class DailyNoteProvider extends ChangeNotifier {
 
   // 获取今天的日常点滴
   Future<List<DailyNote>> getTodayDailyNotes() async {
-    print('DailyNoteProvider: 开始获取今天的日常点滴');
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
     final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
@@ -304,7 +274,6 @@ class DailyNoteProvider extends ChangeNotifier {
 
   // 获取昨天的日常点滴
   Future<List<DailyNote>> getYesterdayDailyNotes() async {
-    print('DailyNoteProvider: 开始获取昨天的日常点滴');
     final now = DateTime.now();
     final yesterday = now.subtract(const Duration(days: 1));
     final startOfDay = DateTime(yesterday.year, yesterday.month, yesterday.day);

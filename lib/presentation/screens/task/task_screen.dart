@@ -188,17 +188,6 @@ class _TaskScreenState extends State<TaskScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final result = await Navigator.pushNamed(context, AppRoutes.addTask);
-          if (result == true && mounted) {
-            _loadTasks();
-          }
-        },
-        backgroundColor: const Color(0xFF3ECABB),
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
     );
   }
   
