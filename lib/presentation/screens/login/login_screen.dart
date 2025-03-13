@@ -6,6 +6,9 @@ import 'package:intellimate/presentation/providers/password_provider.dart';
 import 'package:intellimate/presentation/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
+import 'dart:math';
+import 'package:intellimate/data/models/user_model.dart';
+import 'package:intellimate/presentation/screens/home/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,17 +27,23 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _isFirstTimeUser = false;
+  
+  // 添加Provider引用
+  late PasswordProvider _passwordProvider;
+  late UserProvider _userProvider;
 
   @override
   void initState() {
     super.initState();
+    // 初始化Provider
+    _passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
+    _userProvider = Provider.of<UserProvider>(context, listen: false);
     _checkIfFirstTimeUser();
   }
 
   // 检查是否是首次使用
   Future<void> _checkIfFirstTimeUser() async {
-    final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
-    final hasPassword = passwordProvider.hasPassword;
+    final hasPassword = _passwordProvider.hasPassword;
     
     setState(() {
       _isFirstTimeUser = !hasPassword;
@@ -58,71 +67,110 @@ class _LoginScreenState extends State<LoginScreen> {
         );
         return;
       }
-
-      setState(() {
-        _isLoading = true;
-      });
-
+      
       try {
-        final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
-        final userProvider = Provider.of<UserProvider>(context, listen: false);
-        
-        if (_isFirstTimeUser) {
-          // 首次使用，设置密码
-          final success = await passwordProvider.setPassword(_passwordController.text);
-          if (!success) {
-            throw Exception('设置密码失败');
-          }
+        setState(() {
+          _isLoading = true;
+        });
+  
+        // 判断是否是第一次登录
+        final isFirstLogin = !_passwordProvider.hasPassword;
+        if (isFirstLogin) {
+          // 第一次登录，设置密码
+          await _passwordProvider.setPassword(_passwordController.text);
           
-          // 检查是否有现有用户
-          final currentUser = await userProvider.getCurrentUser();
-          if (currentUser != null) {
-            // 已有用户，直接登录
-            await userProvider.login(currentUser.id);
-          } else {
-            // 没有用户，创建一个新用户
-            final newUser = User(
-              id: const Uuid().v4(),
-              username: _nicknameController.text,
-              nickname: _nicknameController.text,
+          // 尝试获取当前用户
+          final currentUser = await _userProvider.getCurrentUser();
+          
+          if (currentUser == null) {
+            // 创建新用户
+            print('未找到现有用户，创建新用户');
+            final id = const Uuid().v4();
+            final now = DateTime.now();
+            
+            final user = UserModel(
+              id: id,
+              username: '用户${Random().nextInt(10000)}',
+              nickname: '新用户',
               avatar: null,
               email: null,
               phone: null,
-              gender: '男',
-              birthday: DateTime.now().toIso8601String(),
-              signature: '欢迎使用智伴！',
-              createdAt: DateTime.now(),
-              updatedAt: DateTime.now(),
+              gender: '保密',
+              birthday: null,
+              signature: '这个人很懒，什么都没留下',
+              createdAt: now,
+              updatedAt: now,
             );
             
-            await userProvider.createUser(newUser);
+            print('准备创建用户: $user');
+            final createdUser = await _userProvider.createUser(user);
+            print('用户创建结果: ${createdUser != null ? '成功' : '失败'}');
+            
+            if (createdUser == null) {
+              throw Exception('创建用户失败，请重试');
+            }
+            
+            // 设置为当前用户
+            await _userProvider.login(createdUser.id);
+            print('用户登录成功，ID: ${createdUser.id}');
+            
+            // 立即验证用户是否真的创建成功
+            final verifiedUser = await _userProvider.getCurrentUser();
+            if (verifiedUser == null) {
+              throw Exception('用户创建成功，但无法获取，请重试');
+            }
+            print('成功验证新用户: ${verifiedUser.username}');
+          } else {
+            // 如果已有用户，直接登录
+            print('找到现有用户: ${currentUser.username}，使用该用户登录');
+            await _userProvider.login(currentUser.id);
           }
         } else {
-          // 非首次使用，验证密码
-          final isPasswordCorrect = await passwordProvider.verifyPassword(_passwordController.text);
-          if (!isPasswordCorrect) {
-            throw Exception('密码错误');
+          // 已有密码，验证密码
+          final isValid = await _passwordProvider.verifyPassword(_passwordController.text);
+          if (!isValid) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('密码错误，请重试')),
+            );
+            setState(() {
+              _isLoading = false;
+            });
+            return;
           }
           
-          // 密码正确，获取用户并登录
-          final currentUser = await userProvider.getCurrentUser();
-          if (currentUser != null) {
-            await userProvider.login(currentUser.id);
-          } else {
-            throw Exception('未找到用户信息');
+          // 获取当前用户
+          final user = await _userProvider.getCurrentUser();
+          print('验证密码后获取用户: ${user?.username ?? "未找到"}');
+          
+          if (user == null) {
+            // 如果没有找到用户，很可能是之前的数据库初始化问题
+            print('未找到用户信息，可能是之前数据库初始化失败，尝试重置');
+            await _passwordProvider.clearPassword();
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('未找到用户信息，请重新注册')),
+            );
+            setState(() {
+              _isLoading = false;
+            });
+            return;
           }
         }
-        
+  
+        // 登录成功，跳转到主页
         if (mounted) {
-          // 跳转到主页
-          Navigator.of(context).pushReplacementNamed(AppRoutes.home);
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('登录失败：$e')),
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
           );
         }
+      } catch (e) {
+        print('登录过程中发生错误: $e');
+        print('错误堆栈: ${StackTrace.current}');
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('登录失败: ${e.toString()}')),
+        );
       } finally {
         if (mounted) {
           setState(() {

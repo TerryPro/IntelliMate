@@ -1,4 +1,4 @@
- import 'package:intellimate/domain/entities/user.dart';
+import 'package:intellimate/domain/entities/user.dart';
 
 class UserModel extends User {
   UserModel({
@@ -17,18 +17,55 @@ class UserModel extends User {
 
   // 从Map创建模型对象（用于数据库读取）
   factory UserModel.fromMap(Map<String, dynamic> map) {
+    print('解析用户数据: $map');
+    
+    // 辅助函数：安全地解析时间戳
+    DateTime parseTimestamp(dynamic value) {
+      if (value == null) {
+        print('时间戳为空，使用当前时间');
+        return DateTime.now();
+      }
+      
+      try {
+        if (value is int) {
+          return DateTime.fromMillisecondsSinceEpoch(value);
+        } else if (value is String) {
+          // 尝试解析为整数字符串
+          final intValue = int.tryParse(value);
+          if (intValue != null) {
+            return DateTime.fromMillisecondsSinceEpoch(intValue);
+          }
+          
+          // 尝试作为ISO日期格式解析
+          final dateTime = DateTime.tryParse(value);
+          if (dateTime != null) {
+            return dateTime;
+          }
+          
+          print('无法解析字符串时间戳: $value，使用当前时间');
+          return DateTime.now();
+        } else {
+          print('未知时间戳类型: ${value.runtimeType}，使用当前时间');
+          return DateTime.now();
+        }
+      } catch (e) {
+        print('解析时间戳失败: $e，使用当前时间');
+        return DateTime.now();
+      }
+    }
+    
     return UserModel(
-      id: map['id'],
-      username: map['username'],
-      nickname: map['nickname'],
+      id: map['id'] ?? '',
+      username: map['username'] ?? '',
+      nickname: map['nickname'] ?? '',
       avatar: map['avatar'],
       email: map['email'],
       phone: map['phone'],
       gender: map['gender'],
       birthday: map['birthday'],
-      signature: map['signature'],
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at']),
-      updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at']),
+      signature: map['signature'] ?? '',
+      createdAt: parseTimestamp(map['created_at']),
+      updatedAt: parseTimestamp(map['updated_at']),
     );
   }
 

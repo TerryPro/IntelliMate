@@ -31,7 +31,19 @@ class UserRepositoryImpl implements UserRepository {
   @override
   Future<User> createUser(User user) async {
     final userModel = UserModel.fromEntity(user);
-    return await _dataSource.createUser(userModel);
+    final userId = await _dataSource.createUser(userModel);
+    
+    if (userId == null) {
+      throw Exception('创建用户失败');
+    }
+    
+    // 创建后获取用户，确保返回完整的用户对象
+    final createdUser = await _dataSource.getUserById(userId);
+    if (createdUser == null) {
+      throw Exception('创建用户后无法获取用户信息');
+    }
+    
+    return createdUser;
   }
 
   @override

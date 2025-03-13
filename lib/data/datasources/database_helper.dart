@@ -67,6 +67,17 @@ class DatabaseHelper {
       final tables = await db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'");
       final tableNames = tables.map((t) => t['name'] as String).toList();
       
+      // 检查用户表是否存在
+      bool hasUserTable = tableNames.contains(tableUser);
+      if (!hasUserTable) {
+        await _createUserTable(db);
+        print('创建用户表成功');
+      } else {
+        print('用户表已存在');
+        
+        // 验证用户表结构
+        await _verifyUserTableStructure(db);
+      }
       
       // 检查特定表是否存在
       bool hasNoteTable = tableNames.contains(tableNote);
@@ -106,8 +117,35 @@ class DatabaseHelper {
       }
       
       _initialized = true;
+      print('数据库初始化完成，所有表已检查并创建');
     } catch (e) {
       _initialized = false;
+      print('数据库初始化失败: $e');
+      rethrow;
+    }
+  }
+  
+  // 创建用户表
+  Future<void> _createUserTable(Database db) async {
+    try {
+      await db.execute('''
+        CREATE TABLE $tableUser (
+          id TEXT PRIMARY KEY,
+          username TEXT NOT NULL,
+          nickname TEXT,
+          avatar TEXT,
+          email TEXT,
+          phone TEXT,
+          gender TEXT,
+          birthday TEXT,
+          signature TEXT,
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        )
+      ''');
+      print('用户表创建SQL执行成功');
+    } catch (e) {
+      print('创建用户表失败: $e');
       rethrow;
     }
   }
@@ -250,13 +288,20 @@ class DatabaseHelper {
 
   // 数据库创建回调
   Future<void> _onCreate(Database db, int version) async {
-    await _createNoteTable(db);
-    await _createTaskTable(db);
-    await _createDailyNoteTable(db);
-    await _createScheduleTable(db);
-    await _createMemoTable(db);
-    await _createFinanceTable(db);
-    // 创建其他表...
+    try {
+      print('正在创建数据库表...');
+      await _createUserTable(db);  // 首先创建用户表
+      await _createNoteTable(db);
+      await _createTaskTable(db);
+      await _createDailyNoteTable(db);
+      await _createScheduleTable(db);
+      await _createMemoTable(db);
+      await _createFinanceTable(db);
+      print('所有数据库表创建完成');
+    } catch (e) {
+      print('数据库表创建失败: $e');
+      rethrow;
+    }
   }
 
   // 数据库升级回调
@@ -268,6 +313,136 @@ class DatabaseHelper {
   Future<void> close() async {
     if (_database != null) {
       await _database!.close();
+    }
+  }
+
+  // 验证用户表结构并修复
+  Future<void> _verifyUserTableStructure(Database db) async {
+    try {
+      // 获取用户表信息
+      final tableInfo = await db.rawQuery("PRAGMA table_info($tableUser)");
+      print('用户表结构: $tableInfo');
+      
+      // 检查时间戳字段类型
+      bool needsRebuild = false;
+      final createdAtColumn = tableInfo.firstWhere((col) => col['name'] == 'created_at', orElse: () => {});
+      final updatedAtColumn = tableInfo.firstWhere((col) => col['name'] == 'updated_at', orElse: () => {});
+      
+      if (createdAtColumn.isEmpty || updatedAtColumn.isEmpty) {
+        print('用户表缺少时间戳字段，需要重建');
+        needsRebuild = true;
+      } else {
+        // 检查字段类型
+        final createdAtType = createdAtColumn['type']?.toString().toUpperCase() ?? '';
+        final updatedAtType = updatedAtColumn['type']?.toString().toUpperCase() ?? '';
+        
+        print('时间戳字段类型 - created_at: $createdAtType, updated_at: $updatedAtType');
+        
+        if (createdAtType != 'INTEGER' || updatedAtType != 'INTEGER') {
+          print('时间戳字段类型不是INTEGER，需要重建表');
+          needsRebuild = true;
+        }
+      }
+      
+      if (needsRebuild) {
+        await _rebuildUserTable(db);
+      }
+    } catch (e) {
+      print('验证用户表结构失败: $e');
+    }
+  }
+  
+  // 重建用户表
+  Future<void> _rebuildUserTable(Database db) async {
+    print('开始重建用户表...');
+    
+    try {
+      // 开始事务
+      await db.transaction((txn) async {
+        // 1. 备份现有数据
+        print('备份现有用户数据');
+        final existingData = await txn.query(tableUser);
+        print('找到 ${existingData.length} 条用户记录');
+        
+        // 2. 重命名现有表
+        print('重命名现有用户表');
+        await txn.execute('ALTER TABLE $tableUser RENAME TO ${tableUser}_old');
+        
+        // 3. 创建新表
+        print('创建新用户表');
+        await txn.execute('''
+          CREATE TABLE $tableUser (
+            id TEXT PRIMARY KEY,
+            username TEXT NOT NULL,
+            nickname TEXT,
+            avatar TEXT,
+            email TEXT,
+            phone TEXT,
+            gender TEXT,
+            birthday TEXT,
+            signature TEXT,
+            created_at INTEGER NOT NULL,
+            updated_at INTEGER NOT NULL
+          )
+        ''');
+        
+        // 4. 迁移数据
+        print('迁移用户数据');
+        for (var record in existingData) {
+          // 处理时间戳字段
+          var createdAt = record['created_at'];
+          var updatedAt = record['updated_at'];
+          
+          // 如果是字符串，尝试转换为毫秒时间戳
+          if (createdAt is String) {
+            try {
+              createdAt = int.tryParse(createdAt) ?? DateTime.now().millisecondsSinceEpoch;
+            } catch (_) {
+              createdAt = DateTime.now().millisecondsSinceEpoch;
+            }
+          } else if (createdAt == null) {
+            createdAt = DateTime.now().millisecondsSinceEpoch;
+          }
+          
+          if (updatedAt is String) {
+            try {
+              updatedAt = int.tryParse(updatedAt) ?? DateTime.now().millisecondsSinceEpoch;
+            } catch (_) {
+              updatedAt = DateTime.now().millisecondsSinceEpoch;
+            }
+          } else if (updatedAt == null) {
+            updatedAt = DateTime.now().millisecondsSinceEpoch;
+          }
+          
+          // 创建新记录
+          final newRecord = {
+            'id': record['id'],
+            'username': record['username'],
+            'nickname': record['nickname'],
+            'avatar': record['avatar'],
+            'email': record['email'],
+            'phone': record['phone'],
+            'gender': record['gender'],
+            'birthday': record['birthday'],
+            'signature': record['signature'],
+            'created_at': createdAt,
+            'updated_at': updatedAt,
+          };
+          
+          print('迁移用户记录: $newRecord');
+          await txn.insert(tableUser, newRecord);
+        }
+        
+        // 5. 删除旧表
+        print('删除旧用户表');
+        await txn.execute('DROP TABLE IF EXISTS ${tableUser}_old');
+        
+        print('用户表重建完成');
+      });
+    } catch (e) {
+      print('重建用户表失败: $e');
+      print('堆栈跟踪: ${StackTrace.current}');
+      rethrow;
     }
   }
 }
