@@ -90,7 +90,7 @@ class NoteProvider extends ChangeNotifier {
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
-      throw e; // 向上传播错误以便UI处理
+      rethrow; // 向上传播错误以便UI处理
     }
   }
 
@@ -112,7 +112,7 @@ class NoteProvider extends ChangeNotifier {
       }
     } catch (e) {
       _error = e.toString();
-      throw e;
+      rethrow;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -134,7 +134,7 @@ class NoteProvider extends ChangeNotifier {
       }
     } catch (e) {
       _error = e.toString();
-      throw e;
+      rethrow;
     } finally {
       _isLoading = false;
       notifyListeners();

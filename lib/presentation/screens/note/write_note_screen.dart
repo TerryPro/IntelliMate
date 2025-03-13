@@ -3,6 +3,7 @@ import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
 import 'package:intellimate/domain/entities/note.dart';
 import 'package:intellimate/presentation/providers/note_provider.dart';
+import 'package:intellimate/presentation/widgets/custom_app_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -211,12 +212,27 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.white,
       body: Column(
         children: [
-          _buildCustomAppBar(),
+          // 自定义顶部导航栏
+          CustomEditorAppBar(
+            title: _isEditing ? '编辑笔记' : '新建笔记',
+            onBackTap: () => Navigator.pop(context),
+            onSaveTap: _saveNote,
+            isLoading: _isLoading,
+          ),
           
+          // 笔记内容
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
@@ -224,106 +240,13 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildTitleInput(),
-                  
-                  _buildCategorySelector(),
-                  
-                  _buildEditToolbar(),
-                  
+                  const SizedBox(height: 16),
                   _buildContentInput(),
-                  
-                  _buildAttachmentArea(),
-                  
-                  _buildBottomOptions(),
-                  
-                  _buildAutoSaveHint(),
+                  const SizedBox(height: 20),
+                  _buildTagsSection(),
+                  const SizedBox(height: 20),
+                  _buildCategorySection(),
                 ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildCustomAppBar() {
-    return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top,
-        left: 16,
-        right: 16,
-        bottom: 16,
-      ),
-      decoration: const BoxDecoration(
-        color: AppColors.primary,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.home);
-                },
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(
-                    color: AppColors.whiteWithOpacity20,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.home,
-                    color: AppColors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(
-                    color: AppColors.whiteWithOpacity20,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back,
-                    color: AppColors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                _isEditing ? '编辑笔记' : '新建笔记',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          ElevatedButton(
-            onPressed: _saveNote,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF3ECABB),
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-            child: const Text(
-              '保存',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -358,7 +281,71 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
     );
   }
   
-  Widget _buildCategorySelector() {
+  Widget _buildContentInput() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: TextField(
+        controller: _contentController,
+        maxLines: null,
+        minLines: 10,
+        decoration: const InputDecoration(
+          hintText: '开始编写笔记内容...',
+          border: InputBorder.none,
+          hintStyle: TextStyle(color: Colors.grey),
+        ),
+        style: const TextStyle(
+          fontSize: 16,
+          color: Colors.black87,
+          height: 1.5,
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildTagsSection() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: _addTag,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.tag,
+                    color: Colors.grey.shade500,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '添加标签',
+                    style: TextStyle(
+                      color: Colors.grey.shade500,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.add,
+                    color: Colors.grey.shade500,
+                    size: 14,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildCategorySection() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(
@@ -419,334 +406,7 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
               ),
             ),
           ),
-          
-          const SizedBox(width: 12),
-          
-          GestureDetector(
-            onTap: _addTag,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.tag,
-                    color: Colors.grey.shade500,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '添加标签',
-                    style: TextStyle(
-                      color: Colors.grey.shade500,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.add,
-                    color: Colors.grey.shade500,
-                    size: 14,
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
-      ),
-    );
-  }
-  
-  Widget _buildEditToolbar() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.blackWithOpacity05,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _buildToolbarButton(Icons.format_bold),
-            _buildToolbarButton(Icons.format_italic),
-            _buildToolbarButton(Icons.format_underlined),
-            _buildToolbarDivider(),
-            _buildToolbarButton(Icons.format_list_bulleted),
-            _buildToolbarButton(Icons.format_list_numbered),
-            _buildToolbarButton(Icons.check_box),
-            _buildToolbarDivider(),
-            _buildToolbarButton(Icons.link),
-            _buildToolbarButton(Icons.image),
-            _buildToolbarButton(Icons.table_chart),
-            _buildToolbarButton(Icons.code),
-            _buildToolbarDivider(),
-            _buildToolbarButton(Icons.title),
-            _buildToolbarButton(Icons.format_quote),
-          ],
-        ),
-      ),
-    );
-  }
-  
-  Widget _buildToolbarButton(IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: IconButton(
-        icon: Icon(icon, color: Colors.grey.shade600),
-        onPressed: () {
-          // 实现相应的格式化功能
-        },
-        constraints: const BoxConstraints(
-          minWidth: 40,
-          minHeight: 40,
-        ),
-      ),
-    );
-  }
-  
-  Widget _buildToolbarDivider() {
-    return Container(
-      height: 24,
-      width: 1,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      color: Colors.grey.shade200,
-    );
-  }
-  
-  Widget _buildContentInput() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: TextField(
-        controller: _contentController,
-        maxLines: null,
-        minLines: 10,
-        decoration: const InputDecoration(
-          hintText: '开始编写笔记内容...',
-          border: InputBorder.none,
-          hintStyle: TextStyle(color: Colors.grey),
-        ),
-        style: const TextStyle(
-          fontSize: 16,
-          color: Colors.black87,
-          height: 1.5,
-        ),
-      ),
-    );
-  }
-  
-  Widget _buildAttachmentArea() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                '附件',
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87,
-                ),
-              ),
-              Text(
-                '${_attachments.length}/5',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade500,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          GridView.count(
-            crossAxisCount: 4,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              GestureDetector(
-                onTap: _addAttachment,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.grey.shade300,
-                      style: BorderStyle.solid,
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.add,
-                        color: Colors.grey.shade400,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '添加',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildBottomOptions() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.blackWithOpacity05,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          GestureDetector(
-            onTap: _togglePrivacy,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.favorite,
-                        color: Colors.grey.shade500,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        '收藏',
-                        style: TextStyle(
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        _isFavorite ? '已收藏' : '未收藏',
-                        style: TextStyle(
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Icon(
-                        Icons.chevron_right,
-                        color: Colors.grey.shade400,
-                        size: 20,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          
-          GestureDetector(
-            onTap: _toggleReminder,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.notifications,
-                      color: Colors.grey.shade500,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      '提醒',
-                      style: TextStyle(
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Text(
-                      '不提醒',
-                      style: TextStyle(
-                        color: Colors.grey.shade500,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(
-                      Icons.chevron_right,
-                      color: Colors.grey.shade400,
-                      size: 20,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildAutoSaveHint() {
-    final now = DateFormat('HH:mm').format(DateTime.now());
-    
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 40),
-        child: Column(
-          children: [
-            Text(
-              '笔记将自动保存至云端',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade500,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '上次保存时间：$now',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade500,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

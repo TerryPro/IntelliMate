@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/domain/entities/daily_note.dart';
 import 'package:intellimate/presentation/providers/daily_note_provider.dart';
+import 'package:intellimate/presentation/widgets/custom_app_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
 
 class DailyNoteScreen extends StatefulWidget {
   const DailyNoteScreen({super.key});
@@ -120,8 +122,19 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
       backgroundColor: Colors.grey[50],
       body: Column(
         children: [
-          // 自定义顶部导航栏
-          _buildCustomAppBar(),
+          // 使用统一的顶部导航栏
+          UnifiedAppBar(
+            title: '日常点滴',
+            actions: [
+              AppBarRefreshButton(
+                onTap: _loadDailyNotes,
+              ),
+              const SizedBox(width: 8),
+              AppBarAddButton(
+                onTap: _addDailyNote,
+              ),
+            ],
+          ),
           
           // 主体内容
           Expanded(
@@ -152,30 +165,46 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
                 }
                 
                 if (dailyNoteProvider.dailyNotes.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.note_alt_outlined, size: 64, color: Colors.grey),
-                        const SizedBox(height: 16),
-                        const Text(
-                          '没有日常点滴记录',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 16,
+                  return SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          // 时间筛选
+                          _buildTimeFilter(),
+                          
+                          // 日历视图切换
+                          _buildCalendarView(),
+                          
+                          // 搜索框
+                          _buildSearchBar(),
+                          
+                          // 快速记录区域
+                          _buildQuickNoteArea(),
+                          
+                          // 空状态提示
+                          const SizedBox(height: 40),
+                          const Icon(Icons.note_alt_outlined, size: 64, color: Colors.grey),
+                          const SizedBox(height: 16),
+                          const Text(
+                            '没有日常点滴记录',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 16,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: _addDailyNote,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF3ECABB),
-                            foregroundColor: Colors.white,
+                          const SizedBox(height: 24),
+                          ElevatedButton(
+                            onPressed: _addDailyNote,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF3ECABB),
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text('添加第一条点滴'),
                           ),
-                          child: const Text('添加第一条点滴'),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 }
@@ -216,73 +245,6 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
                   ),
                 );
               },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  // 构建自定义顶部导航栏
-  Widget _buildCustomAppBar() {
-    return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top,
-        left: 16,
-        right: 16,
-        bottom: 16,
-      ),
-      decoration: const BoxDecoration(
-        color: Color(0xFF3ECABB),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.home);
-                },
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(
-                    color: AppColors.whiteWithOpacity20,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.home,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                '日常点滴',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          Container(
-            width: 40,
-            height: 40,
-            decoration: const BoxDecoration(
-              color: AppColors.whiteWithOpacity20,
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: const Icon(
-                Icons.refresh,
-                color: Colors.white,
-                size: 20,
-              ),
-              onPressed: _loadDailyNotes,
             ),
           ),
         ],
@@ -434,7 +396,7 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
           const Expanded(
             child: TextField(
               decoration: InputDecoration(
-                hintText: '搜索笔记...',
+                hintText: '搜索...',
                 border: InputBorder.none,
                 hintStyle: TextStyle(color: Colors.grey),
               ),
@@ -808,7 +770,7 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 image: DecorationImage(
-                  image: AssetImage(note.images![0]),
+                  image: FileImage(File(note.images![0])),
                   fit: BoxFit.cover,
                 ),
               ),

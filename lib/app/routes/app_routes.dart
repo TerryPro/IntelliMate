@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intellimate/domain/entities/memo.dart';
 import 'package:intellimate/domain/entities/photo.dart';
 import 'package:intellimate/domain/entities/travel.dart';
+import 'package:intellimate/domain/entities/goal.dart';
 import 'package:intellimate/presentation/screens/login/login_screen.dart';
 import 'package:intellimate/presentation/screens/assistant/assistant_screen.dart';
 import 'package:intellimate/presentation/screens/schedule/schedule_screen.dart';
@@ -28,6 +28,7 @@ import 'package:intellimate/presentation/screens/settings/password_change_screen
 import 'package:intellimate/presentation/screens/home/home_screen.dart';
 import 'package:intellimate/presentation/screens/splash/splash_screen.dart';
 import 'package:intellimate/presentation/screens/placeholder_screen.dart';
+import 'package:intellimate/presentation/screens/goal/add_goal_screen.dart';
 
 class AppRoutes {
   // 路由名称常量
@@ -48,6 +49,8 @@ class AppRoutes {
   static const String photoGallery = '/photo_gallery';
   static const String albumDetail = '/photo_gallery/album';
   static const String goal = '/goal';
+  static const String addGoal = '/goal/add';
+  static const String editGoal = '/goal/edit';
   static const String travel = '/travel';
   static const String travelDetail = '/travel/detail';
   static const String memo = '/memo';
@@ -76,7 +79,13 @@ class AppRoutes {
       assistant: (context) => const AssistantScreen(),
       // 日程管理模块
       schedule: (context) => const ScheduleScreen(),
-      addSchedule: (context) => const AddScheduleScreen(),
+      addSchedule: (context) {
+        final args = ModalRoute.of(context)?.settings.arguments;
+        if (args is String) {
+          return AddScheduleScreen(scheduleId: args);
+        }
+        return const AddScheduleScreen();
+      },
       // 任务管理模块
       task: (context) => const TaskScreen(),
       addTask: (context) => const AddTaskScreen(),
@@ -93,6 +102,11 @@ class AppRoutes {
         return AlbumDetailScreen(album: album);
       },
       goal: (context) => const GoalScreen(),
+      addGoal: (context) => const AddGoalScreen(),
+      editGoal: (context) {
+        final goal = ModalRoute.of(context)?.settings.arguments as Goal;
+        return AddGoalScreen(goal: goal);
+      },
       travel: (context) => const TravelScreen(),
       travelDetail: (context) {
         final travel = ModalRoute.of(context)?.settings.arguments as Travel;

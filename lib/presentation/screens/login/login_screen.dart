@@ -23,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
-  bool _agreeToTerms = true;
+  final bool _agreeToTerms = true;
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _isFirstTimeUser = false;
@@ -205,10 +205,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: Colors.white,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
-                          Icons.assistant_rounded,
-                          size: 50,
-                          color: AppColors.primary,
+                        child: Padding(
+                          padding: const EdgeInsets.all(15),
+                          child: Image.asset(
+                            'assets/icons/ai.png',
+                            fit: BoxFit.contain,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),

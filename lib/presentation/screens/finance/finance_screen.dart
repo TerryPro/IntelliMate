@@ -440,7 +440,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                   ],
                 ),
               );
-            }).toList(),
+            }),
         ],
       ),
     );
@@ -512,7 +512,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
               ),
             )
           else
-            ...provider.finances.map((finance) => _buildTransactionItem(finance)).toList(),
+            ...provider.finances.map((finance) => _buildTransactionItem(finance)),
         ],
       ),
     );

@@ -2,30 +2,18 @@ import 'package:intellimate/domain/entities/memo.dart';
 
 class MemoModel extends Memo {
   MemoModel({
-    required String id,
-    required String title,
-    required String content,
-    required DateTime date,
-    String? category,
-    required String priority,
-    required bool isPinned,
-    required bool isCompleted,
-    DateTime? completedAt,
-    required DateTime createdAt,
-    required DateTime updatedAt,
-  }) : super(
-          id: id,
-          title: title,
-          content: content,
-          date: date,
-          category: category,
-          priority: priority,
-          isPinned: isPinned,
-          isCompleted: isCompleted,
-          completedAt: completedAt,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
-        );
+    required super.id,
+    required super.title,
+    required super.content,
+    required super.date,
+    super.category,
+    required super.priority,
+    required super.isPinned,
+    required super.isCompleted,
+    super.completedAt,
+    required super.createdAt,
+    required super.updatedAt,
+  });
 
   // 从实体类创建模型
   factory MemoModel.fromEntity(Memo memo) {

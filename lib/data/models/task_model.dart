@@ -72,6 +72,10 @@ class TaskModel extends Task {
 
   // 从实体创建模型
   factory TaskModel.fromEntity(Task task) {
+    if (task is TaskModel) {
+      return task;
+    }
+    
     return TaskModel(
       id: task.id,
       title: task.title,

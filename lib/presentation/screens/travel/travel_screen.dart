@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
 import 'package:intellimate/domain/entities/travel.dart';
-import 'package:intellimate/presentation/widgets/app_bar_widget.dart';
 import 'package:intl/intl.dart';
 
 class TravelScreen extends StatefulWidget {

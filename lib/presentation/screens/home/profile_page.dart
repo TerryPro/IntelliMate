@@ -1,38 +1,107 @@
 import 'package:flutter/material.dart';
 import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
+import 'package:intellimate/domain/entities/user.dart';
+import 'package:intellimate/presentation/providers/user_provider.dart';
+import 'package:provider/provider.dart';
+import 'dart:io';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  // 用户信息
+  String _username = '未登录用户';
+  String _bio = '';
+  String? _avatarUrl;
+  bool _isLoading = true;
+  
+  // 统计数据
+  String _completedTasks = '0';
+  String _inProgressTasks = '0';
+  String _completionRate = '0%';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+  
+  // 加载用户数据
+  Future<void> _loadUserData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final user = userProvider.currentUser;
+      
+      if (user != null) {
+        setState(() {
+          _username = user.nickname;
+          _bio = user.signature ?? '暂无个性签名';
+          _avatarUrl = user.avatar;
+          
+          // 这里可以加载任务统计数据
+          // 暂时使用模拟数据
+          _completedTasks = '12';
+          _inProgressTasks = '8';
+          _completionRate = '95%';
+        });
+      }
+    } catch (e) {
+      debugPrint('加载用户数据失败: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+  
+  // 获取头像图片
+  ImageProvider _getAvatarImage(String url) {
+    if (url.startsWith('http')) {
+      return NetworkImage(url);
+    } else {
+      return FileImage(File(url));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: Column(
-        children: [
-          // 顶部用户信息区域
-          _buildUserHeader(context),
-          
-          // 主体内容
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    // 我的功能区
-                    _buildFunctionSection(context),
-                    
-                    // 设置区域
-                    _buildSettingsSection(context),
-                  ],
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                // 顶部用户信息区域
+                _buildUserHeader(context),
+                
+                // 主体内容
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          // 我的功能区
+                          _buildFunctionSection(context),
+                          
+                          // 设置区域
+                          _buildSettingsSection(context),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
   
@@ -63,12 +132,22 @@ class ProfilePage extends StatelessWidget {
                 height: 80,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
+                  color: Colors.grey[200],
                   border: Border.all(color: Colors.white, width: 2),
-                  image: const DecorationImage(
-                    image: NetworkImage('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde'),
-                    fit: BoxFit.cover,
-                  ),
+                  image: _avatarUrl != null
+                      ? DecorationImage(
+                          image: _getAvatarImage(_avatarUrl!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
+                child: _avatarUrl == null
+                    ? const Icon(
+                        Icons.person,
+                        size: 40,
+                        color: Colors.white,
+                      )
+                    : null,
               ),
               const SizedBox(width: 20),
               // 用户名和签名
@@ -76,9 +155,9 @@ class ProfilePage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      '小明',
-                      style: TextStyle(
+                    Text(
+                      _username,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -86,11 +165,13 @@ class ProfilePage extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '提高效率，成就更好的自己',
+                      _bio,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8 * 255),
+                        color: Colors.white.withOpacity(0.8),
                         fontSize: 14,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -98,7 +179,7 @@ class ProfilePage extends StatelessWidget {
               // 编辑按钮
               IconButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.profileEdit);
+                  Navigator.pushNamed(context, AppRoutes.profileEdit).then((_) => _loadUserData());
                 },
                 icon: const Icon(
                   Icons.edit,
@@ -114,9 +195,9 @@ class ProfilePage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildUserStat('12', '已完成任务'),
-              _buildUserStat('8', '进行中任务'),
-              _buildUserStat('95%', '完成率'),
+              _buildUserStat(_completedTasks, '已完成任务'),
+              _buildUserStat(_inProgressTasks, '进行中任务'),
+              _buildUserStat(_completionRate, '完成率'),
             ],
           ),
         ],
@@ -140,7 +221,7 @@ class ProfilePage extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.8 * 255),
+            color: Colors.white.withOpacity(0.8),
             fontSize: 12,
           ),
         ),

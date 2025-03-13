@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intellimate/app/routes/app_routes.dart';
-import 'package:intellimate/presentation/helpers/navigation_helper.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:intellimate/presentation/providers/task_provider.dart';
 import 'package:intellimate/presentation/providers/schedule_provider.dart';
 import 'package:intellimate/domain/entities/schedule.dart';
-import 'package:intellimate/domain/entities/task.dart';
 import 'package:intl/intl.dart';
 
 class AssistantScreen extends StatefulWidget {

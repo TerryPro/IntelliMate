@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/domain/entities/daily_note.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
 import 'package:intellimate/presentation/providers/daily_note_provider.dart';
+import 'package:intellimate/presentation/widgets/custom_app_bar.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class AddDailyNoteScreen extends StatefulWidget {
   const AddDailyNoteScreen({super.key});
@@ -16,24 +18,14 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
   final _contentController = TextEditingController();
   final _locationController = TextEditingController();
   
-  String _mood = '开心';
-  String _weather = '晴';
-  bool _isPrivate = false;
   final List<String> _selectedImages = [];
   bool _isLoading = false;
   DailyNote? _editingNote;
   bool _isEditMode = false;
   
-  // 模拟图片列表
-  final List<String> _availableImages = [
-    'assets/images/design.jpg',
-  ];
-  
-  // 心情选项
-  final List<String> _moods = ['开心', '平静', '伤心', '愤怒', '惊讶'];
-  
-  // 天气选项
-  final List<String> _weathers = ['晴', '多云', '阴', '雨', '雪'];
+  // 图片选择器
+  final ImagePicker _picker = ImagePicker();
+  File? _selectedImage;
   
   @override
   void initState() {
@@ -51,15 +43,18 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
           if (args.location != null) {
             _locationController.text = args.location!;
           }
-          if (args.mood != null) {
-            _mood = args.mood!;
-          }
-          if (args.weather != null) {
-            _weather = args.weather!;
-          }
-          _isPrivate = args.isPrivate;
           if (args.images != null && args.images!.isNotEmpty) {
             _selectedImages.addAll(args.images!);
+            // 尝试加载第一张图片
+            try {
+              final imagePath = args.images!.first;
+              final file = File(imagePath);
+              if (file.existsSync()) {
+                _selectedImage = file;
+              }
+            } catch (e) {
+              print('加载已有图片失败: $e');
+            }
           }
         });
       }
@@ -103,12 +98,7 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
           author: _editingNote!.author,
           images: _selectedImages.isNotEmpty ? _selectedImages : null,
           location: _locationController.text.isNotEmpty ? _locationController.text : null,
-          mood: _editingNote!.mood, // 保留原有的心情值
-          weather: _editingNote!.weather, // 保留原有的天气值
-          isPrivate: _editingNote!.isPrivate, // 保留原有的隐私设置
-          likes: _editingNote!.likes,
-          comments: _editingNote!.comments,
-          codeSnippet: _editingNote!.codeSnippet,
+          isPrivate: false, // 设置为非私密
           createdAt: _editingNote!.createdAt,
           updatedAt: DateTime.now(), // 更新时间戳
         );
@@ -124,10 +114,7 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
           author: '用户',
           images: _selectedImages.isNotEmpty ? _selectedImages : null,
           location: _locationController.text.isNotEmpty ? _locationController.text : null,
-          // 移除心情、天气和隐私设置相关参数，使用默认值
-          // mood: _mood,
-          // weather: _weather,
-          // isPrivate: _isPrivate,
+          isPrivate: false, // 设置为非私密
         );
       }
       
@@ -158,13 +145,56 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
   }
   
   // 选择图片
-  void _selectImage() {
-    // 这里应该调用图片选择器
-    // 暂时只是添加模拟图片
-    if (_selectedImages.isEmpty && _availableImages.isNotEmpty) {
-      setState(() {
-        _selectedImages.add(_availableImages.first);
-      });
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+      
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+          // 清空之前的图片列表，因为我们只允许一张图片
+          _selectedImages.clear();
+          // 存储图片路径
+          _selectedImages.add(image.path);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('选择图片失败: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+  
+  // 拍摄照片
+  Future<void> _takePhoto() async {
+    try {
+      final XFile? photo = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+      );
+      
+      if (photo != null) {
+        setState(() {
+          _selectedImage = File(photo.path);
+          // 清空之前的图片列表，因为我们只允许一张图片
+          _selectedImages.clear();
+          // 存储图片路径
+          _selectedImages.add(photo.path);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('拍照失败: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
   
@@ -172,6 +202,7 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
   void _removeImage(int index) {
     setState(() {
       _selectedImages.removeAt(index);
+      _selectedImage = null;
     });
   }
 
@@ -184,7 +215,12 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
           Column(
             children: [
               // 自定义顶部导航栏
-              _buildCustomAppBar(),
+              CustomEditorAppBar(
+                title: _isEditMode ? '编辑点滴' : '新建点滴',
+                onBackTap: () => Navigator.pop(context),
+                onSaveTap: _saveDailyNote,
+                isLoading: _isLoading,
+              ),
               
               // 主体内容
               Expanded(
@@ -203,16 +239,6 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
                       
                       // 位置输入
                       _buildLocationInput(),
-                      // 以下部分暂时移除
-                      // const SizedBox(height: 20),
-                      // 心情选择
-                      // _buildMoodSelector(),
-                      // const SizedBox(height: 20),
-                      // 天气选择
-                      // _buildWeatherSelector(),
-                      // const SizedBox(height: 20),
-                      // 隐私设置
-                      // _buildPrivacyToggle(),
                     ],
                   ),
                 ),
@@ -228,75 +254,6 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
                 child: CircularProgressIndicator(),
               ),
             ),
-        ],
-      ),
-    );
-  }
-  
-  // 构建自定义顶部导航栏
-  Widget _buildCustomAppBar() {
-    return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top,
-        left: 20,
-        right: 20,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.05),
-            blurRadius: 10,
-            spreadRadius: 0,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // 取消按钮
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.grey.shade700,
-              padding: EdgeInsets.zero,
-              minimumSize: const Size(40, 40),
-            ),
-            child: const Text('取消'),
-          ),
-          
-          // 标题
-          Text(
-            _isEditMode ? '编辑点滴' : '新建点滴',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          
-          // 发布按钮
-          TextButton(
-            onPressed: _saveDailyNote,
-            style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF3ECABB),
-              padding: EdgeInsets.zero,
-              minimumSize: const Size(40, 40),
-            ),
-            child: _isLoading
-                ? Container(
-                    width: 20,
-                    height: 20,
-                    margin: const EdgeInsets.symmetric(horizontal: 10),
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3ECABB)),
-                    ),
-                  )
-                : const Text('发布'),
-          ),
         ],
       ),
     );
@@ -340,89 +297,132 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 已选择的图片
-          if (_selectedImages.isNotEmpty)
-            Container(
-              height: 120,
-              margin: const EdgeInsets.only(bottom: 16),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _selectedImages.length,
-                itemBuilder: (context, index) {
-                  return Stack(
-                    children: [
-                      Container(
-                        width: 120,
-                        height: 120,
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          image: DecorationImage(
-                            image: AssetImage(_selectedImages[index]),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 4,
-                        right: 12,
-                        child: GestureDetector(
-                          onTap: () => _removeImage(index),
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Colors.black54,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.close,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
+          const Text(
+            '添加照片',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
             ),
+          ),
+          const SizedBox(height: 12),
           
-          // 添加图片按钮
-          GestureDetector(
-            onTap: _selectImage,
-            child: Container(
-              padding: const EdgeInsets.all(16),
+          // 已选择的图片
+          if (_selectedImage != null)
+            Container(
+              height: 200,
+              margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
-                boxShadow: const [
-                  BoxShadow(
-                    color: AppColors.blackWithOpacity05,
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
+                image: DecorationImage(
+                  image: FileImage(_selectedImage!),
+                  fit: BoxFit.cover,
+                ),
               ),
-              child: Row(
+              child: Stack(
                 children: [
-                  Icon(
-                    Icons.image,
-                    color: Colors.grey.shade500,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    '添加图片',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey.shade500,
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: () => _removeImage(0),
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.black54,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
+          
+          // 添加图片按钮
+          if (_selectedImage == null)
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: AppColors.blackWithOpacity05,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.photo_library,
+                            color: Colors.grey.shade500,
+                            size: 32,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '从相册选择',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: _takePhoto,
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: AppColors.blackWithOpacity05,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.camera_alt,
+                            color: Colors.grey.shade500,
+                            size: 32,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '拍摄照片',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );
@@ -430,20 +430,56 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
   
   // 构建位置输入
   Widget _buildLocationInput() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: TextField(
-        controller: _locationController,
-        decoration: const InputDecoration(
-          hintText: '添加位置',
-          border: InputBorder.none,
-          hintStyle: TextStyle(color: Colors.grey),
-        ),
-        style: const TextStyle(
-          fontSize: 14,
-          color: Colors.black87,
-        ),
-        textAlign: TextAlign.right,
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.blackWithOpacity05,
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '位置',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(
+                Icons.location_on,
+                color: Colors.grey.shade500,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextField(
+                  controller: _locationController,
+                  decoration: const InputDecoration(
+                    hintText: '添加位置',
+                    border: InputBorder.none,
+                    hintStyle: TextStyle(color: Colors.grey),
+                  ),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

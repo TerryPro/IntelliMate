@@ -5,6 +5,10 @@ import 'package:intellimate/domain/entities/user.dart';
 import 'package:intellimate/presentation/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 class ProfileEditScreen extends StatefulWidget {
   const ProfileEditScreen({super.key});
@@ -171,14 +175,75 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
   
   // 选择头像
-  void _selectAvatar() {
-    // 这里应该调用图片选择器
-    // 暂时只是显示一个提示
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('头像选择功能尚未实现'),
-      ),
-    );
+  Future<void> _selectAvatar() async {
+    try {
+      // 显示选择对话框
+      showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return SafeArea(
+            child: Wrap(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('从相册选择'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(ImageSource.gallery);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.camera_alt),
+                  title: const Text('拍摄照片'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(ImageSource.camera);
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      _showErrorSnackBar('选择头像失败: $e');
+    }
+  }
+  
+  // 选择图片
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: source,
+        imageQuality: 80,
+        maxWidth: 800,
+        maxHeight: 800,
+      );
+      
+      if (image != null) {
+        // 保存图片到应用目录
+        final Directory appDir = await getApplicationDocumentsDirectory();
+        final String fileName = 'avatar_${DateTime.now().millisecondsSinceEpoch}${path.extension(image.path)}';
+        final String savedPath = path.join(appDir.path, fileName);
+        
+        // 复制图片到应用目录
+        final File savedImage = await File(image.path).copy(savedPath);
+        
+        setState(() {
+          _avatarUrl = savedImage.path;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('头像已更新，点击保存完成修改'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      _showErrorSnackBar('处理图片失败: $e');
+    }
   }
 
   @override
@@ -358,7 +423,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 color: Colors.grey[200],
                 image: _avatarUrl != null
                     ? DecorationImage(
-                        image: NetworkImage(_avatarUrl!),
+                        image: _avatarUrl!.startsWith('http') 
+                            ? NetworkImage(_avatarUrl!) as ImageProvider
+                            : FileImage(File(_avatarUrl!)),
                         fit: BoxFit.cover,
                       )
                     : null,

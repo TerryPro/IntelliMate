@@ -5,7 +5,7 @@ import 'package:intellimate/domain/entities/memo.dart';
 import 'package:intl/intl.dart';
 import 'package:intellimate/presentation/providers/memo_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intellimate/presentation/widgets/custom_app_bar.dart';
 
 class AddMemoScreen extends StatefulWidget {
   const AddMemoScreen({super.key, this.memo});
@@ -146,148 +146,56 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                // 自定义顶部导航栏
-                _buildCustomAppBar(),
-                
-                // 主体内容
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // 标题输入
-                          _buildTitleInput(),
-                          
-                          const SizedBox(height: 24),
-                          
-                          // 内容输入
-                          _buildContentInput(),
-                          
-                          const SizedBox(height: 24),
-                          
-                          // 日期时间选择
-                          _buildDateTimeSelector(),
-                          
-                          const SizedBox(height: 24),
-                          
-                          // 优先级选择
-                          _buildPrioritySelector(),
-                          
-                          const SizedBox(height: 24),
-                          
-                          // 分类选择
-                          _buildCategorySelector(),
-                          
-                          const SizedBox(height: 24),
-                          
-                          // 额外选项
-                          _buildExtraOptions(),
-                          
-                          const SizedBox(height: 40),
-                          
-                          // 保存按钮
-                          _buildSaveButton(),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-    );
-  }
-  
-  // 构建自定义顶部导航栏
-  Widget _buildCustomAppBar() {
-    return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top,
-        left: 16,
-        right: 16,
-        bottom: 16,
-      ),
-      decoration: const BoxDecoration(
-        color: AppColors.primary,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: Column(
         children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.pushReplacementNamed(context, AppRoutes.home);
-                },
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.home,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                widget.memo == null ? '添加备忘录' : '编辑备忘录',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+          // 自定义顶部导航栏
+          CustomEditorAppBar(
+            title: widget.memo == null ? '添加备忘录' : '编辑备忘录',
+            onBackTap: () => Navigator.pop(context),
+            onSaveTap: _saveMemo,
+            isLoading: _isLoading,
           ),
-          ElevatedButton(
-            onPressed: _saveMemo,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+          
+          // 表单内容
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTitleInput(),
+                  const SizedBox(height: 20),
+                  
+                  _buildContentInput(),
+                  const SizedBox(height: 20),
+                  
+                  _buildCategoryInput(),
+                  const SizedBox(height: 20),
+                  
+                  _buildPrioritySelector(),
+                  const SizedBox(height: 20),
+                  
+                  _buildReminderSelector(),
+                  const SizedBox(height: 20),
+                ],
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
-            child: const Text('保存'),
           ),
         ],
       ),
     );
   }
-
+  
   // 构建标题输入
   Widget _buildTitleInput() {
     return TextFormField(
@@ -337,8 +245,8 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
     );
   }
 
-  // 构建日期时间选择器
-  Widget _buildDateTimeSelector() {
+  // 构建分类选择器
+  Widget _buildCategoryInput() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -349,61 +257,39 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            '日期和时间',
+            '分类',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: InkWell(
-                  onTap: _selectDate,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey[300]!),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          DateFormat('yyyy年MM月dd日').format(_selectedDate),
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const Icon(Icons.calendar_today, size: 18),
-                      ],
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: _categories.map((category) {
+              final isSelected = category == _selectedCategory;
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedCategory = category;
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.primary : Colors.grey[200],
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    category,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.grey[700],
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: InkWell(
-                  onTap: _selectTime,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey[300]!),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _selectedTime.format(context),
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const Icon(Icons.access_time, size: 18),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
+              );
+            }).toList(),
           ),
         ],
       ),
@@ -485,8 +371,8 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
     );
   }
 
-  // 构建分类选择器
-  Widget _buildCategorySelector() {
+  // 构建提醒选择器
+  Widget _buildReminderSelector() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -497,105 +383,63 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            '分类',
+            '提醒',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 16),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: _categories.map((category) {
-              final isSelected = category == _selectedCategory;
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedCategory = category;
-                  });
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary : Colors.grey[200],
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    category,
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.grey[700],
+          Row(
+            children: [
+              Expanded(
+                child: InkWell(
+                  onTap: _selectDate,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey[300]!),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          DateFormat('yyyy年MM月dd日').format(_selectedDate),
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const Icon(Icons.calendar_today, size: 18),
+                      ],
                     ),
                   ),
                 ),
-              );
-            }).toList(),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: InkWell(
+                  onTap: _selectTime,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey[300]!),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _selectedTime.format(context),
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const Icon(Icons.access_time, size: 18),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
-      ),
-    );
-  }
-
-  // 构建额外选项
-  Widget _buildExtraOptions() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: [
-          SwitchListTile(
-            title: const Text('置顶备忘'),
-            subtitle: const Text('将备忘显示在置顶区域'),
-            secondary: const Icon(Icons.push_pin),
-            value: _isPinned,
-            activeColor: AppColors.primary,
-            onChanged: (bool value) {
-              setState(() {
-                _isPinned = value;
-              });
-            },
-          ),
-          const Divider(),
-          SwitchListTile(
-            title: const Text('标记为已完成'),
-            subtitle: const Text('将备忘标记为已完成状态'),
-            secondary: const Icon(Icons.check_circle),
-            value: _isCompleted,
-            activeColor: AppColors.primary,
-            onChanged: (bool value) {
-              setState(() {
-                _isCompleted = value;
-              });
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 构建保存按钮
-  Widget _buildSaveButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: ElevatedButton(
-        onPressed: _saveMemo,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-        child: const Text(
-          '保存备忘',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
       ),
     );
   }

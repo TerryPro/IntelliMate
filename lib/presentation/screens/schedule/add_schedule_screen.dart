@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/domain/entities/schedule.dart';
 import 'package:intellimate/presentation/providers/schedule_provider.dart';
+import 'package:intellimate/presentation/widgets/custom_app_bar.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import 'package:intellimate/app/theme/app_colors.dart';
 
 class AddScheduleScreen extends StatefulWidget {
   final String? scheduleId; // 用于编辑现有日程
@@ -26,9 +30,6 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
   
   String? _reminder = '提前15分钟';
   final List<String> _reminderOptions = ['无', '提前5分钟', '提前15分钟', '提前30分钟', '提前1小时', '提前1天'];
-  
-  String? _repeatOption = '不重复';
-  final List<String> _repeatOptions = ['不重复', '每天', '每周', '每月', '每年'];
   
   String _selectedCategory = '工作';
   final List<Map<String, dynamic>> _categories = [
@@ -80,7 +81,6 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
           );
           _isAllDay = schedule.isAllDay;
           _reminder = schedule.reminder;
-          _repeatOption = schedule.isRepeated ? schedule.repeatType : '不重复';
           _selectedCategory = schedule.category ?? '工作';
           
           // 更新分类选择状态
@@ -144,8 +144,8 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
             location: _locationController.text.isNotEmpty ? _locationController.text : null,
             isAllDay: _isAllDay,
             category: _selectedCategory,
-            isRepeated: _repeatOption != '不重复',
-            repeatType: _repeatOption != '不重复' ? _repeatOption : null,
+            isRepeated: false,
+            repeatType: null,
             reminder: _reminder,
             createdAt: _existingSchedule!.createdAt,
             updatedAt: DateTime.now(),
@@ -171,8 +171,8 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
             location: _locationController.text.isNotEmpty ? _locationController.text : null,
             isAllDay: _isAllDay,
             category: _selectedCategory,
-            isRepeated: _repeatOption != '不重复',
-            repeatType: _repeatOption != '不重复' ? _repeatOption : null,
+            isRepeated: false,
+            repeatType: null,
             reminder: _reminder,
           );
           
@@ -290,8 +290,32 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
         children: [
           Column(
             children: [
-              // 自定义顶部导航栏
-              _buildCustomAppBar(),
+              // 使用统一的顶部导航栏
+              UnifiedAppBar(
+                title: _existingSchedule == null ? '添加日程' : '编辑日程',
+                showHomeButton: false,
+                showBackButton: true,
+                actions: [
+                  ElevatedButton(
+                    onPressed: _saveSchedule,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF3ECABB),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Text(
+                      '保存',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               
               // 表单内容
               Expanded(
@@ -328,10 +352,6 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
                               _buildCategorySelector(),
                               const SizedBox(height: 20),
                               
-                              // 重复选项
-                              _buildRepeatOptions(),
-                              const SizedBox(height: 20),
-                              
                               // 提醒选项
                               _buildReminderOptions(),
                               const SizedBox(height: 20),
@@ -339,9 +359,6 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
                               // 备注输入
                               _buildNotesInput(),
                               const SizedBox(height: 40),
-                              
-                              // 保存按钮
-                              _buildSaveButton(),
                             ],
                           ),
                         ),
@@ -351,7 +368,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
           ),
           
           // 加载指示器
-          if (_isLoading && _existingSchedule != null)
+          if (_isLoading)
             Container(
               color: Colors.black.withOpacity(0.3),
               child: const Center(
@@ -398,67 +415,6 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
                 ),
               ),
             ),
-        ],
-      ),
-    );
-  }
-  
-  // 构建自定义顶部导航栏
-  Widget _buildCustomAppBar() {
-    return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top,
-        left: 16,
-        right: 16,
-        bottom: 16,
-      ),
-      decoration: const BoxDecoration(
-        color: Color(0xFF3ECABB),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                '添加日程',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          ElevatedButton(
-            onPressed: _saveSchedule,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF3ECABB),
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-            child: const Text(
-              '保存',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -798,85 +754,6 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
     );
   }
   
-  // 构建重复部分
-  Widget _buildRepeatOptions() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '重复',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: () {
-            // 显示重复选项
-            showModalBottomSheet(
-              context: context,
-              builder: (context) {
-                return Container(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: _repeatOptions.map((option) {
-                      return ListTile(
-                        title: Text(option),
-                        trailing: option == _repeatOption
-                            ? const Icon(Icons.check, color: Color(0xFF3ECABB))
-                            : null,
-                        onTap: () {
-                          setState(() {
-                            _repeatOption = option;
-                          });
-                          Navigator.pop(context);
-                        },
-                      );
-                    }).toList(),
-                  ),
-                );
-              },
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade200),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.repeat,
-                  color: Color(0xFF3ECABB),
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  _repeatOption ?? '不重复',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black87,
-                  ),
-                ),
-                const Spacer(),
-                const Icon(
-                  Icons.chevron_right,
-                  color: Colors.grey,
-                  size: 20,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-  
   // 构建提醒部分
   Widget _buildReminderOptions() {
     return Column(
@@ -987,28 +864,6 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
           ),
         ),
       ],
-    );
-  }
-  
-  // 构建保存按钮
-  Widget _buildSaveButton() {
-    return ElevatedButton(
-      onPressed: _saveSchedule,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF3ECABB),
-        foregroundColor: Colors.white,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-      ),
-      child: const Text(
-        '保存',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
-      ),
     );
   }
 } 

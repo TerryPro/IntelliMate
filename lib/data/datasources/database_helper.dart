@@ -116,6 +116,14 @@ class DatabaseHelper {
       } else {
       }
       
+      bool hasGoalTable = tableNames.contains(tableGoal);
+      if (!hasGoalTable) {
+        await _createGoalTable(db);
+        print('创建目标表成功');
+      } else {
+        print('目标表已存在');
+      }
+      
       _initialized = true;
       print('数据库初始化完成，所有表已检查并创建');
     } catch (e) {
@@ -286,6 +294,26 @@ class DatabaseHelper {
     }
   }
 
+  // 创建目标表
+  Future<void> _createGoalTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS $tableGoal (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        description TEXT,
+        start_date INTEGER NOT NULL,
+        end_date INTEGER,
+        progress REAL NOT NULL DEFAULT 0.0,
+        status TEXT NOT NULL,
+        category TEXT,
+        milestones TEXT,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      )
+    ''');
+    print('目标表创建成功');
+  }
+
   // 数据库创建回调
   Future<void> _onCreate(Database db, int version) async {
     try {
@@ -297,6 +325,7 @@ class DatabaseHelper {
       await _createScheduleTable(db);
       await _createMemoTable(db);
       await _createFinanceTable(db);
+      await _createGoalTable(db);  // 添加创建目标表
       print('所有数据库表创建完成');
     } catch (e) {
       print('数据库表创建失败: $e');
@@ -400,9 +429,7 @@ class DatabaseHelper {
             } catch (_) {
               createdAt = DateTime.now().millisecondsSinceEpoch;
             }
-          } else if (createdAt == null) {
-            createdAt = DateTime.now().millisecondsSinceEpoch;
-          }
+          } else createdAt ??= DateTime.now().millisecondsSinceEpoch;
           
           if (updatedAt is String) {
             try {
@@ -410,9 +437,7 @@ class DatabaseHelper {
             } catch (_) {
               updatedAt = DateTime.now().millisecondsSinceEpoch;
             }
-          } else if (updatedAt == null) {
-            updatedAt = DateTime.now().millisecondsSinceEpoch;
-          }
+          } else updatedAt ??= DateTime.now().millisecondsSinceEpoch;
           
           // 创建新记录
           final newRecord = {

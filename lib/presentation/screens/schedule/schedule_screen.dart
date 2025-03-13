@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/domain/entities/schedule.dart';
 import 'package:intellimate/presentation/providers/schedule_provider.dart';
+import 'package:intellimate/presentation/widgets/custom_app_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
@@ -88,8 +89,24 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       backgroundColor: Colors.grey[50],
       body: Column(
         children: [
-          // 自定义顶部导航栏
-          _buildCustomAppBar(),
+          // 使用统一的顶部导航栏
+          UnifiedAppBar(
+            title: '日程管理',
+            actions: [
+              AppBarRefreshButton(
+                onTap: _loadSchedules,
+              ),
+              const SizedBox(width: 8),
+              AppBarAddButton(
+                onTap: () async {
+                  final result = await Navigator.pushNamed(context, AppRoutes.addSchedule);
+                  if (result == true && mounted) {
+                    _loadSchedules();
+                  }
+                },
+              ),
+            ],
+          ),
           
           // 主体内容
           Expanded(
@@ -106,82 +123,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   _buildScheduleList(),
                 ],
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  // 构建自定义顶部导航栏
-  Widget _buildCustomAppBar() {
-    return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top,
-        left: 16,
-        right: 16,
-        bottom: 16,
-      ),
-      decoration: const BoxDecoration(
-        color: Color(0xFF3ECABB),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.home);
-                },
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(
-                    color: AppColors.whiteWithOpacity20,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.home,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                '日程管理',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          Container(
-            width: 40,
-            height: 40,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: IconButton(
-              icon: const Icon(
-                Icons.add,
-                color: Color(0xFF3ECABB),
-                size: 20,
-              ),
-              onPressed: () {
-                Navigator.pushNamed(context, AppRoutes.addSchedule);
-              },
             ),
           ),
         ],
@@ -456,19 +397,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     final endTimeFormat = DateFormat('HH:mm');
     
     return GestureDetector(
-      onTap: () {
-        // 导航到编辑日程界面
-        Navigator.pushNamed(
-          context,
-          AppRoutes.addSchedule,
-          arguments: schedule.id,
-        ).then((result) {
-          if (result == true) {
-            // 如果编辑成功，重新加载日程
-            _loadSchedules();
-          }
-        });
-      },
+      onTap: () => _showScheduleDetail(schedule),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
@@ -488,55 +417,423 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             ),
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 时间
-              Text(
-                '${startTimeFormat.format(schedule.startTime)} - ${endTimeFormat.format(schedule.endTime)}',
-                style: const TextStyle(
-                  color: Color(0xFF3ECABB),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 4),
-              
-              // 标题
-              Text(
-                schedule.title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 4),
-              
-              // 位置
-              Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
-                    Icons.location_on_outlined,
-                    size: 14,
-                    color: Colors.grey,
+                  // 标题和时间
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          schedule.title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        schedule.isAllDay
+                            ? '全天'
+                            : '${startTimeFormat.format(schedule.startTime)} - ${endTimeFormat.format(schedule.endTime)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 4),
+                  
+                  // 描述
+                  if (schedule.description != null && schedule.description!.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      schedule.description!,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                  
+                  // 位置
+                  if (schedule.location != null && schedule.location!.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          size: 16,
+                          color: Colors.grey.shade500,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          schedule.location!,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  
+                  // 底部操作栏 - 编辑和删除功能
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      // 编辑按钮
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.addSchedule,
+                            arguments: schedule.id,
+                          ).then((result) {
+                            if (result == true) {
+                              // 如果编辑成功，重新加载日程
+                              _loadSchedules();
+                            }
+                          });
+                        },
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.edit,
+                            size: 20,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // 删除按钮
+                      GestureDetector(
+                        onTap: () => _showDeleteConfirmation(schedule),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.delete,
+                            size: 20,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  // 显示日程详情
+  void _showScheduleDetail(Schedule schedule) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _buildScheduleDetailSheet(schedule),
+    );
+  }
+  
+  // 构建日程详情底部弹出框
+  Widget _buildScheduleDetailSheet(Schedule schedule) {
+    final dateFormat = DateFormat('yyyy年MM月dd日');
+    final timeFormat = DateFormat('HH:mm');
+    
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.7,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 顶部拖动条
+          Center(
+            child: Container(
+              margin: const EdgeInsets.only(top: 12, bottom: 8),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          
+          // 标题栏
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+            child: Row(
+              children: [
+                const Text(
+                  '日程详情',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                // 编辑按钮
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Color(0xFF3ECABB)),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.addSchedule,
+                      arguments: schedule.id,
+                    ).then((result) {
+                      if (result == true) {
+                        _loadSchedules();
+                      }
+                    });
+                  },
+                ),
+                // 删除按钮
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showDeleteConfirmation(schedule);
+                  },
+                ),
+              ],
+            ),
+          ),
+          
+          const Divider(height: 1),
+          
+          // 详情内容
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 标题
                   Text(
-                    schedule.location ?? '无地点',
+                    schedule.title,
                     style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // 时间信息
+                  _buildDetailItem(
+                    icon: Icons.access_time,
+                    title: '时间',
+                    content: schedule.isAllDay
+                        ? '全天 · ${dateFormat.format(schedule.startTime)}'
+                        : '${timeFormat.format(schedule.startTime)} - ${timeFormat.format(schedule.endTime)} · ${dateFormat.format(schedule.startTime)}',
+                  ),
+                  
+                  // 地点信息
+                  if (schedule.location != null && schedule.location!.isNotEmpty)
+                    _buildDetailItem(
+                      icon: Icons.location_on,
+                      title: '地点',
+                      content: schedule.location!,
+                    ),
+                  
+                  // 分类信息
+                  if (schedule.category != null)
+                    _buildDetailItem(
+                      icon: Icons.category,
+                      title: '分类',
+                      content: schedule.category!,
+                    ),
+                  
+                  // 提醒信息
+                  if (schedule.reminder != null && schedule.reminder != '无')
+                    _buildDetailItem(
+                      icon: Icons.notifications,
+                      title: '提醒',
+                      content: schedule.reminder!,
+                    ),
+                  
+                  // 描述信息
+                  if (schedule.description != null && schedule.description!.isNotEmpty)
+                    _buildDetailItem(
+                      icon: Icons.description,
+                      title: '备注',
+                      content: schedule.description!,
+                    ),
+                  
+                  // 创建和更新时间
+                  const SizedBox(height: 20),
+                  Text(
+                    '创建于 ${DateFormat('yyyy-MM-dd HH:mm').format(schedule.createdAt)}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '更新于 ${DateFormat('yyyy-MM-dd HH:mm').format(schedule.updatedAt)}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
                     ),
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
+  }
+  
+  // 构建详情项
+  Widget _buildDetailItem({
+    required IconData icon,
+    required String title,
+    required String content,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFF3ECABB).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: const Color(0xFF3ECABB),
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  content,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // 显示删除确认对话框
+  void _showDeleteConfirmation(Schedule schedule) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('确认删除'),
+        content: const Text('确定要删除这个日程吗？此操作不可恢复。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteSchedule(schedule.id);
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // 删除日程
+  Future<void> _deleteSchedule(String id) async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+      
+      final success = await Provider.of<ScheduleProvider>(context, listen: false).deleteSchedule(id);
+      
+      if (success && mounted) {
+        _loadSchedules();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('日程已删除'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('删除失败，请重试'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('删除失败: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 } 

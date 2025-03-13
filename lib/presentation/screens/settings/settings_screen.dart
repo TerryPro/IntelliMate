@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
+import 'package:intellimate/domain/entities/user.dart';
+import 'package:intellimate/presentation/providers/user_provider.dart';
+import 'package:provider/provider.dart';
+import 'dart:io';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -11,10 +15,44 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   // 用户信息
-  final String _username = '小明';
-  final String _phone = '13800138000';
-  final String _bio = '提高效率，成就更好的自己';
-  final String _avatarUrl = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde';
+  String _username = '未登录用户';
+  String _phone = '';
+  String _bio = '';
+  String? _avatarUrl;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+  
+  // 加载用户数据
+  Future<void> _loadUserData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final user = userProvider.currentUser;
+      
+      if (user != null) {
+        setState(() {
+          _username = user.nickname;
+          _phone = user.phone ?? '';
+          _bio = user.signature ?? '';
+          _avatarUrl = user.avatar;
+        });
+      }
+    } catch (e) {
+      debugPrint('加载用户数据失败: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,91 +65,93 @@ class _SettingsScreenState extends State<SettingsScreen> {
           
           // 主体内容
           Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 用户信息卡片
-                    _buildUserInfoCard(),
-                    
-                    // 基础设置
-                    _buildSettingSection('基础设置', [
-                      _buildSettingItem(
-                        icon: Icons.person,
-                        title: '个人信息',
-                        onTap: () => Navigator.pushNamed(context, AppRoutes.profileEdit),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 用户信息卡片
+                          _buildUserInfoCard(),
+                          
+                          // 基础设置
+                          _buildSettingSection('基础设置', [
+                            _buildSettingItem(
+                              icon: Icons.person,
+                              title: '个人信息',
+                              onTap: () => Navigator.pushNamed(context, AppRoutes.profileEdit).then((_) => _loadUserData()),
+                            ),
+                            _buildSettingItem(
+                              icon: Icons.lock,
+                              title: '密码修改',
+                              onTap: () => Navigator.pushNamed(context, AppRoutes.passwordChange),
+                            ),
+                            _buildSettingItem(
+                              icon: Icons.notifications,
+                              title: '通知设置',
+                              onTap: () {},
+                            ),
+                          ]),
+                          
+                          // 数据管理
+                          _buildSettingSection('数据管理', [
+                            _buildSettingItem(
+                              icon: Icons.file_upload,
+                              title: '数据导入导出',
+                              onTap: () {},
+                            ),
+                            _buildSettingItem(
+                              icon: Icons.cloud_upload,
+                              title: '数据备份',
+                              subtitle: '自动备份已开启',
+                              onTap: () {},
+                            ),
+                          ]),
+                          
+                          // 系统信息
+                          _buildSettingSection('系统信息', [
+                            _buildSettingItem(
+                              icon: Icons.storage,
+                              title: '存储空间',
+                              subtitle: '已用 45MB/1GB',
+                              onTap: () {},
+                            ),
+                            _buildSettingItem(
+                              icon: Icons.delete,
+                              title: '缓存管理',
+                              subtitle: '12MB',
+                              onTap: () {},
+                            ),
+                            _buildSettingItem(
+                              icon: Icons.info,
+                              title: '版本信息',
+                              subtitle: 'v2.1.0',
+                              onTap: () {},
+                            ),
+                          ]),
+                          
+                          // 账号安全
+                          _buildSettingSection('账号安全', [
+                            _buildSettingItem(
+                              icon: Icons.security,
+                              title: '隐私设置',
+                              onTap: () {},
+                            ),
+                            _buildSettingItem(
+                              icon: Icons.person_off,
+                              title: '账号注销',
+                              onTap: () {},
+                            ),
+                          ]),
+                          
+                          // 退出登录按钮
+                          _buildLogoutButton(),
+                        ],
                       ),
-                      _buildSettingItem(
-                        icon: Icons.lock,
-                        title: '密码修改',
-                        onTap: () => Navigator.pushNamed(context, AppRoutes.passwordChange),
-                      ),
-                      _buildSettingItem(
-                        icon: Icons.notifications,
-                        title: '通知设置',
-                        onTap: () {},
-                      ),
-                    ]),
-                    
-                    // 数据管理
-                    _buildSettingSection('数据管理', [
-                      _buildSettingItem(
-                        icon: Icons.file_upload,
-                        title: '数据导入导出',
-                        onTap: () {},
-                      ),
-                      _buildSettingItem(
-                        icon: Icons.cloud_upload,
-                        title: '数据备份',
-                        subtitle: '自动备份已开启',
-                        onTap: () {},
-                      ),
-                    ]),
-                    
-                    // 系统信息
-                    _buildSettingSection('系统信息', [
-                      _buildSettingItem(
-                        icon: Icons.storage,
-                        title: '存储空间',
-                        subtitle: '已用 45MB/1GB',
-                        onTap: () {},
-                      ),
-                      _buildSettingItem(
-                        icon: Icons.delete,
-                        title: '缓存管理',
-                        subtitle: '12MB',
-                        onTap: () {},
-                      ),
-                      _buildSettingItem(
-                        icon: Icons.info,
-                        title: '版本信息',
-                        subtitle: 'v2.1.0',
-                        onTap: () {},
-                      ),
-                    ]),
-                    
-                    // 账号安全
-                    _buildSettingSection('账号安全', [
-                      _buildSettingItem(
-                        icon: Icons.security,
-                        title: '隐私设置',
-                        onTap: () {},
-                      ),
-                      _buildSettingItem(
-                        icon: Icons.person_off,
-                        title: '账号注销',
-                        onTap: () {},
-                      ),
-                    ]),
-                    
-                    // 退出登录按钮
-                    _buildLogoutButton(),
-                  ],
-                ),
-              ),
-            ),
+                    ),
+                  ),
           ),
         ],
       ),
@@ -170,21 +210,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,
-              image: DecorationImage(
-                image: NetworkImage(_avatarUrl),
-                fit: BoxFit.cover,
-              ),
+              image: _avatarUrl != null
+                  ? DecorationImage(
+                      image: _getAvatarImage(_avatarUrl!),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
             ),
+            child: _avatarUrl == null
+                ? const Icon(
+                    Icons.person,
+                    color: AppColors.primary,
+                    size: 24,
+                  )
+                : null,
           ),
         ],
       ),
     );
   }
   
+  // 获取头像图片
+  ImageProvider _getAvatarImage(String url) {
+    if (url.startsWith('http')) {
+      return NetworkImage(url);
+    } else {
+      return FileImage(File(url));
+    }
+  }
+  
   // 构建用户信息卡片
   Widget _buildUserInfoCard() {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, AppRoutes.profileEdit),
+      onTap: () => Navigator.pushNamed(context, AppRoutes.profileEdit).then((_) => _loadUserData()),
       child: Container(
         margin: const EdgeInsets.only(bottom: 24),
         padding: const EdgeInsets.all(16),
@@ -207,11 +265,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
               margin: const EdgeInsets.only(right: 16),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: NetworkImage(_avatarUrl),
-                  fit: BoxFit.cover,
-                ),
+                color: Colors.grey[200],
+                image: _avatarUrl != null
+                    ? DecorationImage(
+                        image: _getAvatarImage(_avatarUrl!),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
+              child: _avatarUrl == null
+                  ? const Icon(
+                      Icons.person,
+                      size: 32,
+                      color: Colors.grey,
+                    )
+                  : null,
             ),
             Expanded(
               child: Column(
@@ -225,21 +293,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       color: Colors.black87,
                     ),
                   ),
-                  Text(
-                    _phone,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
+                  if (_phone.isNotEmpty)
+                    Text(
+                      _phone,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _bio,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade500,
+                  if (_bio.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      _bio,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),

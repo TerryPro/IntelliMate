@@ -396,90 +396,46 @@ class _TaskScreenState extends State<TaskScreen> {
       }
     }
     
-    return Dismissible(
-      key: Key(task.id),
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        color: Colors.red,
-        child: const Icon(Icons.delete, color: Colors.white),
-      ),
-      direction: DismissDirection.endToStart,
-      confirmDismiss: (direction) async {
-        return await showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('确认删除'),
-              content: const Text('确定要删除这个任务吗？'),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('取消'),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text('删除'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-      onDismissed: (direction) {
-        _deleteTask(task.id);
-      },
-      child: GestureDetector(
-        onTap: () async {
-          final result = await Navigator.pushNamed(
-            context, 
-            AppRoutes.addTask,
-            arguments: task.id,
-          );
-          if (result == true && mounted) {
-            _loadTasks();
-          }
-        },
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: const [
-              BoxShadow(
-                color: AppColors.blackWithOpacity05,
-                blurRadius: 4,
-                offset: Offset(0, 2),
-              ),
-            ],
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.blackWithOpacity05,
+            blurRadius: 4,
+            offset: Offset(0, 2),
           ),
-          child: Row(
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 任务完成状态复选框
-              GestureDetector(
-                onTap: () => _toggleTaskCompletion(task),
-                child: Container(
-                  width: 24,
-                  height: 24,
-                  margin: const EdgeInsets.only(right: 16),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFF3ECABB),
-                      width: 2,
-                    ),
-                    color: task.isCompleted ? const Color(0xFF3ECABB) : Colors.transparent,
+              // 任务完成状态标记
+              Container(
+                width: 24,
+                height: 24,
+                margin: const EdgeInsets.only(right: 16, top: 2),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFF3ECABB),
+                    width: 2,
                   ),
-                  child: task.isCompleted
-                      ? const Icon(
-                          Icons.check,
-                          size: 14,
-                          color: Colors.white,
-                        )
-                      : null,
+                  color: task.isCompleted ? const Color(0xFF3ECABB) : Colors.transparent,
                 ),
+                child: task.isCompleted
+                    ? const Icon(
+                        Icons.check,
+                        size: 14,
+                        color: Colors.white,
+                      )
+                    : null,
               ),
               
               // 任务内容
@@ -494,7 +450,6 @@ class _TaskScreenState extends State<TaskScreen> {
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
-                        decoration: task.isCompleted ? TextDecoration.lineThrough : null,
                       ),
                     ),
                     if (task.description != null && task.description!.isNotEmpty) ...[
@@ -506,7 +461,6 @@ class _TaskScreenState extends State<TaskScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey.shade600,
-                          decoration: task.isCompleted ? TextDecoration.lineThrough : null,
                         ),
                       ),
                     ],
@@ -545,7 +499,103 @@ class _TaskScreenState extends State<TaskScreen> {
               ),
             ],
           ),
-        ),
+          
+          // 操作按钮
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              // 完成按钮
+              GestureDetector(
+                onTap: () => _toggleTaskCompletion(task),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    task.isCompleted ? Icons.refresh : Icons.check,
+                    color: const Color(0xFF3ECABB),
+                    size: 20,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              
+              // 编辑按钮
+              GestureDetector(
+                onTap: () async {
+                  final result = await Navigator.pushNamed(
+                    context, 
+                    AppRoutes.addTask,
+                    arguments: task.id,
+                  );
+                  if (result == true && mounted) {
+                    _loadTasks();
+                  }
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.edit,
+                    size: 20,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              
+              // 删除按钮
+              GestureDetector(
+                onTap: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('确认删除'),
+                        content: const Text('确定要删除这个任务吗？'),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text('取消'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text('删除'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                  
+                  if (confirm == true) {
+                    _deleteTask(task.id);
+                  }
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.delete,
+                    size: 20,
+                    color: Colors.red,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

@@ -18,7 +18,7 @@ class NoteModel extends Note {
       id: map['id'],
       title: map['title'],
       content: map['content'],
-      tags: map['tags'] != null ? map['tags'].split(',') : null,
+      tags: map['tags']?.split(','),
       category: map['category'],
       isFavorite: map['is_favorite'] == 1,
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at']),

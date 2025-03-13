@@ -3,28 +3,30 @@ import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
 import 'package:intellimate/domain/entities/goal.dart';
 import 'package:intellimate/presentation/providers/goal_provider.dart';
+import 'package:intellimate/presentation/widgets/custom_app_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
-class EditGoalScreen extends StatefulWidget {
-  final Goal goal;
+class AddGoalScreen extends StatefulWidget {
+  final Goal? goal; // 如果为null，则是添加模式；否则是编辑模式
 
-  const EditGoalScreen({super.key, required this.goal});
+  const AddGoalScreen({super.key, this.goal});
 
   @override
-  State<EditGoalScreen> createState() => _EditGoalScreenState();
+  State<AddGoalScreen> createState() => _AddGoalScreenState();
 }
 
-class _EditGoalScreenState extends State<EditGoalScreen> {
+class _AddGoalScreenState extends State<AddGoalScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   
-  late String _selectedCategory;
-  late double _progress;
-  late String _status;
-  late DateTime _startDate;
-  late DateTime? _endDate;
+  DateTime _startDate = DateTime.now();
+  DateTime? _endDate;
+  String _category = '周目标';
+  String _status = '未开始';
+  double _progress = 0.0;
   
   bool _isLoading = false;
   bool _isDeleting = false;
@@ -35,18 +37,23 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
   // 状态选项
   final List<String> _statusOptions = ['未开始', '进行中', '已完成', '已放弃', '落后'];
   
+  // 是否是编辑模式
+  bool get _isEditMode => widget.goal != null;
+  
   @override
   void initState() {
     super.initState();
     
-    // 初始化数据
-    _titleController.text = widget.goal.title;
-    _descriptionController.text = widget.goal.description ?? '';
-    _selectedCategory = widget.goal.category ?? '周目标';
-    _progress = widget.goal.progress;
-    _status = widget.goal.status;
-    _startDate = widget.goal.startDate;
-    _endDate = widget.goal.endDate;
+    // 如果是编辑模式，初始化数据
+    if (_isEditMode) {
+      _titleController.text = widget.goal!.title;
+      _descriptionController.text = widget.goal!.description ?? '';
+      _category = widget.goal!.category ?? '周目标';
+      _progress = widget.goal!.progress;
+      _status = widget.goal!.status;
+      _startDate = widget.goal!.startDate;
+      _endDate = widget.goal!.endDate;
+    }
   }
   
   @override
@@ -69,27 +76,54 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
     try {
       final goalProvider = Provider.of<GoalProvider>(context, listen: false);
       
-      final updatedGoal = Goal(
-        id: widget.goal.id,
-        title: _titleController.text,
-        description: _descriptionController.text.isNotEmpty ? _descriptionController.text : null,
-        startDate: _startDate,
-        endDate: _endDate,
-        progress: _progress,
-        status: _status,
-        category: _selectedCategory,
-        milestones: widget.goal.milestones,
-        createdAt: widget.goal.createdAt,
-        updatedAt: DateTime.now(),
-      );
-      
-      await goalProvider.updateGoal(updatedGoal);
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('目标更新成功')),
+      if (_isEditMode) {
+        // 更新现有目标
+        final updatedGoal = Goal(
+          id: widget.goal!.id,
+          title: _titleController.text,
+          description: _descriptionController.text.isNotEmpty ? _descriptionController.text : null,
+          startDate: _startDate,
+          endDate: _endDate,
+          progress: _progress,
+          status: _status,
+          category: _category,
+          milestones: widget.goal!.milestones,
+          createdAt: widget.goal!.createdAt,
+          updatedAt: DateTime.now(),
         );
-        Navigator.pop(context);
+        
+        await goalProvider.updateGoal(updatedGoal);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('目标更新成功')),
+          );
+          Navigator.pop(context, true);
+        }
+      } else {
+        // 创建新目标
+        final newGoal = Goal(
+          id: const Uuid().v4(),
+          title: _titleController.text,
+          description: _descriptionController.text.isNotEmpty ? _descriptionController.text : null,
+          startDate: _startDate,
+          endDate: _endDate,
+          progress: 0,
+          status: '未开始',
+          category: _category,
+          milestones: const [],
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+        
+        await goalProvider.createGoal(newGoal);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('目标创建成功')),
+          );
+          Navigator.pop(context, true);
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -106,6 +140,8 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
   
   // 删除目标
   Future<void> _deleteGoal() async {
+    if (!_isEditMode) return;
+    
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -137,13 +173,13 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
     
     try {
       final goalProvider = Provider.of<GoalProvider>(context, listen: false);
-      await goalProvider.deleteGoal(widget.goal.id);
+      await goalProvider.deleteGoal(widget.goal!.id);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('目标已删除')),
         );
-        Navigator.pop(context);
+        Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
@@ -169,6 +205,10 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
     if (picked != null && picked != _startDate) {
       setState(() {
         _startDate = picked;
+        // 如果结束日期早于开始日期，则清除结束日期
+        if (_endDate != null && _endDate!.isBefore(_startDate)) {
+          _endDate = null;
+        }
       });
     }
   }
@@ -198,160 +238,65 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading || _isDeleting) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: Column(
         children: [
-          _buildCustomAppBar(),
+          // 自定义顶部导航栏
+          CustomEditorAppBar(
+            title: _isEditMode ? '编辑目标' : '添加目标',
+            onBackTap: () => Navigator.pop(context),
+            onSaveTap: _saveGoal,
+            isLoading: _isLoading,
+            actions: _isEditMode ? [
+              IconButton(
+                icon: const Icon(Icons.delete, color: Colors.white),
+                onPressed: _deleteGoal,
+                tooltip: '删除',
+              ),
+            ] : null,
+          ),
           
+          // 表单内容
           Expanded(
-            child: Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Form(
+                key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildTitleInput(),
-                    
                     const SizedBox(height: 20),
                     
                     _buildDescriptionInput(),
-                    
                     const SizedBox(height: 20),
                     
-                    _buildCategorySelector(),
-                    
+                    _buildCategoryInput(),
                     const SizedBox(height: 20),
                     
-                    _buildStatusSelector(),
-                    
+                    _buildDateInput(),
                     const SizedBox(height: 20),
                     
-                    _buildProgressSelector(),
-                    
-                    const SizedBox(height: 20),
-                    
-                    _buildDateSelector(),
+                    if (_isEditMode) ...[
+                      _buildProgressInput(),
+                      const SizedBox(height: 20),
+                      
+                      _buildStatusInput(),
+                      const SizedBox(height: 20),
+                    ],
                   ],
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  // 构建自定义顶部导航栏
-  Widget _buildCustomAppBar() {
-    return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top,
-        left: 16,
-        right: 16,
-        bottom: 16,
-      ),
-      decoration: const BoxDecoration(
-        color: AppColors.primary,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.home);
-                },
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.home,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                '编辑目标',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              GestureDetector(
-                onTap: _isDeleting ? null : _deleteGoal,
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.delete,
-                    color: _isDeleting ? Colors.grey : Colors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _saveGoal,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: AppColors.primary,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: _isLoading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text(
-                        '保存',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-              ),
-            ],
           ),
         ],
       ),
@@ -402,7 +347,7 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
   }
   
   // 构建分类选择器
-  Widget _buildCategorySelector() {
+  Widget _buildCategoryInput() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -423,11 +368,11 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
           Wrap(
             spacing: 10,
             children: _categories.map((category) {
-              final isSelected = category == _selectedCategory;
+              final isSelected = category == _category;
               return GestureDetector(
                 onTap: () {
                   setState(() {
-                    _selectedCategory = category;
+                    _category = category;
                   });
                 },
                 child: Container(
@@ -455,149 +400,8 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
     );
   }
   
-  // 构建状态选择器
-  Widget _buildStatusSelector() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '目标状态',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: _statusOptions.map((status) {
-              final isSelected = status == _status;
-              Color color;
-              Color textColor;
-              
-              switch (status) {
-                case '未开始':
-                  color = isSelected ? Colors.grey[700]! : Colors.grey[200]!;
-                  textColor = isSelected ? Colors.white : Colors.grey[700]!;
-                  break;
-                case '进行中':
-                  color = isSelected ? Colors.blue[600]! : Colors.blue[50]!;
-                  textColor = isSelected ? Colors.white : Colors.blue[600]!;
-                  break;
-                case '已完成':
-                  color = isSelected ? Colors.green[600]! : Colors.green[50]!;
-                  textColor = isSelected ? Colors.white : Colors.green[600]!;
-                  break;
-                case '已放弃':
-                  color = isSelected ? Colors.red[600]! : Colors.red[50]!;
-                  textColor = isSelected ? Colors.white : Colors.red[600]!;
-                  break;
-                case '落后':
-                  color = isSelected ? Colors.orange[600]! : Colors.orange[50]!;
-                  textColor = isSelected ? Colors.white : Colors.orange[600]!;
-                  break;
-                default:
-                  color = isSelected ? Colors.grey[700]! : Colors.grey[200]!;
-                  textColor = isSelected ? Colors.white : Colors.grey[700]!;
-              }
-              
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _status = status;
-                  });
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    status,
-                    style: TextStyle(
-                      color: textColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  // 构建进度选择器
-  Widget _buildProgressSelector() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                '完成进度',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                '${_progress.toStringAsFixed(1)}%',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SliderTheme(
-            data: SliderThemeData(
-              thumbColor: AppColors.primary,
-              activeTrackColor: AppColors.primary,
-              inactiveTrackColor: Colors.grey[200],
-              trackHeight: 4,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-              overlayColor: AppColors.primary.withOpacity(0.2),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
-            ),
-            child: Slider(
-              value: _progress,
-              min: 0,
-              max: 100,
-              divisions: 100,
-              label: _progress.toStringAsFixed(1),
-              onChanged: (value) {
-                setState(() {
-                  _progress = value;
-                });
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  // 构建日期选择器
-  Widget _buildDateSelector() {
+  // 构建日期输入
+  Widget _buildDateInput() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -681,12 +485,165 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    _endDate != null ? DateFormat('yyyy年MM月dd日').format(_endDate!) : '无截止日期',
+                    _endDate != null 
+                        ? DateFormat('yyyy年MM月dd日').format(_endDate!) 
+                        : '无截止日期',
                     style: const TextStyle(fontSize: 16),
                   ),
                   const Icon(Icons.calendar_today, size: 18),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // 构建状态选择器
+  Widget _buildStatusInput() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '目标状态',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: _statusOptions.map((status) {
+              final isSelected = status == _status;
+              Color color;
+              Color textColor;
+              
+              switch (status) {
+                case '未开始':
+                  color = isSelected ? Colors.grey[700]! : Colors.grey[200]!;
+                  textColor = isSelected ? Colors.white : Colors.grey[700]!;
+                  break;
+                case '进行中':
+                  color = isSelected ? Colors.blue[600]! : Colors.blue[50]!;
+                  textColor = isSelected ? Colors.white : Colors.blue[600]!;
+                  break;
+                case '已完成':
+                  color = isSelected ? Colors.green[600]! : Colors.green[50]!;
+                  textColor = isSelected ? Colors.white : Colors.green[600]!;
+                  break;
+                case '已放弃':
+                  color = isSelected ? Colors.red[600]! : Colors.red[50]!;
+                  textColor = isSelected ? Colors.white : Colors.red[600]!;
+                  break;
+                case '落后':
+                  color = isSelected ? Colors.orange[600]! : Colors.orange[50]!;
+                  textColor = isSelected ? Colors.white : Colors.orange[600]!;
+                  break;
+                default:
+                  color = isSelected ? Colors.grey[700]! : Colors.grey[200]!;
+                  textColor = isSelected ? Colors.white : Colors.grey[700]!;
+              }
+              
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _status = status;
+                    // 如果状态是已完成，则进度设为100%
+                    if (status == '已完成') {
+                      _progress = 100.0;
+                    }
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    status,
+                    style: TextStyle(
+                      color: textColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // 构建进度选择器
+  Widget _buildProgressInput() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                '完成进度',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                '${_progress.toStringAsFixed(1)}%',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SliderTheme(
+            data: SliderThemeData(
+              thumbColor: AppColors.primary,
+              activeTrackColor: AppColors.primary,
+              inactiveTrackColor: Colors.grey[200],
+              trackHeight: 4,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+              overlayColor: AppColors.primary.withOpacity(0.2),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+            ),
+            child: Slider(
+              value: _progress,
+              min: 0,
+              max: 100,
+              divisions: 100,
+              label: _progress.toStringAsFixed(1),
+              onChanged: (value) {
+                setState(() {
+                  _progress = value;
+                  // 如果进度为100%，则状态设为已完成
+                  if (value == 100) {
+                    _status = '已完成';
+                  } else if (_status == '已完成') {
+                    _status = '进行中';
+                  }
+                });
+              },
             ),
           ),
         ],

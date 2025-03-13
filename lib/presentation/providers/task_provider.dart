@@ -243,15 +243,19 @@ class TaskProvider extends ChangeNotifier {
         updatedAt: DateTime.now(),
       );
 
-      // 手动更新本地列表中的任务
-      final index = _tasks.indexWhere((t) => t.id == id);
-      if (index != -1) {
-        _tasks[index] = updatedTask;
-        notifyListeners();
-      }
-
       // 调用用例进行更新
-      return await _updateTaskUseCase.execute(updatedTask);
+      final success = await _updateTaskUseCase.execute(updatedTask);
+      
+      if (success) {
+        // 手动更新本地列表中的任务
+        final index = _tasks.indexWhere((t) => t.id == id);
+        if (index != -1) {
+          _tasks[index] = updatedTask;
+          notifyListeners();
+        }
+      }
+      
+      return success;
     } catch (e) {
       _setError('更新任务状态失败: $e');
       return false;

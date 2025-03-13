@@ -31,7 +31,7 @@ class ScheduleModel extends Schedule {
       category: map['category'],
       isRepeated: map['is_repeated'] == 1,
       repeatType: map['repeat_type'],
-      participants: map['participants'] != null ? map['participants'].split(',') : null,
+      participants: map['participants']?.split(','),
       reminder: map['reminder'],
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at']),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at']),

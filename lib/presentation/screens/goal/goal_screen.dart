@@ -3,7 +3,8 @@ import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
 import 'package:intellimate/domain/entities/goal.dart';
 import 'package:intellimate/presentation/providers/goal_provider.dart';
-import 'package:intellimate/presentation/screens/goal/edit_goal_screen.dart';
+import 'package:intellimate/presentation/screens/goal/add_goal_screen.dart';
+import 'package:intellimate/presentation/widgets/custom_app_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -23,19 +24,25 @@ class _GoalScreenState extends State<GoalScreen> {
   
   // 添加新目标
   void _addGoal() {
-    _showAddGoalDialog(context);
+    Navigator.pushNamed(context, AppRoutes.addGoal).then((result) {
+      if (result == true) {
+        // 刷新数据
+        Provider.of<GoalProvider>(context, listen: false).loadGoals();
+      }
+    });
   }
   
   // 编辑目标
   void _editGoal(Goal goal) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EditGoalScreen(goal: goal),
-      ),
-    ).then((_) {
-      // 刷新数据
-      Provider.of<GoalProvider>(context, listen: false).loadGoals();
+    Navigator.pushNamed(
+      context, 
+      AppRoutes.editGoal,
+      arguments: goal,
+    ).then((result) {
+      if (result == true) {
+        // 刷新数据
+        Provider.of<GoalProvider>(context, listen: false).loadGoals();
+      }
     });
   }
 
@@ -164,8 +171,19 @@ class _GoalScreenState extends State<GoalScreen> {
           
           return Column(
         children: [
-          // 自定义顶部导航栏
-          _buildCustomAppBar(),
+          // 使用统一的顶部导航栏
+          UnifiedAppBar(
+            title: '目标管理',
+            actions: [
+              AppBarRefreshButton(
+                onTap: () => Provider.of<GoalProvider>(context, listen: false).loadGoals(),
+              ),
+              const SizedBox(width: 8),
+              AppBarAddButton(
+                onTap: _addGoal,
+              ),
+            ],
+          ),
           
           // 主体内容
           Expanded(
@@ -196,80 +214,6 @@ class _GoalScreenState extends State<GoalScreen> {
         ],
           );
         },
-      ),
-      // 新增目标浮动按钮
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addGoal,
-        backgroundColor: const Color(0xFF3ECABB),
-        foregroundColor: Colors.white,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
-    );
-  }
-  
-  // 构建自定义顶部导航栏
-  Widget _buildCustomAppBar() {
-    return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top,
-        left: 16,
-        right: 16,
-        bottom: 16,
-      ),
-      decoration: const BoxDecoration(
-        color: AppColors.primary,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.home);
-                },
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(
-                    color: AppColors.whiteWithOpacity20,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.home,
-                    color: AppColors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                '目标管理',
-                style: TextStyle(
-                  color: AppColors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          GestureDetector(
-            onTap: _addGoal,
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: const BoxDecoration(
-                color: AppColors.whiteWithOpacity20,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.add,
-                color: AppColors.white,
-                size: 18,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -498,25 +442,13 @@ class _GoalScreenState extends State<GoalScreen> {
                     const SizedBox(height: 8),
                     Text(
                       '暂无${title.substring(0, 1)}期目标',
-              style: TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey[700],
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: _addGoal,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3ECABB),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      child: const Text('添加目标'),
-            ),
-          ],
-        ),
+                  ],
+                ),
               ),
             )
           else
@@ -654,20 +586,40 @@ class _GoalScreenState extends State<GoalScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              IconButton(
-                icon: const Icon(Icons.edit, color: Colors.blue),
-                onPressed: () => _editGoal(goal),
-                tooltip: '编辑',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
+              // 编辑按钮
+              GestureDetector(
+                onTap: () => _editGoal(goal),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.edit,
+                    size: 20,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
               ),
-              const SizedBox(width: 16),
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () => _deleteGoal(goal.id),
-                tooltip: '删除',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
+              const SizedBox(width: 12),
+              // 删除按钮
+              GestureDetector(
+                onTap: () => _deleteGoal(goal.id),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.delete,
+                    size: 20,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
               ),
             ],
           ),
@@ -692,361 +644,5 @@ class _GoalScreenState extends State<GoalScreen> {
       default:
         return Colors.grey;
     }
-  }
-
-  // 显示添加目标对话框
-  void _showAddGoalDialog(BuildContext context) {
-    final titleController = TextEditingController();
-    final descriptionController = TextEditingController();
-    String selectedCategory = '周目标';
-    final categories = ['周目标', '月目标', '年度目标'];
-    DateTime startDate = DateTime.now();
-    DateTime? endDate;
-    
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text('添加新目标'),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextField(
-                      controller: titleController,
-                      decoration: const InputDecoration(
-                        labelText: '目标标题',
-                        hintText: '请输入目标标题',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: descriptionController,
-                      decoration: const InputDecoration(
-                        labelText: '目标描述',
-                        hintText: '请输入目标描述',
-                      ),
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: selectedCategory,
-                      decoration: const InputDecoration(
-                        labelText: '目标类别',
-                      ),
-                      items: categories.map((category) {
-                        return DropdownMenuItem(
-                          value: category,
-                          child: Text(category),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() {
-                            selectedCategory = value;
-                          });
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text('开始日期: ${DateFormat('yyyy/MM/dd').format(startDate)}'),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            final picked = await showDatePicker(
-                              context: context,
-                              initialDate: startDate,
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2100),
-                            );
-                            if (picked != null) {
-                              setState(() {
-                                startDate = picked;
-                              });
-                            }
-                          },
-                          child: const Text('选择日期'),
-            ),
-        ],
-      ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text('结束日期: ${endDate != null ? DateFormat('yyyy/MM/dd').format(endDate!) : '无截止日期'}'),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            final picked = await showDatePicker(
-                              context: context,
-                              initialDate: endDate ?? startDate.add(const Duration(days: 7)),
-                              firstDate: startDate,
-                              lastDate: DateTime(2100),
-                            );
-                            if (picked != null) {
-                              setState(() {
-                                endDate = picked;
-                              });
-                            }
-                          },
-                          child: const Text('选择日期'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('取消'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    if (titleController.text.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('请输入目标标题'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                      return;
-                    }
-                    
-                    final newGoal = Goal(
-                      id: const Uuid().v4(),
-                      title: titleController.text,
-                      description: descriptionController.text.isNotEmpty ? descriptionController.text : null,
-                      startDate: startDate,
-                      endDate: endDate,
-                      progress: 0,
-                      status: '未开始',
-                      category: selectedCategory,
-                      milestones: const [],
-                      createdAt: DateTime.now(),
-                      updatedAt: DateTime.now(),
-                    );
-                    
-                    Provider.of<GoalProvider>(context, listen: false).createGoal(newGoal);
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('目标添加成功'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  },
-                  child: const Text('添加'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  // 显示编辑目标对话框
-  void _showEditGoalDialog(BuildContext context, Goal goal) {
-    final titleController = TextEditingController(text: goal.title);
-    final descriptionController = TextEditingController(text: goal.description ?? '');
-    String selectedCategory = goal.category ?? ''; // 修复可能为null的category
-    double progress = goal.progress;
-    String status = goal.status;
-    final categories = ['周目标', '月目标', '年度目标'];
-    final statusOptions = ['未开始', '进行中', '已完成', '已放弃', '落后'];
-    DateTime startDate = goal.startDate;
-    DateTime? endDate = goal.endDate;
-    
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text('编辑目标'),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextField(
-                      controller: titleController,
-                      decoration: const InputDecoration(
-                        labelText: '目标标题',
-                        hintText: '请输入目标标题',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: descriptionController,
-                      decoration: const InputDecoration(
-                        labelText: '目标描述',
-                        hintText: '请输入目标描述',
-                      ),
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: selectedCategory,
-                      decoration: const InputDecoration(
-                        labelText: '目标类别',
-                      ),
-                      items: categories.map((category) {
-                        return DropdownMenuItem(
-                          value: category,
-                          child: Text(category),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() {
-                            selectedCategory = value;
-                          });
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: status,
-                      decoration: const InputDecoration(
-                        labelText: '目标状态',
-                      ),
-                      items: statusOptions.map((option) {
-                        return DropdownMenuItem(
-                          value: option,
-                          child: Text(option),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() {
-                            status = value;
-                          });
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('完成进度: ${progress.toStringAsFixed(1)}%'),
-                        Slider(
-                          value: progress,
-                          min: 0,
-                          max: 100,
-                          divisions: 100,
-                          label: progress.toStringAsFixed(1),
-                          onChanged: (value) {
-                            setState(() {
-                              progress = value;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text('开始日期: ${DateFormat('yyyy/MM/dd').format(startDate)}'),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            final picked = await showDatePicker(
-                              context: context,
-                              initialDate: startDate,
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2100),
-                            );
-                            if (picked != null) {
-                              setState(() {
-                                startDate = picked;
-                              });
-                            }
-                          },
-                          child: const Text('选择日期'),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text('结束日期: ${endDate != null ? DateFormat('yyyy/MM/dd').format(endDate!) : '无截止日期'}'),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            final picked = await showDatePicker(
-                              context: context,
-                              initialDate: endDate ?? startDate.add(const Duration(days: 7)),
-                              firstDate: startDate,
-                              lastDate: DateTime(2100),
-                            );
-                            if (picked != null) {
-                              setState(() {
-                                endDate = picked;
-                              });
-                            }
-                          },
-                          child: const Text('选择日期'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('取消'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    if (titleController.text.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('请输入目标标题'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                      return;
-                    }
-                    
-                    final updatedGoal = Goal(
-                      id: goal.id,
-                      title: titleController.text,
-                      description: descriptionController.text.isNotEmpty ? descriptionController.text : null,
-                      startDate: startDate,
-                      endDate: endDate,
-                      progress: progress,
-                      status: status,
-                      category: selectedCategory,
-                      milestones: goal.milestones,
-                      createdAt: goal.createdAt,
-                      updatedAt: DateTime.now(),
-                    );
-                    
-                    Provider.of<GoalProvider>(context, listen: false).updateGoal(updatedGoal);
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('目标更新成功'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  },
-                  child: const Text('保存'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
   }
 } 

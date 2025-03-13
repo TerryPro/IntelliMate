@@ -2,7 +2,6 @@ import 'package:intellimate/data/datasources/database_helper.dart';
 import 'package:intellimate/data/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:uuid/uuid.dart';
 
 class UserDataSource {
   final DatabaseHelper _databaseHelper = DatabaseHelper.instance;

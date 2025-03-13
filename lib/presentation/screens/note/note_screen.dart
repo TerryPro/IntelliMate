@@ -461,7 +461,7 @@ class _NoteScreenState extends State<NoteScreen> {
                           fontSize: 12,
                         ),
                       ),
-                    )).toList(),
+                    )),
                 ],
               ),
             ],

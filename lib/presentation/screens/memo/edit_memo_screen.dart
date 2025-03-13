@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class EditMemoScreen extends StatefulWidget {
-  const EditMemoScreen({Key? key}) : super(key: key);
+  const EditMemoScreen({super.key});
 
   @override
   State<EditMemoScreen> createState() => _EditMemoScreenState();

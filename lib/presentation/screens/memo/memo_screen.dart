@@ -8,9 +8,10 @@ import 'package:intellimate/presentation/widgets/common/loading_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
+import 'package:intellimate/presentation/widgets/custom_app_bar.dart';
 
 class MemoScreen extends StatefulWidget {
-  const MemoScreen({Key? key}) : super(key: key);
+  const MemoScreen({super.key});
 
   @override
   State<MemoScreen> createState() => _MemoScreenState();
@@ -113,8 +114,15 @@ class _MemoScreenState extends State<MemoScreen> {
       body: Column(
         children: [
          
-          // 顶部栏
-          _buildHeader(),
+          // 使用统一的顶部导航栏
+          UnifiedAppBar(
+            title: '备忘管理',
+            actions: [
+              AppBarAddButton(
+                onTap: _navigateToAddMemo,
+              ),
+            ],
+          ),
           
           // 内容区域
           Expanded(
@@ -155,106 +163,6 @@ class _MemoScreenState extends State<MemoScreen> {
                       ),
                     ),
                   ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 构建顶部栏
-  Widget _buildHeader() {
-    return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top,
-        left: 16,
-        right: 16,
-        bottom: 16,
-      ),
-      decoration: const BoxDecoration(
-        color: Color(0xFF3ECABB),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.pushReplacementNamed(context, AppRoutes.home);
-                },
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.home,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                '备忘管理',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  // 搜索功能
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('搜索功能即将上线')),
-                  );
-                },
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.search,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                width: 40,
-                height: 40,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: IconButton(
-                  icon: const Icon(
-                    Icons.add,
-                    color: Color(0xFF3ECABB),
-                    size: 20,
-                  ),
-                  onPressed: _navigateToAddMemo,
-                ),
-              ),
-            ],
           ),
         ],
       ),
