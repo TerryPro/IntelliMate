@@ -262,37 +262,94 @@ class _NoteScreenState extends State<NoteScreen> {
               ),
             ],
           ),
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-              // 搜索按钮
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('搜索笔记'),
-                  content: TextField(
-                    controller: _searchController,
-                    decoration: const InputDecoration(
-                      hintText: '输入关键?',
-                      prefixIcon: Icon(Icons.search),
-                    ),
+          Row(
+            children: [
+              GestureDetector(
+                onTap: _loadNotes,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    color: AppColors.whiteWithOpacity20,
+                    shape: BoxShape.circle,
                   ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('取消'),
+                  child: const Icon(
+                    Icons.refresh,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () {
+                  // 搜索按钮
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('搜索笔记'),
+                      content: TextField(
+                        controller: _searchController,
+                        decoration: const InputDecoration(
+                          hintText: '输入关键词',
+                          prefixIcon: Icon(Icons.search),
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('取消'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _searchNotes(_searchController.text);
+                          },
+                          child: const Text('搜索'),
+                        ),
+                      ],
                     ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _searchNotes(_searchController.text);
-                      },
-                      child: const Text('搜索'),
+                  );
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    color: AppColors.whiteWithOpacity20,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.search,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
-              );
-            },
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.add,
+                    color: Color(0xFF3ECABB),
+                    size: 20,
+                  ),
+                  onPressed: _createNewNote,
+                ),
+              ),
+            ],
           ),
         ],
       ),

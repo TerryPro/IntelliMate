@@ -156,42 +156,45 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
     
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: Column(
-        children: [
-          // 自定义顶部导航栏
-          CustomEditorAppBar(
-            title: widget.memo == null ? '添加备忘录' : '编辑备忘录',
-            onBackTap: () => Navigator.pop(context),
-            onSaveTap: _saveMemo,
-            isLoading: _isLoading,
-          ),
-          
-          // 表单内容
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildTitleInput(),
-                  const SizedBox(height: 20),
-                  
-                  _buildContentInput(),
-                  const SizedBox(height: 20),
-                  
-                  _buildCategoryInput(),
-                  const SizedBox(height: 20),
-                  
-                  _buildPrioritySelector(),
-                  const SizedBox(height: 20),
-                  
-                  _buildReminderSelector(),
-                  const SizedBox(height: 20),
-                ],
+      body: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            // 自定义顶部导航栏
+            CustomEditorAppBar(
+              title: widget.memo == null ? '添加备忘录' : '编辑备忘录',
+              onBackTap: () => Navigator.pop(context),
+              onSaveTap: _saveMemo,
+              isLoading: _isLoading,
+            ),
+            
+            // 表单内容
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildTitleInput(),
+                    const SizedBox(height: 20),
+                    
+                    _buildContentInput(),
+                    const SizedBox(height: 20),
+                    
+                    _buildCategoryInput(),
+                    const SizedBox(height: 20),
+                    
+                    _buildPrioritySelector(),
+                    const SizedBox(height: 20),
+                    
+                    _buildReminderSelector(),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -390,50 +393,50 @@ class _AddMemoScreenState extends State<AddMemoScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          Row(
+          Column(
             children: [
-              Expanded(
-                child: InkWell(
-                  onTap: _selectDate,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey[300]!),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          DateFormat('yyyy年MM月dd日').format(_selectedDate),
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const Icon(Icons.calendar_today, size: 18),
-                      ],
-                    ),
+              // 日期选择
+              InkWell(
+                onTap: _selectDate,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey[300]!),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        DateFormat('yyyy年MM月dd日').format(_selectedDate),
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      const Icon(Icons.calendar_today, size: 18),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: InkWell(
-                  onTap: _selectTime,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey[300]!),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _selectedTime.format(context),
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const Icon(Icons.access_time, size: 18),
-                      ],
-                    ),
+              const SizedBox(height: 12),
+              // 时间选择
+              InkWell(
+                onTap: _selectTime,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey[300]!),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _selectedTime.format(context),
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      const Icon(Icons.access_time, size: 18),
+                    ],
                   ),
                 ),
               ),
