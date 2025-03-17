@@ -94,96 +94,7 @@ class MemoDataSource {
       DatabaseHelper.tableMemo,
       limit: limit,
       offset: offset,
-      orderBy: orderBy ?? 'date ${descending ? 'DESC' : 'ASC'}',
-    );
-    
-    return List.generate(maps.length, (i) {
-      return MemoModel.fromMap(maps[i]);
-    });
-  }
-
-  // 按日期获取备忘
-  Future<List<MemoModel>> getMemosByDate(DateTime date) async {
-    await _ensureDatabaseInitialized();
-    final db = await _databaseHelper.database;
-    
-    // 设置日期的开始时间（00:00:00）和结束时间（23:59:59）
-    final DateTime startOfDay = DateTime(date.year, date.month, date.day);
-    final DateTime endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
-    
-    final List<Map<String, dynamic>> maps = await db.query(
-      DatabaseHelper.tableMemo,
-      where: 'date >= ? AND date <= ?',
-      whereArgs: [startOfDay.millisecondsSinceEpoch, endOfDay.millisecondsSinceEpoch],
-      orderBy: 'date ASC',
-    );
-    
-    return List.generate(maps.length, (i) {
-      return MemoModel.fromMap(maps[i]);
-    });
-  }
-
-  // 获取已完成的备忘
-  Future<List<MemoModel>> getCompletedMemos() async {
-    await _ensureDatabaseInitialized();
-    final db = await _databaseHelper.database;
-    
-    final List<Map<String, dynamic>> maps = await db.query(
-      DatabaseHelper.tableMemo,
-      where: 'is_completed = ?',
-      whereArgs: [1],
-      orderBy: 'completed_at DESC',
-    );
-    
-    return List.generate(maps.length, (i) {
-      return MemoModel.fromMap(maps[i]);
-    });
-  }
-
-  // 获取未完成的备忘
-  Future<List<MemoModel>> getUncompletedMemos() async {
-    await _ensureDatabaseInitialized();
-    final db = await _databaseHelper.database;
-    
-    final List<Map<String, dynamic>> maps = await db.query(
-      DatabaseHelper.tableMemo,
-      where: 'is_completed = ?',
-      whereArgs: [0],
-      orderBy: 'date ASC',
-    );
-    
-    return List.generate(maps.length, (i) {
-      return MemoModel.fromMap(maps[i]);
-    });
-  }
-
-  // 按优先级获取备忘
-  Future<List<MemoModel>> getMemosByPriority(String priority) async {
-    await _ensureDatabaseInitialized();
-    final db = await _databaseHelper.database;
-    
-    final List<Map<String, dynamic>> maps = await db.query(
-      DatabaseHelper.tableMemo,
-      where: 'priority = ?',
-      whereArgs: [priority],
-      orderBy: 'date ASC',
-    );
-    
-    return List.generate(maps.length, (i) {
-      return MemoModel.fromMap(maps[i]);
-    });
-  }
-
-  // 获取置顶备忘
-  Future<List<MemoModel>> getPinnedMemos() async {
-    await _ensureDatabaseInitialized();
-    final db = await _databaseHelper.database;
-    
-    final List<Map<String, dynamic>> maps = await db.query(
-      DatabaseHelper.tableMemo,
-      where: 'is_pinned = ?',
-      whereArgs: [1],
-      orderBy: 'date ASC',
+      orderBy: orderBy ?? 'created_at ${descending ? 'DESC' : 'ASC'}',
     );
     
     return List.generate(maps.length, (i) {
@@ -200,7 +111,7 @@ class MemoDataSource {
       DatabaseHelper.tableMemo,
       where: 'title LIKE ? OR content LIKE ?',
       whereArgs: ['%$query%', '%$query%'],
-      orderBy: 'date DESC',
+      orderBy: 'created_at DESC',
     );
     
     return List.generate(maps.length, (i) {
@@ -217,7 +128,7 @@ class MemoDataSource {
       DatabaseHelper.tableMemo,
       where: 'category = ?',
       whereArgs: [category],
-      orderBy: 'date ASC',
+      orderBy: 'created_at DESC',
     );
     
     return List.generate(maps.length, (i) {

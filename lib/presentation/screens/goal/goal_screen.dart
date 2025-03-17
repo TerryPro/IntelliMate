@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intellimate/app/routes/app_routes.dart';
-import 'package:intellimate/app/theme/app_colors.dart';
 import 'package:intellimate/domain/entities/goal.dart';
 import 'package:intellimate/presentation/providers/goal_provider.dart';
-import 'package:intellimate/presentation/screens/goal/add_goal_screen.dart';
 import 'package:intellimate/presentation/widgets/custom_app_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
 
 class GoalScreen extends StatefulWidget {
   const GoalScreen({super.key});

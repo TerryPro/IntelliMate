@@ -20,7 +20,6 @@ import 'package:intellimate/presentation/screens/goal/goal_screen.dart';
 import 'package:intellimate/presentation/screens/travel/travel_screen.dart';
 import 'package:intellimate/presentation/screens/travel/travel_detail_screen.dart';
 import 'package:intellimate/presentation/screens/memo/memo_screen.dart';
-import 'package:intellimate/presentation/screens/memo/add_memo_screen.dart';
 import 'package:intellimate/presentation/screens/memo/edit_memo_screen.dart';
 import 'package:intellimate/presentation/screens/settings/settings_screen.dart';
 import 'package:intellimate/presentation/screens/settings/profile_edit_screen.dart';
@@ -61,7 +60,7 @@ class AppRoutes {
   static const String passwordChange = '/settings/password';
   static const String dataManagement = '/settings/data';
   static const String reminder = '/reminder';
-  
+
   // 路由表
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -71,7 +70,8 @@ class AppRoutes {
         // 获取路由参数
         final args = ModalRoute.of(context)?.settings.arguments;
         int initialTabIndex = 0;
-        if (args is Map<String, dynamic> && args.containsKey('initialTabIndex')) {
+        if (args is Map<String, dynamic> &&
+            args.containsKey('initialTabIndex')) {
           initialTabIndex = args['initialTabIndex'] as int;
         }
         return HomeScreen(initialTabIndex: initialTabIndex);
@@ -88,7 +88,13 @@ class AppRoutes {
       },
       // 任务管理模块
       task: (context) => const TaskScreen(),
-      addTask: (context) => const AddTaskScreen(),
+      addTask: (context) {
+        final args = ModalRoute.of(context)?.settings.arguments;
+        if (args is String) {
+          return AddTaskScreen(taskId: args);
+        }
+        return const AddTaskScreen();
+      },
       // 其他模块使用临时占位页面
       dailyNote: (context) => const DailyNoteScreen(),
       addDailyNote: (context) => const AddDailyNoteScreen(),
@@ -113,29 +119,29 @@ class AppRoutes {
         return TravelDetailScreen(travel: travel);
       },
       memo: (context) => const MemoScreen(),
-      addMemo: (context) => const AddMemoScreen(),
+      addMemo: (context) => const EditMemoScreen(),
       editMemo: (context) => const EditMemoScreen(),
       settings: (context) => const SettingsScreen(),
       profileEdit: (context) => const ProfileEditScreen(),
       passwordChange: (context) => const PasswordChangeScreen(),
       dataManagement: (context) => const PlaceholderScreen(
-        title: '数据管理',
-        icon: Icons.storage,
-        moduleKey: 'settings',
-      ),
+            title: '数据管理',
+            icon: Icons.storage,
+            moduleKey: 'settings',
+          ),
       reminder: (context) => const PlaceholderScreen(
-        title: '设置提醒',
-        icon: Icons.notifications_active,
-        moduleKey: 'schedule',
-      ),
+            title: '设置提醒',
+            icon: Icons.notifications_active,
+            moduleKey: 'schedule',
+          ),
     };
   }
-  
+
   // 初始路由
   static String getInitialRoute() {
     return splash;
   }
-  
+
   // 未知路由处理
   static Route<dynamic> onUnknownRoute(RouteSettings settings) {
     return MaterialPageRoute(
@@ -149,4 +155,4 @@ class AppRoutes {
       ),
     );
   }
-} 
+}

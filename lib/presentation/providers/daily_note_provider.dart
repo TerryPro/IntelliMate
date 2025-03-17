@@ -36,7 +36,8 @@ class DailyNoteProvider extends ChangeNotifier {
         _getAllDailyNotesUseCase = getAllDailyNotesUseCase,
         _getDailyNoteByIdUseCase = getDailyNoteByIdUseCase,
         _getDailyNotesByConditionUseCase = getDailyNotesByConditionUseCase,
-        _getDailyNotesWithCodeSnippetsUseCase = getDailyNotesWithCodeSnippetsUseCase,
+        _getDailyNotesWithCodeSnippetsUseCase =
+            getDailyNotesWithCodeSnippetsUseCase,
         _getPrivateDailyNotesUseCase = getPrivateDailyNotesUseCase,
         _searchDailyNotesUseCase = searchDailyNotesUseCase,
         _updateDailyNoteUseCase = updateDailyNoteUseCase;
@@ -102,7 +103,7 @@ class DailyNoteProvider extends ChangeNotifier {
     try {
       // 创建临时ID，实际ID将由数据库生成
       final now = DateTime.now();
-      
+
       final dailyNote = DailyNote(
         id: 'temp_id', // 临时ID，会被数据库替换
         author: author,
@@ -139,13 +140,14 @@ class DailyNoteProvider extends ChangeNotifier {
     try {
       final success = await _updateDailyNoteUseCase.execute(dailyNote);
       if (success) {
+        print(_dailyNotes);
+        print(dailyNote);
         final index = _dailyNotes.indexWhere((note) => note.id == dailyNote.id);
         if (index != -1) {
           _dailyNotes[index] = dailyNote;
           notifyListeners();
         }
-      } else {
-      }
+      } else {}
       return success;
     } catch (e) {
       _setError('更新日常点滴失败: $e');
@@ -165,8 +167,7 @@ class DailyNoteProvider extends ChangeNotifier {
       if (success) {
         _dailyNotes.removeWhere((note) => note.id == id);
         notifyListeners();
-      } else {
-      }
+      } else {}
       return success;
     } catch (e) {
       _setError('删除日常点滴失败: $e');
@@ -265,7 +266,7 @@ class DailyNoteProvider extends ChangeNotifier {
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
     final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
-    
+
     return getDailyNotesByCondition(
       fromDate: startOfDay,
       toDate: endOfDay,
@@ -277,8 +278,9 @@ class DailyNoteProvider extends ChangeNotifier {
     final now = DateTime.now();
     final yesterday = now.subtract(const Duration(days: 1));
     final startOfDay = DateTime(yesterday.year, yesterday.month, yesterday.day);
-    final endOfDay = DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
-    
+    final endOfDay =
+        DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
+
     return getDailyNotesByCondition(
       fromDate: startOfDay,
       toDate: endOfDay,
@@ -301,4 +303,4 @@ class DailyNoteProvider extends ChangeNotifier {
   void _clearError() {
     _error = null;
   }
-} 
+}

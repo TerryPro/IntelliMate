@@ -8,12 +8,7 @@ abstract class MemoRepository {
   Future<Memo> createMemo({
     required String title,
     required String content,
-    required DateTime date,
     String? category,
-    required String priority,
-    required bool isPinned,
-    required bool isCompleted,
-    DateTime? completedAt,
   });
   
   // 更新备忘
@@ -29,21 +24,6 @@ abstract class MemoRepository {
     String? orderBy,
     bool descending = true,
   });
-  
-  // 按日期获取备忘
-  Future<List<Memo>> getMemosByDate(DateTime date);
-  
-  // 获取已完成的备忘
-  Future<List<Memo>> getCompletedMemos();
-  
-  // 获取未完成的备忘
-  Future<List<Memo>> getUncompletedMemos();
-  
-  // 按优先级获取备忘
-  Future<List<Memo>> getMemosByPriority(String priority);
-  
-  // 获取置顶备忘
-  Future<List<Memo>> getPinnedMemos();
   
   // 搜索备忘
   Future<List<Memo>> searchMemos(String query);

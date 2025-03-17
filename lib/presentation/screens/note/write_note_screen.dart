@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intellimate/app/routes/app_routes.dart';
-import 'package:intellimate/app/theme/app_colors.dart';
 import 'package:intellimate/domain/entities/note.dart';
 import 'package:intellimate/presentation/providers/note_provider.dart';
 import 'package:intellimate/presentation/widgets/custom_app_bar.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class WriteNoteScreen extends StatefulWidget {

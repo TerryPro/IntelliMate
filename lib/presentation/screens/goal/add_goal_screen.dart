@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
 import 'package:intellimate/domain/entities/goal.dart';
 import 'package:intellimate/presentation/providers/goal_provider.dart';
@@ -21,29 +20,29 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  
+
   DateTime _startDate = DateTime.now();
   DateTime? _endDate;
   String _category = '周目标';
   String _status = '未开始';
   double _progress = 0.0;
-  
+
   bool _isLoading = false;
   bool _isDeleting = false;
-  
+
   // 分类列表
   final List<String> _categories = ['周目标', '月目标', '年度目标'];
-  
+
   // 状态选项
   final List<String> _statusOptions = ['未开始', '进行中', '已完成', '已放弃', '落后'];
-  
+
   // 是否是编辑模式
   bool get _isEditMode => widget.goal != null;
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     // 如果是编辑模式，初始化数据
     if (_isEditMode) {
       _titleController.text = widget.goal!.title;
@@ -55,33 +54,35 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       _endDate = widget.goal!.endDate;
     }
   }
-  
+
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
-  
+
   // 保存目标
   Future<void> _saveGoal() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    
+
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       final goalProvider = Provider.of<GoalProvider>(context, listen: false);
-      
+
       if (_isEditMode) {
         // 更新现有目标
         final updatedGoal = Goal(
           id: widget.goal!.id,
           title: _titleController.text,
-          description: _descriptionController.text.isNotEmpty ? _descriptionController.text : null,
+          description: _descriptionController.text.isNotEmpty
+              ? _descriptionController.text
+              : null,
           startDate: _startDate,
           endDate: _endDate,
           progress: _progress,
@@ -91,9 +92,9 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
           createdAt: widget.goal!.createdAt,
           updatedAt: DateTime.now(),
         );
-        
+
         await goalProvider.updateGoal(updatedGoal);
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('目标更新成功')),
@@ -105,7 +106,9 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
         final newGoal = Goal(
           id: const Uuid().v4(),
           title: _titleController.text,
-          description: _descriptionController.text.isNotEmpty ? _descriptionController.text : null,
+          description: _descriptionController.text.isNotEmpty
+              ? _descriptionController.text
+              : null,
           startDate: _startDate,
           endDate: _endDate,
           progress: 0,
@@ -115,9 +118,9 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
-        
+
         await goalProvider.createGoal(newGoal);
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('目标创建成功')),
@@ -137,11 +140,11 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       }
     }
   }
-  
+
   // 删除目标
   Future<void> _deleteGoal() async {
     if (!_isEditMode) return;
-    
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -162,19 +165,19 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
         ],
       ),
     );
-    
+
     if (confirmed != true) {
       return;
     }
-    
+
     setState(() {
       _isDeleting = true;
     });
-    
+
     try {
       final goalProvider = Provider.of<GoalProvider>(context, listen: false);
       await goalProvider.deleteGoal(widget.goal!.id);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('目标已删除')),
@@ -192,7 +195,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       }
     }
   }
-  
+
   // 选择开始日期
   Future<void> _selectStartDate() async {
     final DateTime? picked = await showDatePicker(
@@ -201,7 +204,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
-    
+
     if (picked != null && picked != _startDate) {
       setState(() {
         _startDate = picked;
@@ -212,7 +215,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       });
     }
   }
-  
+
   // 选择结束日期
   Future<void> _selectEndDate() async {
     final DateTime? picked = await showDatePicker(
@@ -221,14 +224,14 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       firstDate: _startDate,
       lastDate: DateTime(2100),
     );
-    
+
     if (picked != null) {
       setState(() {
         _endDate = picked;
       });
     }
   }
-  
+
   // 清除结束日期
   void _clearEndDate() {
     setState(() {
@@ -245,7 +248,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
         ),
       );
     }
-    
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: Column(
@@ -256,15 +259,9 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             onBackTap: () => Navigator.pop(context),
             onSaveTap: _saveGoal,
             isLoading: _isLoading,
-            actions: _isEditMode ? [
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.white),
-                onPressed: _deleteGoal,
-                tooltip: '删除',
-              ),
-            ] : null,
+            actions: _isEditMode ? [] : null,
           ),
-          
+
           // 表单内容
           Expanded(
             child: SingleChildScrollView(
@@ -276,20 +273,15 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                   children: [
                     _buildTitleInput(),
                     const SizedBox(height: 20),
-                    
                     _buildDescriptionInput(),
                     const SizedBox(height: 20),
-                    
                     _buildCategoryInput(),
                     const SizedBox(height: 20),
-                    
                     _buildDateInput(),
                     const SizedBox(height: 20),
-                    
                     if (_isEditMode) ...[
                       _buildProgressInput(),
                       const SizedBox(height: 20),
-                      
                       _buildStatusInput(),
                       const SizedBox(height: 20),
                     ],
@@ -302,7 +294,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       ),
     );
   }
-  
+
   // 构建标题输入
   Widget _buildTitleInput() {
     return TextFormField(
@@ -326,7 +318,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       },
     );
   }
-  
+
   // 构建描述输入
   Widget _buildDescriptionInput() {
     return TextFormField(
@@ -345,7 +337,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       maxLines: 4,
     );
   }
-  
+
   // 构建分类选择器
   Widget _buildCategoryInput() {
     return Container(
@@ -376,19 +368,22 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                   });
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
                     color: isSelected ? AppColors.primary : Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: isSelected ? AppColors.primary : Colors.grey.shade300,
+                      color:
+                          isSelected ? AppColors.primary : Colors.grey.shade300,
                     ),
                   ),
                   child: Text(
                     category,
                     style: TextStyle(
                       color: isSelected ? Colors.white : Colors.grey.shade700,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                 ),
@@ -399,7 +394,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       ),
     );
   }
-  
+
   // 构建日期输入
   Widget _buildDateInput() {
     return Container(
@@ -485,8 +480,8 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    _endDate != null 
-                        ? DateFormat('yyyy年MM月dd日').format(_endDate!) 
+                    _endDate != null
+                        ? DateFormat('yyyy年MM月dd日').format(_endDate!)
                         : '无截止日期',
                     style: const TextStyle(fontSize: 16),
                   ),
@@ -499,7 +494,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       ),
     );
   }
-  
+
   // 构建状态选择器
   Widget _buildStatusInput() {
     return Container(
@@ -526,7 +521,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
               final isSelected = status == _status;
               Color color;
               Color textColor;
-              
+
               switch (status) {
                 case '未开始':
                   color = isSelected ? Colors.grey[700]! : Colors.grey[200]!;
@@ -552,7 +547,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                   color = isSelected ? Colors.grey[700]! : Colors.grey[200]!;
                   textColor = isSelected ? Colors.white : Colors.grey[700]!;
               }
-              
+
               return GestureDetector(
                 onTap: () {
                   setState(() {
@@ -564,7 +559,8 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                   });
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
                     color: color,
                     borderRadius: BorderRadius.circular(20),
@@ -584,7 +580,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       ),
     );
   }
-  
+
   // 构建进度选择器
   Widget _buildProgressInput() {
     return Container(
@@ -650,4 +646,4 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       ),
     );
   }
-} 
+}

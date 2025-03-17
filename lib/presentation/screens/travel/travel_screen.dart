@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
 import 'package:intellimate/domain/entities/travel.dart';
+import 'package:intellimate/presentation/providers/travel_provider.dart';
+import 'package:intellimate/presentation/screens/travel/add_travel_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class TravelScreen extends StatefulWidget {
   const TravelScreen({super.key});
@@ -13,67 +16,10 @@ class TravelScreen extends StatefulWidget {
 class _TravelScreenState extends State<TravelScreen> {
   // 当前选中的标签索引
   int _selectedTabIndex = 0;
-  
+
   // 标签列表
   final List<String> _tabs = ['全部', '计划中', '进行中', '已完成'];
-  
-  // 模拟旅行数据
-  final List<Travel> _travels = [
-    Travel(
-      id: 1,
-      title: '云南之旅',
-      startDate: DateTime(2023, 7, 15),
-      endDate: DateTime(2023, 7, 22),
-      destination: '昆明',
-      places: ['昆明', '大理', '丽江'],
-      peopleCount: 3,
-      budget: 6000,
-      status: TravelStatus.ongoing,
-      photoCount: 36,
-    ),
-    Travel(
-      id: 2,
-      title: '上海周末游',
-      startDate: DateTime(2023, 6, 24),
-      endDate: DateTime(2023, 6, 25),
-      destination: '上海',
-      places: ['上海'],
-      peopleCount: 2,
-      budget: 2000,
-      actualCost: 1860,
-      status: TravelStatus.completed,
-      photoCount: 48,
-    ),
-    Travel(
-      id: 3,
-      title: '北京之行',
-      startDate: DateTime(2023, 10, 1),
-      endDate: DateTime(2023, 10, 7),
-      destination: '北京',
-      places: ['北京'],
-      peopleCount: 4,
-      budget: 8000,
-      status: TravelStatus.planning,
-      tasks: [
-        TravelTask(
-          id: 1,
-          title: '预订机票',
-          type: TravelTaskType.transportation,
-        ),
-        TravelTask(
-          id: 2,
-          title: '预订酒店',
-          type: TravelTaskType.accommodation,
-        ),
-        TravelTask(
-          id: 3,
-          title: '准备行李',
-          type: TravelTaskType.packing,
-        ),
-      ],
-    ),
-  ];
-  
+
   // 旅行工具列表
   final List<Map<String, dynamic>> _travelTools = [
     {
@@ -119,45 +65,87 @@ class _TravelScreenState extends State<TravelScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    // 初始化时加载数据
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadTravelData();
+    });
+  }
+
+  // 加载旅行数据
+  void _loadTravelData() {
+    final travelProvider = Provider.of<TravelProvider>(context, listen: false);
+    travelProvider.loadAllTravels();
+  }
+
+  // 根据选中的标签获取对应的旅行列表
+  List<Travel> _getFilteredTravels() {
+    final travelProvider = Provider.of<TravelProvider>(context);
+
+    switch (_selectedTabIndex) {
+      case 0: // 全部
+        return travelProvider.allTravels;
+      case 1: // 计划中
+        return travelProvider.planningTravels;
+      case 2: // 进行中
+        return travelProvider.ongoingTravels;
+      case 3: // 已完成
+        return travelProvider.completedTravels;
+      default:
+        return travelProvider.allTravels;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final travelProvider = Provider.of<TravelProvider>(context);
+    final isLoading = travelProvider.isLoading;
+    final error = travelProvider.error;
+    final travels = _getFilteredTravels();
+
     return Scaffold(
       body: Column(
         children: [
           // 自定义顶部导航栏
           _buildCustomAppBar(),
-          
+
           // 内容区域
           Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 旅行统计卡片
-                    _buildTravelStatsCard(),
-                    
-                    // 旅行类型选择
-                    _buildTravelTypeTabs(),
-                    
-                    // 旅行列表
-                    _buildTravelList(),
-                    
-                    // 旅行工具
-                    _buildTravelTools(),
-                    
-                    // 底部间距
-                    const SizedBox(height: 80),
-                  ],
-                ),
-              ),
-            ),
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : error != null
+                    ? Center(child: Text('加载数据出错: $error'))
+                    : SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // 旅行统计卡片
+                              _buildTravelStatsCard(),
+
+                              // 旅行类型选择
+                              _buildTravelTypeTabs(),
+
+                              // 旅行列表
+                              _buildTravelList(travels),
+
+                              // 旅行工具
+                              _buildTravelTools(),
+
+                              // 底部间距
+                              const SizedBox(height: 80),
+                            ],
+                          ),
+                        ),
+                      ),
           ),
         ],
       ),
     );
   }
-  
+
   // 构建自定义顶部导航栏
   Widget _buildCustomAppBar() {
     return Container(
@@ -177,7 +165,7 @@ class _TravelScreenState extends State<TravelScreen> {
             children: [
               GestureDetector(
                 onTap: () {
-                  Navigator.pushNamed(context, 'appRoutes.home');
+                  Navigator.pop(context);
                 },
                 child: Container(
                   width: 32,
@@ -187,7 +175,7 @@ class _TravelScreenState extends State<TravelScreen> {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.home,
+                    Icons.arrow_back,
                     color: Colors.white,
                     size: 18,
                   ),
@@ -209,9 +197,7 @@ class _TravelScreenState extends State<TravelScreen> {
               GestureDetector(
                 onTap: () {
                   // 刷新旅游数据
-                  setState(() {
-                    // 刷新逻辑
-                  });
+                  _loadTravelData();
                 },
                 child: Container(
                   width: 40,
@@ -227,30 +213,33 @@ class _TravelScreenState extends State<TravelScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Container(
-                width: 40,
-                height: 40,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
+              const SizedBox(width: 12),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddTravelScreen(),
                     ),
-                  ],
-                ),
-                child: IconButton(
-                  icon: const Icon(
+                  ).then((result) {
+                    // 如果返回结果为true，表示添加或编辑成功，刷新数据
+                    if (result == true) {
+                      _loadTravelData();
+                    }
+                  });
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
                     Icons.add,
-                    color: Color(0xFF3ECABB),
+                    color: Colors.white,
                     size: 20,
                   ),
-                  onPressed: () {
-                    // 添加旅行
-                  },
                 ),
               ),
             ],
@@ -259,9 +248,17 @@ class _TravelScreenState extends State<TravelScreen> {
       ),
     );
   }
-  
+
   // 构建旅行统计卡片
   Widget _buildTravelStatsCard() {
+    final travelProvider = Provider.of<TravelProvider>(context);
+    final allTravels = travelProvider.allTravels;
+
+    // 计算统计数据
+    int totalCities = _calculateTotalCities(allTravels);
+    int totalDays = _calculateTotalDays(allTravels);
+    double totalCost = _calculateTotalCost(allTravels);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(16),
@@ -292,7 +289,7 @@ class _TravelScreenState extends State<TravelScreen> {
             children: [
               Expanded(
                 child: _buildStatItem(
-                  '8',
+                  '$totalCities',
                   '已去城市',
                   Colors.blue.shade50,
                   Colors.blue,
@@ -301,7 +298,7 @@ class _TravelScreenState extends State<TravelScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildStatItem(
-                  '12',
+                  '$totalDays',
                   '旅行天数',
                   Colors.green.shade50,
                   Colors.green,
@@ -310,7 +307,7 @@ class _TravelScreenState extends State<TravelScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildStatItem(
-                  '¥9,860',
+                  '¥${totalCost.toStringAsFixed(0)}',
                   '总花费',
                   Colors.purple.shade50,
                   Colors.purple,
@@ -322,9 +319,42 @@ class _TravelScreenState extends State<TravelScreen> {
       ),
     );
   }
-  
+
+  // 计算总城市数
+  int _calculateTotalCities(List<Travel> travels) {
+    final Set<String> cities = {};
+    for (var travel in travels) {
+      cities.addAll(travel.places);
+    }
+    return cities.length;
+  }
+
+  // 计算总旅行天数
+  int _calculateTotalDays(List<Travel> travels) {
+    int days = 0;
+    for (var travel in travels) {
+      days += travel.endDate.difference(travel.startDate).inDays + 1;
+    }
+    return days;
+  }
+
+  // 计算总花费
+  double _calculateTotalCost(List<Travel> travels) {
+    double cost = 0;
+    for (var travel in travels) {
+      if (travel.status == TravelStatus.completed &&
+          travel.actualCost != null) {
+        cost += travel.actualCost!;
+      } else {
+        cost += travel.budget;
+      }
+    }
+    return cost;
+  }
+
   // 构建统计项
-  Widget _buildStatItem(String value, String label, Color bgColor, Color textColor) {
+  Widget _buildStatItem(
+      String value, String label, Color bgColor, Color textColor) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
@@ -353,7 +383,7 @@ class _TravelScreenState extends State<TravelScreen> {
       ),
     );
   }
-  
+
   // 构建旅行类型标签
   Widget _buildTravelTypeTabs() {
     return Container(
@@ -382,7 +412,8 @@ class _TravelScreenState extends State<TravelScreen> {
                   _tabs[index],
                   style: TextStyle(
                     color: isSelected ? Colors.white : Colors.grey[600],
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
               ),
@@ -392,9 +423,9 @@ class _TravelScreenState extends State<TravelScreen> {
       ),
     );
   }
-  
+
   // 构建旅行列表
-  Widget _buildTravelList() {
+  Widget _buildTravelList(List<Travel> travels) {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -430,22 +461,39 @@ class _TravelScreenState extends State<TravelScreen> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // 旅行卡片列表
-          ..._travels.map((travel) => _buildTravelCard(travel)),
+          travels.isEmpty
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32.0),
+                    child: Text(
+                      '暂无旅行数据',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                )
+              : Column(
+                  children: travels
+                      .map((travel) => _buildTravelCard(travel))
+                      .toList(),
+                ),
         ],
       ),
     );
   }
-  
+
   // 构建旅行卡片
   Widget _buildTravelCard(Travel travel) {
     // 根据旅行状态设置标签颜色
     Color statusColor;
     String statusText;
-    
+
     switch (travel.status) {
       case TravelStatus.planning:
         statusColor = Colors.amber;
@@ -460,16 +508,16 @@ class _TravelScreenState extends State<TravelScreen> {
         statusText = '已完成';
         break;
     }
-    
+
     // 格式化日期
     final dateFormat = DateFormat('yyyy.MM.dd');
     final startDateStr = dateFormat.format(travel.startDate);
     final endDateStr = dateFormat.format(travel.endDate);
-    
+
     // 计算旅行天数
     final duration = travel.endDate.difference(travel.startDate).inDays + 1;
     final durationText = '$duration天${duration > 1 ? '${duration - 1}晚' : ''}';
-    
+
     return GestureDetector(
       onTap: () {
         // 导航到旅行详情页面
@@ -477,7 +525,10 @@ class _TravelScreenState extends State<TravelScreen> {
           context,
           '/travel/detail',
           arguments: travel,
-        );
+        ).then((_) {
+          // 返回时刷新数据
+          _loadTravelData();
+        });
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -499,7 +550,8 @@ class _TravelScreenState extends State<TravelScreen> {
               children: [
                 // 背景图片
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(12)),
                   child: Image.network(
                     _getTravelImage(travel),
                     height: 120,
@@ -518,12 +570,13 @@ class _TravelScreenState extends State<TravelScreen> {
                     },
                   ),
                 ),
-                
+
                 // 渐变遮罩
                 Container(
                   height: 120,
                   decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(12)),
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
@@ -535,13 +588,14 @@ class _TravelScreenState extends State<TravelScreen> {
                     ),
                   ),
                 ),
-                
+
                 // 状态标签
                 Positioned(
                   top: 16,
                   right: 16,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: statusColor,
                       borderRadius: BorderRadius.circular(4),
@@ -556,7 +610,7 @@ class _TravelScreenState extends State<TravelScreen> {
                     ),
                   ),
                 ),
-                
+
                 // 旅行标题和日期
                 Positioned(
                   left: 16,
@@ -586,7 +640,7 @@ class _TravelScreenState extends State<TravelScreen> {
                 ),
               ],
             ),
-            
+
             // 旅行详情
             Padding(
               padding: const EdgeInsets.all(16),
@@ -627,9 +681,9 @@ class _TravelScreenState extends State<TravelScreen> {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   // 底部信息
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -652,7 +706,7 @@ class _TravelScreenState extends State<TravelScreen> {
                           ),
                         ],
                       ),
-                      
+
                       // 预算/花费
                       Row(
                         children: [
@@ -673,7 +727,7 @@ class _TravelScreenState extends State<TravelScreen> {
                           ),
                         ],
                       ),
-                      
+
                       // 照片数量或待完成任务
                       Row(
                         children: [
@@ -687,7 +741,7 @@ class _TravelScreenState extends State<TravelScreen> {
                           const SizedBox(width: 4),
                           Text(
                             travel.status == TravelStatus.planning
-                                ? '待完成: ${travel.tasks?.length ?? 0}项'
+                                ? '待完成: ${travel.tasks.length ?? 0}项'
                                 : '${travel.photoCount ?? 0}张照片',
                             style: TextStyle(
                               color: Colors.grey[600],
@@ -706,7 +760,7 @@ class _TravelScreenState extends State<TravelScreen> {
       ),
     );
   }
-  
+
   // 获取旅行图片
   String _getTravelImage(Travel travel) {
     // 根据旅行目的地或状态返回不同的图片
@@ -719,7 +773,7 @@ class _TravelScreenState extends State<TravelScreen> {
         return 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e';
     }
   }
-  
+
   // 构建旅行工具
   Widget _buildTravelTools() {
     return Column(
@@ -733,9 +787,7 @@ class _TravelScreenState extends State<TravelScreen> {
             color: Colors.black87,
           ),
         ),
-        
         const SizedBox(height: 16),
-        
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -748,17 +800,88 @@ class _TravelScreenState extends State<TravelScreen> {
           itemCount: _travelTools.length,
           itemBuilder: (context, index) {
             final tool = _travelTools[index];
-            return _buildToolItem(
-              icon: tool['icon'],
-              label: tool['label'],
-              color: tool['color'],
+            return GestureDetector(
+              onTap: () {
+                _handleToolClick(index);
+              },
+              child: _buildToolItem(
+                icon: tool['icon'],
+                label: tool['label'],
+                color: tool['color'],
+              ),
             );
           },
         ),
       ],
     );
   }
-  
+
+  // 处理工具点击事件
+  void _handleToolClick(int index) {
+    // 根据工具类型执行相应操作
+    switch (index) {
+      case 0: // 行程规划
+        // 这里可以导航到行程规划页面
+        _showFeatureUnderDevelopmentDialog('行程规划');
+        break;
+      case 1: // 住宿管理
+        _showFeatureUnderDevelopmentDialog('住宿管理');
+        break;
+      case 2: // 旅行日志
+        _showFeatureUnderDevelopmentDialog('旅行日志');
+        break;
+      case 3: // 花费记录
+        _showFeatureUnderDevelopmentDialog('花费记录');
+        break;
+      case 4: // 行李清单
+        _showFeatureUnderDevelopmentDialog('行李清单');
+        break;
+      case 5: // 票务管理
+        _showFeatureUnderDevelopmentDialog('票务管理');
+        break;
+      case 6: // 景点收藏
+        _showFeatureUnderDevelopmentDialog('景点收藏');
+        break;
+      case 7: // 更多
+        _showMoreToolsDialog();
+        break;
+    }
+  }
+
+  // 显示功能开发中提示
+  void _showFeatureUnderDevelopmentDialog(String feature) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('$feature功能'),
+        content: Text('$feature功能正在开发中，敬请期待！'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 显示更多工具对话框
+  void _showMoreToolsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('更多工具'),
+        content: const Text('更多旅行工具正在开发中，敬请期待！'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
+  }
+
   // 构建工具项
   Widget _buildToolItem({
     required IconData icon,
@@ -792,4 +915,4 @@ class _TravelScreenState extends State<TravelScreen> {
       ],
     );
   }
-} 
+}

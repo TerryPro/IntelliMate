@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
-import 'package:intellimate/domain/entities/user.dart';
 import 'package:intellimate/presentation/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';

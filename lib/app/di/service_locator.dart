@@ -1,11 +1,13 @@
 import 'package:get_it/get_it.dart';
 import 'package:intellimate/app/di/service_locator_memo.dart';
 import 'package:intellimate/data/datasources/daily_note_datasource.dart';
+import 'package:intellimate/data/datasources/database_helper.dart';
 import 'package:intellimate/data/datasources/goal_datasource.dart';
 import 'package:intellimate/data/datasources/memo_datasource.dart';
 import 'package:intellimate/data/datasources/note_datasource.dart';
 import 'package:intellimate/data/datasources/schedule_datasource.dart';
 import 'package:intellimate/data/datasources/task_datasource.dart';
+import 'package:intellimate/data/datasources/travel_datasource.dart';
 import 'package:intellimate/data/datasources/user_datasource.dart';
 import 'package:intellimate/data/repositories/daily_note_repository_impl.dart';
 import 'package:intellimate/data/repositories/goal_repository_impl.dart';
@@ -13,6 +15,7 @@ import 'package:intellimate/data/repositories/memo_repository_impl.dart';
 import 'package:intellimate/data/repositories/note_repository_impl.dart';
 import 'package:intellimate/data/repositories/schedule_repository_impl.dart';
 import 'package:intellimate/data/repositories/task_repository_impl.dart';
+import 'package:intellimate/data/repositories/travel_repository_impl.dart';
 import 'package:intellimate/data/repositories/user_repository_impl.dart';
 import 'package:intellimate/domain/repositories/daily_note_repository.dart';
 import 'package:intellimate/domain/repositories/goal_repository.dart';
@@ -20,6 +23,7 @@ import 'package:intellimate/domain/repositories/memo_repository.dart';
 import 'package:intellimate/domain/repositories/note_repository.dart';
 import 'package:intellimate/domain/repositories/schedule_repository.dart';
 import 'package:intellimate/domain/repositories/task_repository.dart';
+import 'package:intellimate/domain/repositories/travel_repository.dart';
 import 'package:intellimate/domain/repositories/user_repository.dart';
 import 'package:intellimate/domain/usecases/daily_note/create_daily_note.dart';
 import 'package:intellimate/domain/usecases/daily_note/delete_daily_note.dart';
@@ -33,13 +37,8 @@ import 'package:intellimate/domain/usecases/daily_note/update_daily_note.dart';
 import 'package:intellimate/domain/usecases/memo/create_memo.dart';
 import 'package:intellimate/domain/usecases/memo/delete_memo.dart';
 import 'package:intellimate/domain/usecases/memo/get_all_memos.dart';
-import 'package:intellimate/domain/usecases/memo/get_completed_memos.dart';
 import 'package:intellimate/domain/usecases/memo/get_memo_by_id.dart';
 import 'package:intellimate/domain/usecases/memo/get_memos_by_category.dart';
-import 'package:intellimate/domain/usecases/memo/get_memos_by_date.dart';
-import 'package:intellimate/domain/usecases/memo/get_memos_by_priority.dart';
-import 'package:intellimate/domain/usecases/memo/get_pinned_memos.dart';
-import 'package:intellimate/domain/usecases/memo/get_uncompleted_memos.dart';
 import 'package:intellimate/domain/usecases/memo/search_memos.dart';
 import 'package:intellimate/domain/usecases/memo/update_memo.dart';
 import 'package:intellimate/domain/usecases/note/create_note.dart';
@@ -71,6 +70,7 @@ import 'package:intellimate/presentation/providers/memo_provider.dart';
 import 'package:intellimate/presentation/providers/note_provider.dart';
 import 'package:intellimate/presentation/providers/schedule_provider.dart';
 import 'package:intellimate/presentation/providers/task_provider.dart';
+import 'package:intellimate/presentation/providers/travel_provider.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -83,6 +83,7 @@ Future<void> setupServiceLocator() async {
   sl.registerLazySingleton<DailyNoteDataSource>(() => DailyNoteDataSourceImpl());
   sl.registerLazySingleton<ScheduleDataSource>(() => ScheduleDataSource());
   sl.registerLazySingleton<MemoDataSource>(() => MemoDataSource());
+  sl.registerLazySingleton<TravelDataSource>(() => TravelDataSource(DatabaseHelper.instance));
 
   // 仓库
   sl.registerLazySingleton<GoalRepository>(() => GoalRepositoryImpl(sl<GoalDataSource>()));
@@ -103,6 +104,9 @@ Future<void> setupServiceLocator() async {
   );
   sl.registerLazySingleton<MemoRepository>(
     () => MemoRepositoryImpl(sl<MemoDataSource>()),
+  );
+  sl.registerLazySingleton<TravelRepository>(
+    () => TravelRepositoryImpl(sl<TravelDataSource>()),
   );
 
   // 笔记用例
@@ -151,11 +155,6 @@ Future<void> setupServiceLocator() async {
   sl.registerLazySingleton(() => UpdateMemo(sl<MemoRepository>()));
   sl.registerLazySingleton(() => DeleteMemo(sl<MemoRepository>()));
   sl.registerLazySingleton(() => GetAllMemos(sl<MemoRepository>()));
-  sl.registerLazySingleton(() => GetMemosByDate(sl<MemoRepository>()));
-  sl.registerLazySingleton(() => GetCompletedMemos(sl<MemoRepository>()));
-  sl.registerLazySingleton(() => GetUncompletedMemos(sl<MemoRepository>()));
-  sl.registerLazySingleton(() => GetMemosByPriority(sl<MemoRepository>()));
-  sl.registerLazySingleton(() => GetPinnedMemos(sl<MemoRepository>()));
   sl.registerLazySingleton(() => SearchMemos(sl<MemoRepository>()));
   sl.registerLazySingleton(() => GetMemosByCategory(sl<MemoRepository>()));
 
@@ -207,14 +206,10 @@ Future<void> setupServiceLocator() async {
     updateMemoUseCase: sl<UpdateMemo>(),
     deleteMemoUseCase: sl<DeleteMemo>(),
     getAllMemosUseCase: sl<GetAllMemos>(),
-    getMemosByDateUseCase: sl<GetMemosByDate>(),
-    getCompletedMemosUseCase: sl<GetCompletedMemos>(),
-    getUncompletedMemosUseCase: sl<GetUncompletedMemos>(),
-    getMemosByPriorityUseCase: sl<GetMemosByPriority>(),
-    getPinnedMemosUseCase: sl<GetPinnedMemos>(),
     searchMemosUseCase: sl<SearchMemos>(),
     getMemosByCategoryUseCase: sl<GetMemosByCategory>(),
   ));
+  sl.registerFactory(() => TravelProvider(sl<TravelRepository>()));
   
   // 注册备忘相关依赖
   await setupMemoServiceLocator();

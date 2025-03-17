@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/domain/entities/schedule.dart';
 import 'package:intellimate/presentation/providers/schedule_provider.dart';
 import 'package:intellimate/presentation/widgets/custom_app_bar.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
-import 'package:intellimate/app/theme/app_colors.dart';
 
 class AddScheduleScreen extends StatefulWidget {
   final String? scheduleId; // 用于编辑现有日程

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
 import 'package:intellimate/domain/entities/photo.dart';
 import 'package:intellimate/presentation/widgets/custom_app_bar.dart';

@@ -446,7 +446,7 @@ class _TaskScreenState extends State<TaskScreen> {
                     // 任务标题
                     Text(
                       task.title,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
@@ -586,7 +586,7 @@ class _TaskScreenState extends State<TaskScreen> {
                     color: Colors.grey.shade100,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.delete,
                     size: 20,
                     color: Colors.red,

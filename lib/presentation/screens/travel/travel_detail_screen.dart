@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
 import 'package:intellimate/domain/entities/travel.dart';
+import 'package:intellimate/presentation/screens/travel/add_travel_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:intellimate/presentation/providers/travel_provider.dart';
+import 'package:intellimate/presentation/screens/travel/widgets/travel_task_list.dart';
+import 'package:intellimate/presentation/screens/travel/widgets/travel_accommodation_list.dart';
 
 class TravelDetailScreen extends StatefulWidget {
   final Travel travel;
@@ -149,46 +154,73 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
           ),
         ),
         
-        // 返回按钮
+        // 返回按钮和更多选项
         Positioned(
           top: MediaQuery.of(context).padding.top,
-          left: 16,
-          child: GestureDetector(
-            onTap: () {
-              Navigator.pop(context);
-            },
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.getColorWithOpacity(Colors.black, 0.3),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(
-                Icons.arrow_back,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-        
-        // 更多按钮
-        Positioned(
-          top: MediaQuery.of(context).padding.top,
-          right: 16,
-          child: GestureDetector(
-            onTap: () {
-              _showMoreOptions(context);
-            },
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.getColorWithOpacity(Colors.black, 0.3),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(
-                Icons.more_vert,
-                color: Colors.white,
-              ),
+          left: 0,
+          right: 0,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // 返回按钮
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                
+                // 更多选项
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, color: Colors.white),
+                  onSelected: (value) {
+                    if (value == 'edit') {
+                      _editTravel();
+                    } else if (value == 'delete') {
+                      _showDeleteConfirmation();
+                    } else if (value == 'share') {
+                      // 分享功能
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('分享功能开发中')),
+                      );
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem<String>(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit, color: Colors.blue),
+                          SizedBox(width: 8),
+                          Text('编辑旅行'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text('删除旅行'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'share',
+                      child: Row(
+                        children: [
+                          Icon(Icons.share, color: Colors.green),
+                          SizedBox(width: 8),
+                          Text('分享旅行'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
@@ -304,24 +336,39 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
   
   // 构建行程标签页
   Widget _buildItineraryTab() {
-    return _buildEmptyState(
-      icon: Icons.route,
-      title: '暂无行程安排',
-      message: '点击下方按钮添加行程安排',
+    if (widget.travel.tasks.isEmpty) {
+      return _buildEmptyState(
+        icon: Icons.route,
+        title: '暂无行程安排',
+        message: '点击下方按钮添加行程安排',
+      );
+    }
+    
+    return TravelTaskList(
+      travelId: widget.travel.id!,
+      tasks: widget.travel.tasks,
     );
   }
   
   // 构建住宿标签页
   Widget _buildAccommodationTab() {
-    return _buildEmptyState(
-      icon: Icons.hotel,
-      title: '暂无住宿信息',
-      message: '点击下方按钮添加住宿信息',
+    if (widget.travel.accommodations.isEmpty) {
+      return _buildEmptyState(
+        icon: Icons.hotel,
+        title: '暂无住宿信息',
+        message: '点击下方按钮添加住宿信息',
+      );
+    }
+    
+    return TravelAccommodationList(
+      travelId: widget.travel.id!,
+      accommodations: widget.travel.accommodations,
     );
   }
   
   // 构建交通标签页
   Widget _buildTransportationTab() {
+    // TODO: 实现交通标签页
     return _buildEmptyState(
       icon: Icons.directions_car,
       title: '暂无交通信息',
@@ -331,6 +378,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
   
   // 构建花费标签页
   Widget _buildExpenseTab() {
+    // TODO: 实现花费标签页
     return _buildEmptyState(
       icon: Icons.attach_money,
       title: '暂无花费记录',
@@ -340,6 +388,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
   
   // 构建照片标签页
   Widget _buildPhotosTab() {
+    // TODO: 实现照片标签页
     return _buildEmptyState(
       icon: Icons.photo_library,
       title: '暂无照片',
@@ -349,6 +398,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
   
   // 构建笔记标签页
   Widget _buildNotesTab() {
+    // TODO: 实现笔记标签页
     return _buildEmptyState(
       icon: Icons.note,
       title: '暂无旅行笔记',
@@ -418,14 +468,12 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
                 ),
               ),
               const Divider(),
-              _buildAddOptionItem(
-                icon: _getTabIcon(currentTab),
-                title: '添加$currentTab',
-                onTap: () {
-                  Navigator.pop(context);
-                  // 添加内容
-                },
-              ),
+              if (currentTab == '行程') _buildAddTaskOption(),
+              if (currentTab == '住宿') _buildAddAccommodationOption(),
+              if (currentTab == '交通') _buildAddTransportationOption(),
+              if (currentTab == '花费') _buildAddExpenseOption(),
+              if (currentTab == '照片') _buildAddPhotoOption(),
+              if (currentTab == '笔记') _buildAddNoteOption(),
               const SizedBox(height: 8),
             ],
           ),
@@ -434,97 +482,564 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
     );
   }
   
-  // 获取标签图标
-  IconData _getTabIcon(String tab) {
-    switch (tab) {
-      case '行程':
-        return Icons.route;
-      case '住宿':
-        return Icons.hotel;
-      case '交通':
-        return Icons.directions_car;
-      case '花费':
-        return Icons.attach_money;
-      case '照片':
-        return Icons.photo_camera;
-      case '笔记':
-        return Icons.note;
-    }
-    return Icons.add;
-  }
-  
-  // 构建添加选项项
-  Widget _buildAddOptionItem({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildAddTaskOption() {
     return ListTile(
-      leading: Icon(icon, color: AppColors.primary),
-      title: Text(title),
-      onTap: onTap,
+      leading: const Icon(Icons.add_task, color: AppColors.primary),
+      title: const Text('添加行程安排'),
+      onTap: () {
+        Navigator.pop(context);
+        _showAddTaskDialog();
+      },
+    );
+  }
+
+  Future<void> _showAddTaskDialog() async {
+    final now = DateTime.now();
+    final task = TravelTask(
+      title: '',
+      startTime: now,
+      endTime: now.add(const Duration(hours: 1)),
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    final result = await showDialog<TravelTask>(
+      context: context,
+      builder: (context) => _TaskEditDialog(task: task),
+    );
+
+    if (result != null && mounted) {
+      final travelProvider = Provider.of<TravelProvider>(context, listen: false);
+      try {
+        await travelProvider.addTask(widget.travel.id!, result);
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('添加失败: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  Widget _buildAddAccommodationOption() {
+    return ListTile(
+      leading: const Icon(Icons.hotel, color: AppColors.primary),
+      title: const Text('添加住宿信息'),
+      onTap: () {
+        Navigator.pop(context);
+        _showAddAccommodationDialog();
+      },
+    );
+  }
+
+  Future<void> _showAddAccommodationDialog() async {
+    final now = DateTime.now();
+    final accommodation = TravelAccommodation(
+      name: '',
+      checkInDate: widget.travel.startDate,
+      checkOutDate: widget.travel.startDate.add(const Duration(days: 1)),
+      price: 0,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    final result = await showDialog<TravelAccommodation>(
+      context: context,
+      builder: (context) => _AccommodationEditDialog(accommodation: accommodation),
+    );
+
+    if (result != null && mounted) {
+      // TODO: 实现添加住宿信息的功能
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('添加住宿信息功能正在开发中')),
+      );
+    }
+  }
+
+  Widget _buildAddTransportationOption() {
+    return ListTile(
+      leading: const Icon(Icons.directions_car, color: AppColors.primary),
+      title: const Text('添加交通信息'),
+      onTap: () {
+        Navigator.pop(context);
+        // TODO: 实现添加交通信息功能
+      },
+    );
+  }
+
+  Widget _buildAddExpenseOption() {
+    return ListTile(
+      leading: const Icon(Icons.attach_money, color: AppColors.primary),
+      title: const Text('添加花费记录'),
+      onTap: () {
+        Navigator.pop(context);
+        // TODO: 实现添加花费记录功能
+      },
+    );
+  }
+
+  Widget _buildAddPhotoOption() {
+    return ListTile(
+      leading: const Icon(Icons.photo_camera, color: AppColors.primary),
+      title: const Text('添加照片'),
+      onTap: () {
+        Navigator.pop(context);
+        // TODO: 实现添加照片功能
+      },
+    );
+  }
+
+  Widget _buildAddNoteOption() {
+    return ListTile(
+      leading: const Icon(Icons.note_add, color: AppColors.primary),
+      title: const Text('添加笔记'),
+      onTap: () {
+        Navigator.pop(context);
+        // TODO: 实现添加笔记功能
+      },
+    );
+  }
+
+  // 编辑旅行
+  void _editTravel() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddTravelScreen(travel: widget.travel),
+      ),
+    ).then((result) {
+      // 如果返回结果为true，表示编辑成功，刷新数据
+      if (result == true) {
+        // 刷新旅行数据
+        final travelProvider = Provider.of<TravelProvider>(context, listen: false);
+        travelProvider.loadAllTravels();
+        
+        // 获取更新后的旅行数据
+        travelProvider.getTravel(widget.travel.id!).then((updatedTravel) {
+          if (updatedTravel != null && mounted) {
+            // 返回到上一页并传递更新后的数据
+            Navigator.pop(context, true);
+          }
+        });
+      }
+    });
+  }
+  
+  // 显示删除确认对话框
+  void _showDeleteConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('删除旅行'),
+        content: const Text('确定要删除这个旅行吗？此操作不可撤销。'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteTravel();
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
     );
   }
   
-  // 显示更多选项
-  void _showMoreOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text('编辑旅行'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // 编辑旅行
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.share),
-                title: const Text('分享旅行'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // 分享旅行
-                },
-              ),
-              if (widget.travel.status == TravelStatus.planning)
-                ListTile(
-                  leading: const Icon(Icons.play_arrow, color: Colors.green),
-                  title: const Text('开始旅行'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    // 开始旅行
-                  },
-                ),
-              if (widget.travel.status == TravelStatus.ongoing)
-                ListTile(
-                  leading: const Icon(Icons.check_circle, color: Colors.blue),
-                  title: const Text('完成旅行'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    // 完成旅行
-                  },
-                ),
-              ListTile(
-                leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text('删除旅行'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // 删除旅行
-                },
-              ),
-              const SizedBox(height: 8),
-            ],
-          ),
+  // 删除旅行
+  void _deleteTravel() async {
+    try {
+      final travelProvider = Provider.of<TravelProvider>(context, listen: false);
+      final result = await travelProvider.deleteTravel(widget.travel.id!);
+      
+      if (result && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('旅行已删除')),
         );
-      },
+        Navigator.pop(context, true);
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('删除失败')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('删除失败: $e')),
+        );
+      }
+    }
+  }
+}
+
+class _AccommodationEditDialog extends StatefulWidget {
+  final TravelAccommodation accommodation;
+
+  const _AccommodationEditDialog({required this.accommodation});
+
+  @override
+  State<_AccommodationEditDialog> createState() => _AccommodationEditDialogState();
+}
+
+class _AccommodationEditDialogState extends State<_AccommodationEditDialog> {
+  late TextEditingController _nameController;
+  late TextEditingController _addressController;
+  late TextEditingController _phoneController;
+  late TextEditingController _priceController;
+  late TextEditingController _bookingNumberController;
+  late TextEditingController _notesController;
+  late DateTime _checkInDate;
+  late DateTime _checkOutDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.accommodation.name);
+    _addressController = TextEditingController(text: widget.accommodation.address);
+    _phoneController = TextEditingController(text: widget.accommodation.phone);
+    _priceController = TextEditingController(text: widget.accommodation.price.toString());
+    _bookingNumberController = TextEditingController(text: widget.accommodation.bookingNumber);
+    _notesController = TextEditingController(text: widget.accommodation.notes);
+    _checkInDate = widget.accommodation.checkInDate;
+    _checkOutDate = widget.accommodation.checkOutDate;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _addressController.dispose();
+    _phoneController.dispose();
+    _priceController.dispose();
+    _bookingNumberController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('编辑住宿信息'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: '住宿名称',
+                hintText: '例如：XX酒店',
+              ),
+            ),
+            TextField(
+              controller: _addressController,
+              decoration: const InputDecoration(
+                labelText: '地址',
+                hintText: '输入住宿地址',
+              ),
+            ),
+            TextField(
+              controller: _phoneController,
+              decoration: const InputDecoration(
+                labelText: '联系电话',
+                hintText: '输入联系电话',
+              ),
+              keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Text('入住日期：'),
+                TextButton(
+                  onPressed: () => _selectDate(context, true),
+                  child: Text(DateFormat('yyyy-MM-dd').format(_checkInDate)),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                const Text('退房日期：'),
+                TextButton(
+                  onPressed: () => _selectDate(context, false),
+                  child: Text(DateFormat('yyyy-MM-dd').format(_checkOutDate)),
+                ),
+              ],
+            ),
+            TextField(
+              controller: _priceController,
+              decoration: const InputDecoration(
+                labelText: '价格',
+                hintText: '输入住宿价格',
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            TextField(
+              controller: _bookingNumberController,
+              decoration: const InputDecoration(
+                labelText: '预订号',
+                hintText: '输入预订号（可选）',
+              ),
+            ),
+            TextField(
+              controller: _notesController,
+              decoration: const InputDecoration(
+                labelText: '备注',
+                hintText: '输入备注信息（可选）',
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('取消'),
+        ),
+        TextButton(
+          onPressed: () {
+            if (_nameController.text.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('住宿名称不能为空')),
+              );
+              return;
+            }
+            
+            if (_priceController.text.isEmpty || double.tryParse(_priceController.text) == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('请输入有效的价格')),
+              );
+              return;
+            }
+            
+            final updatedAccommodation = widget.accommodation.copyWith(
+              name: _nameController.text,
+              address: _addressController.text.isEmpty ? null : _addressController.text,
+              phone: _phoneController.text.isEmpty ? null : _phoneController.text,
+              checkInDate: _checkInDate,
+              checkOutDate: _checkOutDate,
+              price: double.parse(_priceController.text),
+              bookingNumber: _bookingNumberController.text.isEmpty ? null : _bookingNumberController.text,
+              notes: _notesController.text.isEmpty ? null : _notesController.text,
+              updatedAt: DateTime.now(),
+            );
+            
+            Navigator.pop(context, updatedAccommodation);
+          },
+          child: const Text('保存'),
+        ),
+      ],
     );
+  }
+
+  Future<void> _selectDate(BuildContext context, bool isCheckIn) async {
+    final initialDate = isCheckIn ? _checkInDate : _checkOutDate;
+    final firstDate = isCheckIn ? DateTime(2000) : _checkInDate;
+    
+    final date = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: firstDate,
+      lastDate: DateTime(2100),
+    );
+    
+    if (date != null) {
+      setState(() {
+        if (isCheckIn) {
+          _checkInDate = date;
+          if (_checkOutDate.isBefore(_checkInDate)) {
+            _checkOutDate = _checkInDate.add(const Duration(days: 1));
+          }
+        } else {
+          _checkOutDate = date;
+        }
+      });
+    }
+  }
+}
+
+class _TaskEditDialog extends StatefulWidget {
+  final TravelTask task;
+
+  const _TaskEditDialog({required this.task});
+
+  @override
+  State<_TaskEditDialog> createState() => _TaskEditDialogState();
+}
+
+class _TaskEditDialogState extends State<_TaskEditDialog> {
+  late TextEditingController _titleController;
+  late TextEditingController _descriptionController;
+  late TextEditingController _locationController;
+  late DateTime _startTime;
+  late DateTime _endTime;
+  late bool _isCompleted;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.task.title);
+    _descriptionController = TextEditingController(text: widget.task.description);
+    _locationController = TextEditingController(text: widget.task.location);
+    _startTime = widget.task.startTime;
+    _endTime = widget.task.endTime;
+    _isCompleted = widget.task.isCompleted;
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _locationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('编辑任务'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _titleController,
+              decoration: const InputDecoration(
+                labelText: '标题',
+                hintText: '输入任务标题',
+              ),
+            ),
+            TextField(
+              controller: _descriptionController,
+              decoration: const InputDecoration(
+                labelText: '描述',
+                hintText: '输入任务描述',
+              ),
+              maxLines: 3,
+            ),
+            TextField(
+              controller: _locationController,
+              decoration: const InputDecoration(
+                labelText: '地点',
+                hintText: '输入任务地点',
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Text('开始时间：'),
+                TextButton(
+                  onPressed: () => _selectDateTime(context, true),
+                  child: Text(DateFormat('MM-dd HH:mm').format(_startTime)),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                const Text('结束时间：'),
+                TextButton(
+                  onPressed: () => _selectDateTime(context, false),
+                  child: Text(DateFormat('MM-dd HH:mm').format(_endTime)),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Checkbox(
+                  value: _isCompleted,
+                  onChanged: (value) {
+                    setState(() {
+                      _isCompleted = value!;
+                    });
+                  },
+                ),
+                const Text('已完成'),
+              ],
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('取消'),
+        ),
+        TextButton(
+          onPressed: () {
+            if (_titleController.text.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('标题不能为空')),
+              );
+              return;
+            }
+            
+            final updatedTask = widget.task.copyWith(
+              title: _titleController.text,
+              description: _descriptionController.text,
+              location: _locationController.text,
+              startTime: _startTime,
+              endTime: _endTime,
+              isCompleted: _isCompleted,
+            );
+            
+            Navigator.pop(context, updatedTask);
+          },
+          child: const Text('保存'),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _selectDateTime(BuildContext context, bool isStart) async {
+    final currentDate = isStart ? _startTime : _endTime;
+    
+    final date = await showDatePicker(
+      context: context,
+      initialDate: currentDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    
+    if (date != null && context.mounted) {
+      final time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(currentDate),
+      );
+      
+      if (time != null) {
+        setState(() {
+          final newDateTime = DateTime(
+            date.year,
+            date.month,
+            date.day,
+            time.hour,
+            time.minute,
+          );
+          
+          if (isStart) {
+            _startTime = newDateTime;
+            if (_endTime.isBefore(_startTime)) {
+              _endTime = _startTime.add(const Duration(hours: 1));
+            }
+          } else {
+            if (newDateTime.isBefore(_startTime)) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('结束时间不能早于开始时间')),
+              );
+              return;
+            }
+            _endTime = newDateTime;
+          }
+        });
+      }
+    }
   }
 } 

@@ -9,22 +9,12 @@ class CreateMemo {
   Future<Memo> call({
     required String title,
     required String content,
-    required DateTime date,
     String? category,
-    required String priority,
-    required bool isPinned,
-    required bool isCompleted,
-    DateTime? completedAt,
   }) async {
     return await repository.createMemo(
       title: title,
       content: content,
-      date: date,
       category: category,
-      priority: priority,
-      isPinned: isPinned,
-      isCompleted: isCompleted,
-      completedAt: completedAt,
     );
   }
 } 

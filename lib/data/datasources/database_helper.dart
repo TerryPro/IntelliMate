@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'dart:io' show Platform;
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -27,6 +26,11 @@ class DatabaseHelper {
   static const String tableTravel = 'travels';
 
   DatabaseHelper._internal();
+
+  // 重置初始化状态
+  static void resetInitializationState() {
+    _initialized = false;
+  }
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -71,9 +75,7 @@ class DatabaseHelper {
       bool hasUserTable = tableNames.contains(tableUser);
       if (!hasUserTable) {
         await _createUserTable(db);
-        print('创建用户表成功');
       } else {
-        print('用户表已存在');
         
         // 验证用户表结构
         await _verifyUserTableStructure(db);
@@ -119,16 +121,18 @@ class DatabaseHelper {
       bool hasGoalTable = tableNames.contains(tableGoal);
       if (!hasGoalTable) {
         await _createGoalTable(db);
-        print('创建目标表成功');
       } else {
-        print('目标表已存在');
+      }
+      
+      bool hasTravelTable = tableNames.contains(tableTravel);
+      if (!hasTravelTable) {
+        await _createTravelTable(db);
+      } else {
       }
       
       _initialized = true;
-      print('数据库初始化完成，所有表已检查并创建');
     } catch (e) {
       _initialized = false;
-      print('数据库初始化失败: $e');
       rethrow;
     }
   }
@@ -151,9 +155,7 @@ class DatabaseHelper {
           updated_at INTEGER NOT NULL
         )
       ''');
-      print('用户表创建SQL执行成功');
     } catch (e) {
-      print('创建用户表失败: $e');
       rethrow;
     }
   }
@@ -258,12 +260,7 @@ class DatabaseHelper {
           id TEXT PRIMARY KEY,
           title TEXT NOT NULL,
           content TEXT NOT NULL,
-          date INTEGER NOT NULL,
           category TEXT,
-          priority TEXT NOT NULL,
-          is_pinned INTEGER NOT NULL DEFAULT 0,
-          is_completed INTEGER NOT NULL DEFAULT 0,
-          completed_at INTEGER,
           created_at INTEGER NOT NULL,
           updated_at INTEGER NOT NULL
         )
@@ -311,13 +308,52 @@ class DatabaseHelper {
         updated_at INTEGER NOT NULL
       )
     ''');
-    print('目标表创建成功');
+  }
+
+  // 创建旅游表
+  Future<void> _createTravelTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS $tableTravel (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        description TEXT,
+        start_date TEXT NOT NULL,
+        end_date TEXT NOT NULL,
+        destination TEXT NOT NULL,
+        places TEXT NOT NULL,
+        people_count INTEGER NOT NULL,
+        budget REAL NOT NULL,
+        actual_cost REAL,
+        status INTEGER NOT NULL,
+        photo_count INTEGER,
+        tasks TEXT,
+        notes TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+    
+    // 创建旅游任务表
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS ${tableTravel}_tasks (
+        id TEXT PRIMARY KEY,
+        travel_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT,
+        location TEXT,
+        start_time TEXT NOT NULL,
+        end_time TEXT NOT NULL,
+        is_completed INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY (travel_id) REFERENCES $tableTravel (id) ON DELETE CASCADE
+      )
+    ''');
   }
 
   // 数据库创建回调
   Future<void> _onCreate(Database db, int version) async {
     try {
-      print('正在创建数据库表...');
       await _createUserTable(db);  // 首先创建用户表
       await _createNoteTable(db);
       await _createTaskTable(db);
@@ -326,9 +362,8 @@ class DatabaseHelper {
       await _createMemoTable(db);
       await _createFinanceTable(db);
       await _createGoalTable(db);  // 添加创建目标表
-      print('所有数据库表创建完成');
+      await _createTravelTable(db); // 添加创建旅游表
     } catch (e) {
-      print('数据库表创建失败: $e');
       rethrow;
     }
   }
@@ -345,12 +380,25 @@ class DatabaseHelper {
     }
   }
 
+  // 删除数据库文件
+  Future<void> deleteDatabase() async {
+    if (_database != null) {
+      await _database!.close();
+      _database = null;
+    }
+    
+    final String databasesPath = await getDatabasesPath();
+    final String path = join(databasesPath, _databaseName);
+    
+    await databaseFactory.deleteDatabase(path);
+    _initialized = false;
+  }
+
   // 验证用户表结构并修复
   Future<void> _verifyUserTableStructure(Database db) async {
     try {
       // 获取用户表信息
       final tableInfo = await db.rawQuery("PRAGMA table_info($tableUser)");
-      print('用户表结构: $tableInfo');
       
       // 检查时间戳字段类型
       bool needsRebuild = false;
@@ -358,17 +406,14 @@ class DatabaseHelper {
       final updatedAtColumn = tableInfo.firstWhere((col) => col['name'] == 'updated_at', orElse: () => {});
       
       if (createdAtColumn.isEmpty || updatedAtColumn.isEmpty) {
-        print('用户表缺少时间戳字段，需要重建');
         needsRebuild = true;
       } else {
         // 检查字段类型
         final createdAtType = createdAtColumn['type']?.toString().toUpperCase() ?? '';
         final updatedAtType = updatedAtColumn['type']?.toString().toUpperCase() ?? '';
         
-        print('时间戳字段类型 - created_at: $createdAtType, updated_at: $updatedAtType');
         
         if (createdAtType != 'INTEGER' || updatedAtType != 'INTEGER') {
-          print('时间戳字段类型不是INTEGER，需要重建表');
           needsRebuild = true;
         }
       }
@@ -377,28 +422,22 @@ class DatabaseHelper {
         await _rebuildUserTable(db);
       }
     } catch (e) {
-      print('验证用户表结构失败: $e');
     }
   }
   
   // 重建用户表
   Future<void> _rebuildUserTable(Database db) async {
-    print('开始重建用户表...');
     
     try {
       // 开始事务
       await db.transaction((txn) async {
         // 1. 备份现有数据
-        print('备份现有用户数据');
         final existingData = await txn.query(tableUser);
-        print('找到 ${existingData.length} 条用户记录');
         
         // 2. 重命名现有表
-        print('重命名现有用户表');
         await txn.execute('ALTER TABLE $tableUser RENAME TO ${tableUser}_old');
         
         // 3. 创建新表
-        print('创建新用户表');
         await txn.execute('''
           CREATE TABLE $tableUser (
             id TEXT PRIMARY KEY,
@@ -416,7 +455,6 @@ class DatabaseHelper {
         ''');
         
         // 4. 迁移数据
-        print('迁移用户数据');
         for (var record in existingData) {
           // 处理时间戳字段
           var createdAt = record['created_at'];
@@ -429,7 +467,9 @@ class DatabaseHelper {
             } catch (_) {
               createdAt = DateTime.now().millisecondsSinceEpoch;
             }
-          } else createdAt ??= DateTime.now().millisecondsSinceEpoch;
+          } else {
+            createdAt ??= DateTime.now().millisecondsSinceEpoch;
+          }
           
           if (updatedAt is String) {
             try {
@@ -437,7 +477,9 @@ class DatabaseHelper {
             } catch (_) {
               updatedAt = DateTime.now().millisecondsSinceEpoch;
             }
-          } else updatedAt ??= DateTime.now().millisecondsSinceEpoch;
+          } else {
+            updatedAt ??= DateTime.now().millisecondsSinceEpoch;
+          }
           
           // 创建新记录
           final newRecord = {
@@ -454,19 +496,14 @@ class DatabaseHelper {
             'updated_at': updatedAt,
           };
           
-          print('迁移用户记录: $newRecord');
           await txn.insert(tableUser, newRecord);
         }
         
         // 5. 删除旧表
-        print('删除旧用户表');
         await txn.execute('DROP TABLE IF EXISTS ${tableUser}_old');
         
-        print('用户表重建完成');
       });
     } catch (e) {
-      print('重建用户表失败: $e');
-      print('堆栈跟踪: ${StackTrace.current}');
       rethrow;
     }
   }

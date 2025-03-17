@@ -7,6 +7,7 @@ import 'package:intellimate/domain/usecases/task/get_task_by_id_usecase.dart';
 import 'package:intellimate/domain/usecases/task/get_tasks_by_condition_usecase.dart';
 import 'package:intellimate/domain/usecases/task/update_task_usecase.dart';
 import 'package:uuid/uuid.dart';
+import 'package:intellimate/data/models/task_model.dart';
 
 class TaskProvider extends ChangeNotifier {
   final CreateTaskUseCase _createTaskUseCase;
@@ -124,7 +125,8 @@ class TaskProvider extends ChangeNotifier {
       if (success) {
         final index = _tasks.indexWhere((t) => t.id == task.id);
         if (index != -1) {
-          _tasks[index] = task;
+          final taskModel = TaskModel.fromEntity(task);
+          _tasks[index] = taskModel;
           notifyListeners();
         }
       }
@@ -250,7 +252,8 @@ class TaskProvider extends ChangeNotifier {
         // 手动更新本地列表中的任务
         final index = _tasks.indexWhere((t) => t.id == id);
         if (index != -1) {
-          _tasks[index] = updatedTask;
+          final taskModel = TaskModel.fromEntity(updatedTask);
+          _tasks[index] = taskModel;
           notifyListeners();
         }
       }
