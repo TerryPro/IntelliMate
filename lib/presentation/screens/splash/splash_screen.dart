@@ -12,7 +12,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
@@ -20,13 +21,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    
+
     // 初始化动画控制器
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     );
-    
+
     // 淡入动画
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
@@ -34,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         curve: const Interval(0.0, 0.5, curve: Curves.easeIn),
       ),
     );
-    
+
     // 缩放动画
     _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(
@@ -42,27 +43,28 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
       ),
     );
-    
+
     // 启动动画
     _animationController.forward();
-    
+
     // 延迟2.5秒后检查登录状态
     Timer(const Duration(milliseconds: 2500), () {
       _checkLoginStatus();
     });
   }
-  
+
   // 检查登录状态
   Future<void> _checkLoginStatus() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
-    
+    final passwordProvider =
+        Provider.of<PasswordProvider>(context, listen: false);
+
     // 检查是否已设置密码
     final hasPassword = passwordProvider.hasPassword;
-    
+
     // 检查是否已登录
     final isLoggedIn = userProvider.isLoggedIn;
-    
+
     if (mounted) {
       if (!hasPassword || !isLoggedIn) {
         // 如果没有设置密码或未登录，跳转到登录页面
@@ -85,14 +87,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF3ECABB),
-              Color(0xFF36B5A5),
-            ],
-          ),
+          color: Color(0xFF3ECABB),
         ),
         child: Center(
           child: AnimatedBuilder(
@@ -155,7 +150,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         width: 40,
                         height: 40,
                         child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                           strokeWidth: 3,
                         ),
                       ),
@@ -169,4 +165,4 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       ),
     );
   }
-} 
+}

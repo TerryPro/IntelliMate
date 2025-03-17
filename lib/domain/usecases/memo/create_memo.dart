@@ -19,7 +19,7 @@ class CreateMemo {
         category: category,
       );
     } catch (e) {
-      return Result.failure("创建备忘录失败: " + e.toString());
+      return Result.failure("创建备忘录失败: $e");
     }
   }
-} 
+}

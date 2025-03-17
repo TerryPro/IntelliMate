@@ -12,7 +12,7 @@ class UpdateMemo {
     try {
       return await repository.updateMemo(memo);
     } catch (e) {
-      return Result.failure("更新备忘录失败: " + e.toString());
+      return Result.failure("更新备忘录失败: $e");
     }
   }
-} 
+}

@@ -291,9 +291,10 @@ class DailyNoteProvider extends ChangeNotifier {
   Future<List<DailyNote>> getDayBeforeYesterdayDailyNotes() async {
     final now = DateTime.now();
     final dayBeforeYesterday = now.subtract(const Duration(days: 2));
-    final startOfDay = DateTime(dayBeforeYesterday.year, dayBeforeYesterday.month, dayBeforeYesterday.day);
-    final endOfDay =
-        DateTime(dayBeforeYesterday.year, dayBeforeYesterday.month, dayBeforeYesterday.day, 23, 59, 59);
+    final startOfDay = DateTime(dayBeforeYesterday.year,
+        dayBeforeYesterday.month, dayBeforeYesterday.day);
+    final endOfDay = DateTime(dayBeforeYesterday.year, dayBeforeYesterday.month,
+        dayBeforeYesterday.day, 23, 59, 59);
 
     return getDailyNotesByCondition(
       fromDate: startOfDay,
@@ -306,8 +307,9 @@ class DailyNoteProvider extends ChangeNotifier {
     final now = DateTime.now();
     // 计算本周的第一天（周一）
     final firstDayOfWeek = now.subtract(Duration(days: now.weekday - 1));
-    final startOfWeek = DateTime(firstDayOfWeek.year, firstDayOfWeek.month, firstDayOfWeek.day);
-    
+    final startOfWeek =
+        DateTime(firstDayOfWeek.year, firstDayOfWeek.month, firstDayOfWeek.day);
+
     return getDailyNotesByCondition(
       fromDate: startOfWeek,
       toDate: now,
@@ -318,7 +320,7 @@ class DailyNoteProvider extends ChangeNotifier {
   Future<List<DailyNote>> getThisMonthDailyNotes() async {
     final now = DateTime.now();
     final startOfMonth = DateTime(now.year, now.month, 1);
-    
+
     return getDailyNotesByCondition(
       fromDate: startOfMonth,
       toDate: now,
@@ -331,7 +333,7 @@ class DailyNoteProvider extends ChangeNotifier {
     // 计算当前季度的第一个月
     final quarterFirstMonth = ((now.month - 1) ~/ 3) * 3 + 1;
     final startOfQuarter = DateTime(now.year, quarterFirstMonth, 1);
-    
+
     return getDailyNotesByCondition(
       fromDate: startOfQuarter,
       toDate: now,
@@ -342,8 +344,9 @@ class DailyNoteProvider extends ChangeNotifier {
   Future<List<DailyNote>> getRecentThreeDaysDailyNotes() async {
     final now = DateTime.now();
     final twoDaysAgo = now.subtract(const Duration(days: 2));
-    final startOfTwoDaysAgo = DateTime(twoDaysAgo.year, twoDaysAgo.month, twoDaysAgo.day);
-    
+    final startOfTwoDaysAgo =
+        DateTime(twoDaysAgo.year, twoDaysAgo.month, twoDaysAgo.day);
+
     return getDailyNotesByCondition(
       fromDate: startOfTwoDaysAgo,
       toDate: now,
@@ -365,5 +368,52 @@ class DailyNoteProvider extends ChangeNotifier {
   // 清除错误信息
   void _clearError() {
     _error = null;
+  }
+
+  // 获取所有日常点滴数量
+  Future<int> getAllDailyNotesCount() async {
+    final notes = await getDailyNotesByCondition();
+    return notes.length;
+  }
+
+  // 获取今日日常点滴数量
+  Future<int> getTodayDailyNotesCount() async {
+    final notes = await getTodayDailyNotes();
+    return notes.length;
+  }
+
+  // 获取本周日常点滴数量
+  Future<int> getThisWeekDailyNotesCount() async {
+    final notes = await getThisWeekDailyNotes();
+    return notes.length;
+  }
+
+  // 获取本月日常点滴数量
+  Future<int> getThisMonthDailyNotesCount() async {
+    final notes = await getThisMonthDailyNotes();
+    return notes.length;
+  }
+
+  // 获取本季度日常点滴数量
+  Future<int> getThisQuarterDailyNotesCount() async {
+    final notes = await getThisQuarterDailyNotes();
+    return notes.length;
+  }
+
+  // 获取日常点滴统计信息
+  Future<Map<String, int>> getDailyNoteStatistics() async {
+    final allCount = await getAllDailyNotesCount();
+    final todayCount = await getTodayDailyNotesCount();
+    final weekCount = await getThisWeekDailyNotesCount();
+    final monthCount = await getThisMonthDailyNotesCount();
+    final quarterCount = await getThisQuarterDailyNotesCount();
+
+    return {
+      'total': allCount,
+      'today': todayCount,
+      'week': weekCount,
+      'month': monthCount,
+      'quarter': quarterCount,
+    };
   }
 }

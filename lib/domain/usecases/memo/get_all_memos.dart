@@ -22,7 +22,7 @@ class GetAllMemos {
         descending: descending,
       );
     } catch (e) {
-      return Result.failure("获取所有备忘录失败: " + e.toString());
+      return Result.failure("获取所有备忘录失败: $e");
     }
   }
-} 
+}

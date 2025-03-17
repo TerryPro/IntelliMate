@@ -12,7 +12,7 @@ class SearchMemos {
     try {
       return await repository.searchMemos(query);
     } catch (e) {
-      return Result.failure("搜索备忘录失败: " + e.toString());
+      return Result.failure("搜索备忘录失败: $e");
     }
   }
-} 
+}

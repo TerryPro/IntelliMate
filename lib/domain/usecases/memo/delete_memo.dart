@@ -10,7 +10,7 @@ class DeleteMemo {
     try {
       return await repository.deleteMemo(id);
     } catch (e) {
-      return Result.failure("删除备忘录失败: " + e.toString());
+      return Result.failure("删除备忘录失败: $e");
     }
   }
-} 
+}

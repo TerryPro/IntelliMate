@@ -12,7 +12,7 @@ class GetMemosByCategory {
     try {
       return await repository.getMemosByCategory(category);
     } catch (e) {
-      return Result.failure("获取分类备忘录失败: " + e.toString());
+      return Result.failure("获取分类备忘录失败: $e");
     }
   }
-} 
+}
