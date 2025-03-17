@@ -1,20 +1,25 @@
 import 'package:intellimate/domain/entities/memo.dart';
 import 'package:intellimate/domain/repositories/memo_repository.dart';
+import 'package:intellimate/domain/core/result.dart';
 
 class CreateMemo {
   final MemoRepository repository;
 
   CreateMemo(this.repository);
 
-  Future<Memo> call({
+  Future<Result<Memo>> call({
     required String title,
     required String content,
     String? category,
   }) async {
-    return await repository.createMemo(
-      title: title,
-      content: content,
-      category: category,
-    );
+    try {
+      return await repository.createMemo(
+        title: title,
+        content: content,
+        category: category,
+      );
+    } catch (e) {
+      return Result.failure("创建备忘录失败: " + e.toString());
+    }
   }
 } 

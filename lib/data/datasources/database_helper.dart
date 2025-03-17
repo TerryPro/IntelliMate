@@ -259,7 +259,7 @@ class DatabaseHelper {
         CREATE TABLE $tableMemo (
           id TEXT PRIMARY KEY,
           title TEXT NOT NULL,
-          content TEXT NOT NULL,
+          content TEXT,
           category TEXT,
           created_at INTEGER NOT NULL,
           updated_at INTEGER NOT NULL

@@ -20,21 +20,32 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
   String _selectedCalendarView = '周';
   final TextEditingController _quickNoteController = TextEditingController();
   bool _isLoading = true;
+  bool _isLoadingMore = false;
+  int _currentPage = 0;
+  final int _pageSize = 10;
+  List<DailyNote> _displayedNotes = [];
+  bool _hasMoreNotes = true;
   
   @override
   void initState() {
     super.initState();
-    _loadDailyNotes();
+    _loadInitialDailyNotes();
   }
   
-  // 加载日常点滴数据
-  Future<void> _loadDailyNotes() async {
+  // 加载初始日常点滴数据（今天、昨天、前天）
+  Future<void> _loadInitialDailyNotes() async {
     setState(() {
       _isLoading = true;
+      _currentPage = 0;
+      _hasMoreNotes = true;
     });
     
     try {
-      await Provider.of<DailyNoteProvider>(context, listen: false).getAllDailyNotes();
+      final provider = Provider.of<DailyNoteProvider>(context, listen: false);
+      await provider.getAllDailyNotes();
+      
+      // 获取最近三天的点滴
+      _displayedNotes = await provider.getRecentThreeDaysDailyNotes();
     } catch (e) {
       // 显示错误提示
       if (mounted) {
@@ -46,6 +57,159 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+        });
+      }
+    }
+  }
+  
+  // 根据筛选条件加载日常点滴
+  Future<void> _loadFilteredDailyNotes() async {
+    setState(() {
+      _isLoading = true;
+      _currentPage = 0;
+      _hasMoreNotes = true;
+    });
+    
+    try {
+      final provider = Provider.of<DailyNoteProvider>(context, listen: false);
+      List<DailyNote> filteredNotes = [];
+      
+      switch (_selectedFilter) {
+        case '全部':
+          await provider.getAllDailyNotes();
+          filteredNotes = provider.dailyNotes;
+          break;
+        case '今天':
+          filteredNotes = await provider.getTodayDailyNotes();
+          break;
+        case '本周':
+          filteredNotes = await provider.getThisWeekDailyNotes();
+          break;
+        case '本月':
+          filteredNotes = await provider.getThisMonthDailyNotes();
+          break;
+        case '本季度':
+          filteredNotes = await provider.getThisQuarterDailyNotes();
+          break;
+        default:
+          await provider.getAllDailyNotes();
+          filteredNotes = provider.dailyNotes;
+      }
+      
+      _displayedNotes = filteredNotes;
+      
+      // 如果筛选后的记录数小于页面大小，则没有更多记录
+      if (filteredNotes.length < _pageSize) {
+        _hasMoreNotes = false;
+      }
+    } catch (e) {
+      // 显示错误提示
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('加载日常点滴失败: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+  
+  // 加载更多日常点滴
+  Future<void> _loadMoreDailyNotes() async {
+    if (_isLoadingMore || !_hasMoreNotes) return;
+    
+    setState(() {
+      _isLoadingMore = true;
+    });
+    
+    try {
+      final provider = Provider.of<DailyNoteProvider>(context, listen: false);
+      _currentPage++;
+      
+      List<DailyNote> moreNotes = [];
+      final offset = _currentPage * _pageSize;
+      
+      switch (_selectedFilter) {
+        case '全部':
+          moreNotes = await provider.getDailyNotesByCondition(
+            limit: _pageSize,
+            offset: offset,
+          );
+          break;
+        case '今天':
+          final now = DateTime.now();
+          final startOfDay = DateTime(now.year, now.month, now.day);
+          final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
+          
+          moreNotes = await provider.getDailyNotesByCondition(
+            fromDate: startOfDay,
+            toDate: endOfDay,
+            limit: _pageSize,
+            offset: offset,
+          );
+          break;
+        case '本周':
+          final now = DateTime.now();
+          final firstDayOfWeek = now.subtract(Duration(days: now.weekday - 1));
+          final startOfWeek = DateTime(firstDayOfWeek.year, firstDayOfWeek.month, firstDayOfWeek.day);
+          
+          moreNotes = await provider.getDailyNotesByCondition(
+            fromDate: startOfWeek,
+            toDate: now,
+            limit: _pageSize,
+            offset: offset,
+          );
+          break;
+        case '本月':
+          final now = DateTime.now();
+          final startOfMonth = DateTime(now.year, now.month, 1);
+          
+          moreNotes = await provider.getDailyNotesByCondition(
+            fromDate: startOfMonth,
+            toDate: now,
+            limit: _pageSize,
+            offset: offset,
+          );
+          break;
+        case '本季度':
+          final now = DateTime.now();
+          final quarterFirstMonth = ((now.month - 1) ~/ 3) * 3 + 1;
+          final startOfQuarter = DateTime(now.year, quarterFirstMonth, 1);
+          
+          moreNotes = await provider.getDailyNotesByCondition(
+            fromDate: startOfQuarter,
+            toDate: now,
+            limit: _pageSize,
+            offset: offset,
+          );
+          break;
+        default:
+          moreNotes = await provider.getDailyNotesByCondition(
+            limit: _pageSize,
+            offset: offset,
+          );
+      }
+      
+      if (moreNotes.isEmpty || moreNotes.length < _pageSize) {
+        _hasMoreNotes = false;
+      }
+      
+      _displayedNotes.addAll(moreNotes);
+    } catch (e) {
+      // 显示错误提示
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('加载更多点滴失败: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingMore = false;
         });
       }
     }
@@ -65,7 +229,7 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
     if (!mounted) return;
     
     if (result == true) {
-      _loadDailyNotes();
+      _loadFilteredDailyNotes();
       
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -127,7 +291,7 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
             title: '日常点滴',
             actions: [
               AppBarRefreshButton(
-                onTap: _loadDailyNotes,
+                onTap: _loadFilteredDailyNotes,
               ),
               const SizedBox(width: 8),
               AppBarAddButton(
@@ -156,7 +320,7 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(
-                          onPressed: _loadDailyNotes,
+                          onPressed: _loadFilteredDailyNotes,
                           child: const Text('重试'),
                         ),
                       ],
@@ -226,17 +390,8 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
                         // 快速记录区域
                         _buildQuickNoteArea(),
                         
-                        // 日期分隔线 - 今天
-                        _buildDateDivider('今天'),
-                        
-                        // 今天的点滴内容列表
-                        _buildTodayNotes(dailyNoteProvider),
-                        
-                        // 日期分隔线 - 昨天
-                        _buildDateDivider('昨天'),
-                        
-                        // 昨天的点滴内容列表
-                        _buildYesterdayNotes(dailyNoteProvider),
+                        // 显示点滴记录
+                        _buildDailyNotesList(),
                         
                         // 加载更多
                         _buildLoadMore(),
@@ -265,6 +420,8 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
           _buildFilterChip('本周'),
           const SizedBox(width: 8),
           _buildFilterChip('本月'),
+          const SizedBox(width: 8),
+          _buildFilterChip('本季度'),
         ],
       ),
     );
@@ -279,6 +436,7 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
         setState(() {
           _selectedFilter = label;
         });
+        _loadFilteredDailyNotes();
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -382,30 +540,7 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
   
   // 构建搜索栏
   Widget _buildSearchBar() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.search, color: Colors.grey.shade400),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: '搜索...',
-                border: InputBorder.none,
-                hintStyle: TextStyle(color: Colors.grey),
-              ),
-              style: TextStyle(color: Colors.black87),
-            ),
-          ),
-        ],
-      ),
-    );
+    return const SizedBox.shrink();
   }
   
   // 构建快速记录区域
@@ -562,18 +697,9 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
     );
   }
   
-  // 构建今天的点滴内容列表
-  Widget _buildTodayNotes(DailyNoteProvider provider) {
-    // 过滤今天的点滴
-    final now = DateTime.now();
-    final todayNotes = provider.dailyNotes.where((note) {
-      final noteDate = note.createdAt;
-      return noteDate.year == now.year && 
-             noteDate.month == now.month && 
-             noteDate.day == now.day;
-    }).toList();
-    
-    if (todayNotes.isEmpty) {
+  // 构建点滴记录列表
+  Widget _buildDailyNotesList() {
+    if (_displayedNotes.isEmpty) {
       return Container(
         margin: const EdgeInsets.only(bottom: 20),
         padding: const EdgeInsets.all(16),
@@ -583,50 +709,67 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
         ),
         child: const Center(
           child: Text(
-            '今天还没有点滴记录',
+            '没有点滴记录',
             style: TextStyle(color: Colors.grey),
           ),
         ),
       );
     }
     
+    // 按日期分组点滴
+    final Map<String, List<DailyNote>> groupedNotes = {};
+    
+    for (final note in _displayedNotes) {
+      final dateKey = _getDateText(note.createdAt);
+      if (!groupedNotes.containsKey(dateKey)) {
+        groupedNotes[dateKey] = [];
+      }
+      groupedNotes[dateKey]!.add(note);
+    }
+    
+    // 按日期顺序排列
+    final sortedDates = groupedNotes.keys.toList()
+      ..sort((a, b) {
+        if (a == '今天') return -1;
+        if (b == '今天') return 1;
+        if (a == '昨天') return -1;
+        if (b == '昨天') return 1;
+        if (a == '前天') return -1;
+        if (b == '前天') return 1;
+        return b.compareTo(a); // 其他日期按降序排列
+      });
+    
     return Column(
-      children: todayNotes.map((note) => _buildDailyNoteItem(note)).toList(),
+      children: sortedDates.map((date) {
+        return Column(
+          children: [
+            // 日期分隔线
+            _buildDateDivider(date),
+            // 该日期下的点滴列表
+            ...groupedNotes[date]!.map((note) => _buildDailyNoteItem(note)).toList(),
+          ],
+        );
+      }).toList(),
     );
   }
   
-  // 构建昨天的点滴内容列表
-  Widget _buildYesterdayNotes(DailyNoteProvider provider) {
-    // 过滤昨天的点滴
+  // 获取日期文本
+  String _getDateText(DateTime date) {
     final now = DateTime.now();
-    final yesterday = now.subtract(const Duration(days: 1));
-    final yesterdayNotes = provider.dailyNotes.where((note) {
-      final noteDate = note.createdAt;
-      return noteDate.year == yesterday.year && 
-             noteDate.month == yesterday.month && 
-             noteDate.day == yesterday.day;
-    }).toList();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final dayBeforeYesterday = today.subtract(const Duration(days: 2));
+    final dateOnly = DateTime(date.year, date.month, date.day);
     
-    if (yesterdayNotes.isEmpty) {
-      return Container(
-        margin: const EdgeInsets.only(bottom: 20),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: const Center(
-          child: Text(
-            '昨天没有点滴记录',
-            style: TextStyle(color: Colors.grey),
-          ),
-        ),
-      );
+    if (dateOnly == today) {
+      return '今天';
+    } else if (dateOnly == yesterday) {
+      return '昨天';
+    } else if (dateOnly == dayBeforeYesterday) {
+      return '前天';
+    } else {
+      return DateFormat('yyyy-MM-dd').format(date);
     }
-    
-    return Column(
-      children: yesterdayNotes.map((note) => _buildDailyNoteItem(note)).toList(),
-    );
   }
   
   // 构建点滴项
@@ -827,50 +970,48 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
   
   // 构建加载更多
   Widget _buildLoadMore() {
-    return GestureDetector(
-      onTap: () {
-        // 加载更多内容
-      },
-      child: const Padding(
+    if (!_hasMoreNotes) {
+      return const Padding(
         padding: EdgeInsets.symmetric(vertical: 16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              '加载更多',
-              style: TextStyle(
-                color: Color(0xFF3ECABB),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            SizedBox(width: 4),
-            Icon(
-              Icons.keyboard_arrow_down,
-              color: Color(0xFF3ECABB),
-              size: 16,
-            ),
-          ],
+        child: Text(
+          '没有更多内容了',
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: 14,
+          ),
+          textAlign: TextAlign.center,
         ),
+      );
+    }
+    
+    return GestureDetector(
+      onTap: _loadMoreDailyNotes,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: _isLoadingMore
+            ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+            : const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '加载更多',
+                    style: TextStyle(
+                      color: Color(0xFF3ECABB),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(
+                    Icons.keyboard_arrow_down,
+                    color: Color(0xFF3ECABB),
+                    size: 16,
+                  ),
+                ],
+              ),
       ),
     );
   }
   
-  // 获取日期文本
-  String _getDateText(DateTime date) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(const Duration(days: 1));
-    final dateOnly = DateTime(date.year, date.month, date.day);
-    
-    if (dateOnly == today) {
-      return '今天';
-    } else if (dateOnly == yesterday) {
-      return '昨天';
-    } else {
-      return DateFormat('MM-dd').format(date);
-    }
-  }
-
   // 显示点滴操作选项
   void _showNoteOptions(DailyNote note) {
     showModalBottomSheet(
@@ -921,7 +1062,7 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
     );
     
     if (result == true && mounted) {
-      _loadDailyNotes();
+      _loadFilteredDailyNotes();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('点滴已更新'),
@@ -968,7 +1109,7 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
       final success = await Provider.of<DailyNoteProvider>(context, listen: false).deleteDailyNote(id);
       
       if (success && mounted) {
-        _loadDailyNotes();
+        _loadFilteredDailyNotes();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('点滴已删除'),

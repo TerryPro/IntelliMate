@@ -7,7 +7,6 @@ import 'package:intellimate/domain/usecases/memo/get_memo_by_id.dart';
 import 'package:intellimate/domain/usecases/memo/get_memos_by_category.dart';
 import 'package:intellimate/domain/usecases/memo/search_memos.dart';
 import 'package:intellimate/domain/usecases/memo/update_memo.dart';
-import 'package:intellimate/data/models/memo_model.dart';
 
 class MemoProvider extends ChangeNotifier {
   final CreateMemo _createMemoUseCase;
@@ -53,18 +52,21 @@ class MemoProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
-    try {
-      final memo = await _getMemoByIdUseCase(id);
-      _selectedMemo = memo;
-      _isLoading = false;
-      notifyListeners();
-      return memo;
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return null;
-    }
+    final result = await _getMemoByIdUseCase(id);
+    _isLoading = false;
+
+    result.fold(
+      onSuccess: (memo) {
+        _selectedMemo = memo;
+        _error = null;
+      },
+      onFailure: (error) {
+        _error = error;
+      },
+    );
+
+    notifyListeners();
+    return result.isSuccess ? result.data : null;
   }
 
   // 创建备忘
@@ -77,32 +79,40 @@ class MemoProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
-    try {
-      // 数据验证
-      if (title.trim().isEmpty) {
-        throw Exception('标题不能为空');
-      }
-      if (content.trim().isEmpty) {
-        throw Exception('内容不能为空');
-      }
-
-      final memo = await _createMemoUseCase(
-        title: title.trim(),
-        content: content.trim(),
-        category: category?.trim(),
-      );
-
-      // 更新状态
-      _memos = [..._memos, memo];
-      _isLoading = false;
-      notifyListeners();
-      return memo;
-    } catch (e) {
-      _error = e.toString();
+    // 数据验证
+    if (title.trim().isEmpty) {
+      _error = '标题不能为空';
       _isLoading = false;
       notifyListeners();
       return null;
     }
+    if (content.trim().isEmpty) {
+      _error = '内容不能为空';
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    }
+
+    final result = await _createMemoUseCase(
+      title: title.trim(),
+      content: content.trim(),
+      category: category?.trim(),
+    );
+
+    _isLoading = false;
+
+    result.fold(
+      onSuccess: (memo) {
+        _memos = [..._memos, memo];
+        _error = null;
+      },
+      onFailure: (error) {
+        _error = error;
+      },
+    );
+
+    notifyListeners();
+    return result.isSuccess ? result.data : null;
   }
 
   // 更新备忘
@@ -111,43 +121,30 @@ class MemoProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
-    print(memo);
-    print(_memos);
-    
-    try {
-      final success = await _updateMemoUseCase(memo);
-      if (success) {
+    final result = await _updateMemoUseCase(memo);
+    _isLoading = false;
+
+    result.fold(
+      onSuccess: (updatedMemo) {
         // 更新本地列表
-        final index = _memos.indexWhere((m) => m.id == memo.id);
+        final index = _memos.indexWhere((m) => m.id == updatedMemo.id);
         if (index != -1) {
-          try {
-            // 将Memo转换为MemoModel
-            final memoModel = MemoModel.fromEntity(memo);
-            _memos[index] = memoModel;
-          } catch (e) {
-            print("更新本地列表失败: $e");
-            _memos = List.from(_memos); // 回滚状态
-            rethrow;
-          }
+          _memos[index] = updatedMemo;
         }
 
         // 如果是当前选中的备忘，也更新它
-        if (_selectedMemo?.id == memo.id) {
-          _selectedMemo = memo;
+        if (_selectedMemo?.id == updatedMemo.id) {
+          _selectedMemo = updatedMemo;
         }
-      }
+        _error = null;
+      },
+      onFailure: (error) {
+        _error = error;
+      },
+    );
 
-      print("success: $success");
-
-      _isLoading = false;
-      notifyListeners();
-      return success;
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+    notifyListeners();
+    return result.isSuccess;
   }
 
   // 删除备忘
@@ -156,10 +153,11 @@ class MemoProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
-    try {
-      final success = await _deleteMemoUseCase(id);
+    final result = await _deleteMemoUseCase(id);
+    _isLoading = false;
 
-      if (success) {
+    result.fold(
+      onSuccess: (_) {
         // 从列表中移除
         _memos.removeWhere((memo) => memo.id == id);
 
@@ -167,17 +165,15 @@ class MemoProvider extends ChangeNotifier {
         if (_selectedMemo?.id == id) {
           _selectedMemo = null;
         }
-      }
+        _error = null;
+      },
+      onFailure: (error) {
+        _error = error;
+      },
+    );
 
-      _isLoading = false;
-      notifyListeners();
-      return success;
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+    notifyListeners();
+    return result.isSuccess;
   }
 
   // 获取所有备忘
@@ -191,24 +187,27 @@ class MemoProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
-    try {
-      final memos = await _getAllMemosUseCase(
-        limit: limit,
-        offset: offset,
-        orderBy: orderBy,
-        descending: descending,
-      );
+    final result = await _getAllMemosUseCase(
+      limit: limit,
+      offset: offset,
+      orderBy: orderBy,
+      descending: descending,
+    );
 
-      _memos = memos;
-      _isLoading = false;
-      notifyListeners();
-      return memos;
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return [];
-    }
+    _isLoading = false;
+
+    result.fold(
+      onSuccess: (memos) {
+        _memos = memos;
+        _error = null;
+      },
+      onFailure: (error) {
+        _error = error;
+      },
+    );
+
+    notifyListeners();
+    return result.isSuccess ? result.data ?? [] : [];
   }
 
   // 搜索备忘
@@ -217,17 +216,20 @@ class MemoProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
-    try {
-      final memos = await _searchMemosUseCase(query);
-      _isLoading = false;
-      notifyListeners();
-      return memos;
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return [];
-    }
+    final result = await _searchMemosUseCase(query);
+    _isLoading = false;
+
+    result.fold(
+      onSuccess: (memos) {
+        _error = null;
+      },
+      onFailure: (error) {
+        _error = error;
+      },
+    );
+
+    notifyListeners();
+    return result.isSuccess ? result.data ?? [] : [];
   }
 
   // 按类别获取备忘
@@ -236,17 +238,20 @@ class MemoProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
-    try {
-      final memos = await _getMemosByCategoryUseCase(category);
-      _isLoading = false;
-      notifyListeners();
-      return memos;
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return [];
-    }
+    final result = await _getMemosByCategoryUseCase(category);
+    _isLoading = false;
+
+    result.fold(
+      onSuccess: (memos) {
+        _error = null;
+      },
+      onFailure: (error) {
+        _error = error;
+      },
+    );
+
+    notifyListeners();
+    return result.isSuccess ? result.data ?? [] : [];
   }
 
   // 清除错误

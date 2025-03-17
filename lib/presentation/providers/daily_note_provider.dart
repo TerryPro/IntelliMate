@@ -287,6 +287,69 @@ class DailyNoteProvider extends ChangeNotifier {
     );
   }
 
+  // 获取前天的日常点滴
+  Future<List<DailyNote>> getDayBeforeYesterdayDailyNotes() async {
+    final now = DateTime.now();
+    final dayBeforeYesterday = now.subtract(const Duration(days: 2));
+    final startOfDay = DateTime(dayBeforeYesterday.year, dayBeforeYesterday.month, dayBeforeYesterday.day);
+    final endOfDay =
+        DateTime(dayBeforeYesterday.year, dayBeforeYesterday.month, dayBeforeYesterday.day, 23, 59, 59);
+
+    return getDailyNotesByCondition(
+      fromDate: startOfDay,
+      toDate: endOfDay,
+    );
+  }
+
+  // 获取本周的日常点滴
+  Future<List<DailyNote>> getThisWeekDailyNotes() async {
+    final now = DateTime.now();
+    // 计算本周的第一天（周一）
+    final firstDayOfWeek = now.subtract(Duration(days: now.weekday - 1));
+    final startOfWeek = DateTime(firstDayOfWeek.year, firstDayOfWeek.month, firstDayOfWeek.day);
+    
+    return getDailyNotesByCondition(
+      fromDate: startOfWeek,
+      toDate: now,
+    );
+  }
+
+  // 获取本月的日常点滴
+  Future<List<DailyNote>> getThisMonthDailyNotes() async {
+    final now = DateTime.now();
+    final startOfMonth = DateTime(now.year, now.month, 1);
+    
+    return getDailyNotesByCondition(
+      fromDate: startOfMonth,
+      toDate: now,
+    );
+  }
+
+  // 获取本季度的日常点滴
+  Future<List<DailyNote>> getThisQuarterDailyNotes() async {
+    final now = DateTime.now();
+    // 计算当前季度的第一个月
+    final quarterFirstMonth = ((now.month - 1) ~/ 3) * 3 + 1;
+    final startOfQuarter = DateTime(now.year, quarterFirstMonth, 1);
+    
+    return getDailyNotesByCondition(
+      fromDate: startOfQuarter,
+      toDate: now,
+    );
+  }
+
+  // 获取最近三天的日常点滴（今天、昨天、前天）
+  Future<List<DailyNote>> getRecentThreeDaysDailyNotes() async {
+    final now = DateTime.now();
+    final twoDaysAgo = now.subtract(const Duration(days: 2));
+    final startOfTwoDaysAgo = DateTime(twoDaysAgo.year, twoDaysAgo.month, twoDaysAgo.day);
+    
+    return getDailyNotesByCondition(
+      fromDate: startOfTwoDaysAgo,
+      toDate: now,
+    );
+  }
+
   // 设置加载状态
   void _setLoading(bool loading) {
     _isLoading = loading;

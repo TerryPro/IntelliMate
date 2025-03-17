@@ -25,7 +25,7 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
   Memo? _memo;
   String? _memoId;
 
-  final List<String> _categories = ['工作', '学习', '生活', '健康', '其他'];
+  final List<String> _categories = ['工作', '学习', '生活', '其他'];
 
   @override
   void didChangeDependencies() {
@@ -382,53 +382,59 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
 
   // 构建类别选择器
   Widget _buildCategorySelector() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: DropdownButtonFormField<String>(
-        value: _selectedCategory,
-        decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '类别',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
           ),
         ),
-        style: const TextStyle(
-          fontSize: 16,
-          color: Color(0xFF333333),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: _categories.map((category) {
+            final isSelected = category == _selectedCategory;
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedCategory = category;
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFF3ECABB) : Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      category == '工作' ? Icons.work :
+                      category == '学习' ? Icons.school :
+                      category == '生活' ? Icons.home :
+                      Icons.category, // 默认图标
+                      size: 16,
+                      color: isSelected ? Colors.white : Colors.grey.shade700,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      category,
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : Colors.grey.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
         ),
-        icon: const Icon(
-          Icons.arrow_drop_down,
-          color: AppColors.primary,
-        ),
-        dropdownColor: Colors.white,
-        items: _categories.map((category) {
-          return DropdownMenuItem<String>(
-            value: category,
-            child: Text(category),
-          );
-        }).toList(),
-        onChanged: (value) {
-          if (value != null) {
-            setState(() {
-              _selectedCategory = value;
-            });
-          }
-        },
-      ),
+      ],
     );
   }
 
@@ -449,7 +455,7 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
       child: TextFormField(
         controller: _contentController,
         decoration: InputDecoration(
-          hintText: '请输入备忘录内容',
+          hintText: '请输入备忘录内容（可选）',
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide.none,
@@ -463,9 +469,6 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
         ),
         maxLines: 10,
         validator: (value) {
-          if (value == null || value.trim().isEmpty) {
-            return '请输入内容';
-          }
           return null;
         },
       ),

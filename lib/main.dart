@@ -65,7 +65,7 @@ Future<void> _initializeDatabase() async {
     
     // 删除备忘录表以适应结构变更
     // 备忘录表结构已简化：移除了date、priority、isPinned、isCompleted和completedAt字段
-    /*
+    /* 
     print('正在删除旧的备忘录表...');
     try {
       await db.execute('DROP TABLE IF EXISTS ${DatabaseHelper.tableMemo}');

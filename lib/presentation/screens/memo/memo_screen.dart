@@ -17,7 +17,7 @@ class _MemoScreenState extends State<MemoScreen> {
   bool _isLoading = true;
   List<Memo> _memos = [];
   String _selectedCategory = '全部';
-  final List<String> _categories = ['全部', '工作', '学习', '生活', '健康', '其他'];
+  final List<String> _categories = ['全部', '工作', '学习', '生活', '其他'];
   final TextEditingController _searchController = TextEditingController();
   final bool _isSearching = false;
 
@@ -240,43 +240,45 @@ class _MemoScreenState extends State<MemoScreen> {
   Widget _buildCategoryFilter() {
     return SizedBox(
       height: 36,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: _categories.map((category) {
           final isSelected = category == _selectedCategory;
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedCategory = category;
-              });
-              _loadMemos();
-            },
-            child: Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary : Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: isSelected ? AppColors.primary : Colors.grey.shade300,
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedCategory = category;
+                });
+                _loadMemos();
+              },
+              child: Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.primary : Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: isSelected ? AppColors.primary : Colors.grey.shade300,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.3),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
                 ),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: AppColors.primary.withOpacity(0.3),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                    : null,
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                category,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.grey.shade700,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 13,
+                alignment: Alignment.center,
+                child: Text(
+                  category,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.grey.shade700,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ),
@@ -292,10 +294,11 @@ class _MemoScreenState extends State<MemoScreen> {
     int workCount = 0;
     int studyCount = 0;
     int lifeCount = 0;
+    int otherCount = 0;
 
     for (var memo in _memos) {
       switch (memo.category) {
-        case '工作':
+        case '工作':  
           workCount++;
           break;
         case '学习':
@@ -305,6 +308,7 @@ class _MemoScreenState extends State<MemoScreen> {
           lifeCount++;
           break;
         default:
+          otherCount++;
           break;
       }
     }
@@ -367,6 +371,13 @@ class _MemoScreenState extends State<MemoScreen> {
                   color: Colors.green,
                 ),
               ),
+              Expanded(
+                child: _buildStatItem(
+                  count: otherCount,
+                  label: '其它',
+                  color: Colors.grey,
+                ),
+              ),
             ],
           ),
         ],
@@ -426,29 +437,6 @@ class _MemoScreenState extends State<MemoScreen> {
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.grey.shade700,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '点击添加按钮创建新的备忘录',
-              style: TextStyle(
-                color: Colors.grey.shade500,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _navigateToAddMemo,
-              icon: const Icon(Icons.add),
-              label: const Text('添加备忘录'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
               ),
             ),
           ],
@@ -530,54 +518,62 @@ class _MemoScreenState extends State<MemoScreen> {
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
 
-                // 底部信息
+                // 创建时间
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // 创建时间
                     Text(
-                      '创建于: ${_formatDate(memo.createdAt)}',
+                      '创建时间: ${_formatDate(memo.createdAt)}',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey.shade500,
+                        color: Colors.grey.shade600,
                       ),
                     ),
-
-                    // 操作按钮
+                    // 编辑和删除按钮
                     Row(
                       children: [
                         // 编辑按钮
-                        IconButton(
-                          icon: Icon(
-                            Icons.edit_outlined,
-                            size: 18,
-                            color: Colors.grey.shade600,
+                        GestureDetector(
+                          onTap: () => _navigateToEditMemo(memo.id),
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.edit,
+                              size: 20,
+                              color: Colors.grey.shade500,
+                            ),
                           ),
-                          onPressed: () => _navigateToEditMemo(memo.id),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          tooltip: '编辑',
                         ),
-                        const SizedBox(width: 16),
-
+                        const SizedBox(width: 12),
                         // 删除按钮
-                        IconButton(
-                          icon: Icon(
-                            Icons.delete_outline,
-                            size: 18,
-                            color: Colors.grey.shade600,
+                        GestureDetector(
+                          onTap: () => _showDeleteConfirmation(memo.id),
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.delete,
+                              size: 20,
+                              color: Colors.grey.shade500,
+                            ),
                           ),
-                          onPressed: () => _showDeleteConfirmation(memo.id),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          tooltip: '删除',
                         ),
                       ],
                     ),
                   ],
                 ),
+                const SizedBox(height: 12),
               ],
             ),
           ),
