@@ -336,19 +336,25 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
                 });
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF3ECABB) : Colors.grey.shade200,
+                  color: isSelected
+                      ? const Color(0xFF3ECABB)
+                      : Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      category == '工作' ? Icons.work :
-                      category == '学习' ? Icons.school :
-                      category == '生活' ? Icons.home :
-                      Icons.category, // 默认图标
+                      category == '工作'
+                          ? Icons.work
+                          : category == '学习'
+                              ? Icons.school
+                              : category == '生活'
+                                  ? Icons.home
+                                  : Icons.category, // 默认图标
                       size: 16,
                       color: isSelected ? Colors.white : Colors.grey.shade700,
                     ),
@@ -406,45 +412,6 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
     );
   }
 
-  // 构建保存按钮
-  Widget _buildSaveButton(bool isEditing) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: _isSaving
-            ? null
-            : isEditing
-                ? _updateMemo
-                : _createMemo,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          elevation: 0,
-        ),
-        child: _isSaving
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
-            : Text(
-                isEditing ? '更新备忘录' : '创建备忘录',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-      ),
-    );
-  }
-
   // 构建表单标签
   Widget _buildFormLabel(String label) {
     return Text(
@@ -455,10 +422,5 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
         color: Color(0xFF4B5563),
       ),
     );
-  }
-
-  // 格式化日期
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 }

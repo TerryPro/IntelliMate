@@ -70,10 +70,9 @@ class ScheduleProvider extends ChangeNotifier {
     try {
       final result = await _getAllSchedulesUseCase.call();
       result.fold(
-        onSuccess: (data) => _schedules = data,
-        onFailure: (error) => _error = error
-      );
-      
+          onSuccess: (data) => _schedules = data,
+          onFailure: (error) => _error = error);
+
       _isLoading = false;
       notifyListeners();
       return _schedules;
@@ -93,19 +92,16 @@ class ScheduleProvider extends ChangeNotifier {
 
     try {
       final result = await _getScheduleByIdUseCase.call(id);
-      
+
       Schedule? schedule;
-      result.fold(
-        onSuccess: (data) {
-          _selectedSchedule = data;
-          schedule = data;
-        },
-        onFailure: (error) {
-          _error = error;
-          schedule = null;
-        }
-      );
-      
+      result.fold(onSuccess: (data) {
+        _selectedSchedule = data;
+        schedule = data;
+      }, onFailure: (error) {
+        _error = error;
+        schedule = null;
+      });
+
       _isLoading = false;
       notifyListeners();
       return schedule;
@@ -149,19 +145,16 @@ class ScheduleProvider extends ChangeNotifier {
         participants: participants,
         reminder: reminder,
       );
-      
+
       Schedule? createdSchedule;
-      result.fold(
-        onSuccess: (data) {
-          createdSchedule = data;
-          _schedules.add(data);
-        },
-        onFailure: (error) {
-          _error = error;
-          createdSchedule = null;
-        }
-      );
-      
+      result.fold(onSuccess: (data) {
+        createdSchedule = data;
+        _schedules.add(data);
+      }, onFailure: (error) {
+        _error = error;
+        createdSchedule = null;
+      });
+
       _isLoading = false;
       notifyListeners();
       return createdSchedule;
@@ -181,25 +174,22 @@ class ScheduleProvider extends ChangeNotifier {
 
     try {
       final result = await _updateScheduleUseCase.call(schedule);
-      
+
       bool success = false;
-      result.fold(
-        onSuccess: (data) {
-          success = true;
-          final index = _schedules.indexWhere((s) => s.id == schedule.id);
-          if (index != -1) {
-            _schedules[index] = schedule;
-          }
-          if (_selectedSchedule?.id == schedule.id) {
-            _selectedSchedule = schedule;
-          }
-        },
-        onFailure: (error) {
-          _error = error;
-          success = false;
+      result.fold(onSuccess: (data) {
+        success = true;
+        final index = _schedules.indexWhere((s) => s.id == schedule.id);
+        if (index != -1) {
+          _schedules[index] = schedule;
         }
-      );
-      
+        if (_selectedSchedule?.id == schedule.id) {
+          _selectedSchedule = schedule;
+        }
+      }, onFailure: (error) {
+        _error = error;
+        success = false;
+      });
+
       _isLoading = false;
       notifyListeners();
       return success;
@@ -219,24 +209,21 @@ class ScheduleProvider extends ChangeNotifier {
 
     try {
       final result = await _deleteScheduleUseCase.call(id);
-      
+
       bool success = false;
-      result.fold(
-        onSuccess: (data) {
-          success = data;
-          if (success) {
-            _schedules.removeWhere((schedule) => schedule.id == id);
-            if (_selectedSchedule?.id == id) {
-              _selectedSchedule = null;
-            }
+      result.fold(onSuccess: (data) {
+        success = data;
+        if (success) {
+          _schedules.removeWhere((schedule) => schedule.id == id);
+          if (_selectedSchedule?.id == id) {
+            _selectedSchedule = null;
           }
-        },
-        onFailure: (error) {
-          _error = error;
-          success = false;
         }
-      );
-      
+      }, onFailure: (error) {
+        _error = error;
+        success = false;
+      });
+
       _isLoading = false;
       notifyListeners();
       return success;
@@ -266,19 +253,16 @@ class ScheduleProvider extends ChangeNotifier {
         includeAllDay: includeAllDay,
         category: category,
       );
-      
+
       List<Schedule> schedules = [];
-      result.fold(
-        onSuccess: (data) {
-          schedules = data;
-          _schedules = data;
-        },
-        onFailure: (error) {
-          _error = error;
-          schedules = [];
-        }
-      );
-      
+      result.fold(onSuccess: (data) {
+        schedules = data;
+        _schedules = data;
+      }, onFailure: (error) {
+        _error = error;
+        schedules = [];
+      });
+
       _isLoading = false;
       notifyListeners();
       return schedules;
@@ -306,19 +290,16 @@ class ScheduleProvider extends ChangeNotifier {
         includeAllDay: includeAllDay,
         category: category,
       );
-      
+
       List<Schedule> schedules = [];
-      result.fold(
-        onSuccess: (data) {
-          schedules = data;
-          _schedules = data;
-        },
-        onFailure: (error) {
-          _error = error;
-          schedules = [];
-        }
-      );
-      
+      result.fold(onSuccess: (data) {
+        schedules = data;
+        _schedules = data;
+      }, onFailure: (error) {
+        _error = error;
+        schedules = [];
+      });
+
       _isLoading = false;
       notifyListeners();
       return schedules;
@@ -338,19 +319,16 @@ class ScheduleProvider extends ChangeNotifier {
 
     try {
       final result = await _searchSchedulesUseCase.call(query);
-      
+
       List<Schedule> schedules = [];
-      result.fold(
-        onSuccess: (data) {
-          schedules = data;
-          _schedules = data;
-        },
-        onFailure: (error) {
-          _error = error;
-          schedules = [];
-        }
-      );
-      
+      result.fold(onSuccess: (data) {
+        schedules = data;
+        _schedules = data;
+      }, onFailure: (error) {
+        _error = error;
+        schedules = [];
+      });
+
       _isLoading = false;
       notifyListeners();
       return schedules;
@@ -370,19 +348,16 @@ class ScheduleProvider extends ChangeNotifier {
 
     try {
       final result = await _getSchedulesByCategoryUseCase.call(category);
-      
+
       List<Schedule> schedules = [];
-      result.fold(
-        onSuccess: (data) {
-          schedules = data;
-          _schedules = data;
-        },
-        onFailure: (error) {
-          _error = error;
-          schedules = [];
-        }
-      );
-      
+      result.fold(onSuccess: (data) {
+        schedules = data;
+        _schedules = data;
+      }, onFailure: (error) {
+        _error = error;
+        schedules = [];
+      });
+
       _isLoading = false;
       notifyListeners();
       return schedules;
@@ -408,19 +383,16 @@ class ScheduleProvider extends ChangeNotifier {
         includeAllDay: includeAllDay,
         category: category,
       );
-      
+
       List<Schedule> schedules = [];
-      result.fold(
-        onSuccess: (data) {
-          schedules = data;
-          _schedules = data;
-        },
-        onFailure: (error) {
-          _error = error;
-          schedules = [];
-        }
-      );
-      
+      result.fold(onSuccess: (data) {
+        schedules = data;
+        _schedules = data;
+      }, onFailure: (error) {
+        _error = error;
+        schedules = [];
+      });
+
       _isLoading = false;
       notifyListeners();
       return schedules;
@@ -446,19 +418,16 @@ class ScheduleProvider extends ChangeNotifier {
         limit: limit,
         category: category,
       );
-      
+
       List<Schedule> schedules = [];
-      result.fold(
-        onSuccess: (data) {
-          schedules = data;
-          _schedules = data;
-        },
-        onFailure: (error) {
-          _error = error;
-          schedules = [];
-        }
-      );
-      
+      result.fold(onSuccess: (data) {
+        schedules = data;
+        _schedules = data;
+      }, onFailure: (error) {
+        _error = error;
+        schedules = [];
+      });
+
       _isLoading = false;
       notifyListeners();
       return schedules;
@@ -485,7 +454,7 @@ class ScheduleProvider extends ChangeNotifier {
       now.day - (now.weekday - 1),
     );
     final lastDayOfWeek = firstDayOfWeek.add(const Duration(days: 6));
-    
+
     // 获取本周内所有日程
     final weekSchedules = await getSchedulesByDateRange(
       firstDayOfWeek,
@@ -497,7 +466,7 @@ class ScheduleProvider extends ChangeNotifier {
     for (var i = 0; i < 7; i++) {
       final day = firstDayOfWeek.add(Duration(days: i));
       final dayKey = DateTime(day.year, day.month, day.day);
-      
+
       final daySchedules = weekSchedules.where((schedule) {
         final scheduleDate = DateTime(
           schedule.startTime.year,
@@ -506,10 +475,10 @@ class ScheduleProvider extends ChangeNotifier {
         );
         return scheduleDate.isAtSameMomentAs(dayKey);
       }).toList();
-      
+
       schedulesMap[dayKey] = daySchedules;
     }
-    
+
     return schedulesMap;
   }
 
@@ -518,7 +487,7 @@ class ScheduleProvider extends ChangeNotifier {
     final now = DateTime.now();
     final firstDayOfMonth = DateTime(now.year, now.month, 1);
     final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
-    
+
     // 获取本月内所有日程
     final monthSchedules = await getSchedulesByDateRange(
       firstDayOfMonth,
@@ -530,7 +499,7 @@ class ScheduleProvider extends ChangeNotifier {
     for (var i = 0; i < lastDayOfMonth.day; i++) {
       final day = firstDayOfMonth.add(Duration(days: i));
       final dayKey = DateTime(day.year, day.month, day.day);
-      
+
       final daySchedules = monthSchedules.where((schedule) {
         final scheduleDate = DateTime(
           schedule.startTime.year,
@@ -539,10 +508,10 @@ class ScheduleProvider extends ChangeNotifier {
         );
         return scheduleDate.isAtSameMomentAs(dayKey);
       }).toList();
-      
+
       schedulesMap[dayKey] = daySchedules;
     }
-    
+
     return schedulesMap;
   }
 
@@ -550,7 +519,7 @@ class ScheduleProvider extends ChangeNotifier {
   Future<List<Schedule>> getNext7DaysSchedules() async {
     final now = DateTime.now();
     final future7Days = now.add(const Duration(days: 7));
-    
+
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -559,8 +528,8 @@ class ScheduleProvider extends ChangeNotifier {
       // 在本地过滤未来7天的日程
       await getAllSchedules();
       final next7DaysSchedules = _schedules.where((schedule) {
-        return schedule.startTime.isAfter(now) && 
-               schedule.startTime.isBefore(future7Days);
+        return schedule.startTime.isAfter(now) &&
+            schedule.startTime.isBefore(future7Days);
       }).toList();
       return next7DaysSchedules;
     } catch (e) {
@@ -623,21 +592,4 @@ class ScheduleProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-  // 设置加载状态
-  void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
-  }
-
-  // 设置错误信息
-  void _setError(String error) {
-    _error = error;
-    notifyListeners();
-  }
-
-  // 清除错误信息
-  void _clearError() {
-    _error = null;
-  }
-} 
+}

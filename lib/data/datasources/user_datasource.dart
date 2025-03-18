@@ -1,11 +1,12 @@
 import 'package:intellimate/data/datasources/database_helper.dart';
 import 'package:intellimate/data/models/user_model.dart';
+import 'package:intellimate/utils/app_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 class UserDataSource {
   final DatabaseHelper _databaseHelper = DatabaseHelper.instance;
-  
+
   // 使用SharedPreferences存储当前登录用户的ID
   static const String _currentUserKey = 'current_user_id';
 
@@ -30,34 +31,34 @@ class UserDataSource {
   // 获取当前用户信息
   Future<UserModel?> getCurrentUser() async {
     try {
-      print('获取当前用户信息');
+      AppLogger.log('获取当前用户信息');
       // 获取当前用户ID
       final currentUserId = await getCurrentUserId();
-      print('当前用户ID: $currentUserId');
-      
+      AppLogger.log('当前用户ID: $currentUserId');
+
       if (currentUserId != null && currentUserId.isNotEmpty) {
         try {
           // 根据ID获取用户信息
           final user = await getUserById(currentUserId);
           if (user != null) {
-            print('成功获取当前用户: ${user.username}');
+            AppLogger.log('成功获取当前用户: ${user.username}');
             return user;
           } else {
-            print('未找到当前用户信息，ID: $currentUserId');
+            AppLogger.log('未找到当前用户信息，ID: $currentUserId');
             return null;
           }
         } catch (e) {
-          print('获取当前用户详细信息失败: $e');
-          print('错误堆栈: ${StackTrace.current}');
+          AppLogger.log('获取当前用户详细信息失败: $e');
+          AppLogger.log('错误堆栈: ${StackTrace.current}');
           return null;
         }
       } else {
-        print('没有当前用户ID，用户未登录');
+        AppLogger.log('没有当前用户ID，用户未登录');
         return null;
       }
     } catch (e) {
-      print('获取用户信息失败: $e');
-      print('错误堆栈: ${StackTrace.current}');
+      AppLogger.log('获取用户信息失败: $e');
+      AppLogger.log('错误堆栈: ${StackTrace.current}');
       return null;
     }
   }
@@ -65,37 +66,37 @@ class UserDataSource {
   // 根据ID获取用户
   Future<UserModel?> getUserById(String id) async {
     try {
-      print('根据ID获取用户: $id');
+      AppLogger.log('根据ID获取用户: $id');
       final db = await DatabaseHelper.instance.database;
-      
+
       // 查询指定ID的用户
       final results = await db.query(
         DatabaseHelper.tableUser,
         where: 'id = ?',
         whereArgs: [id],
       );
-      
-      print('查询结果数量: ${results.length}');
-      
+
+      AppLogger.log('查询结果数量: ${results.length}');
+
       if (results.isNotEmpty) {
         final userData = results.first;
-        print('找到用户数据: $userData');
+        AppLogger.log('找到用户数据: $userData');
         try {
           final user = UserModel.fromMap(userData);
-          print('成功解析用户数据: ${user.username}');
+          AppLogger.log('成功解析用户数据: ${user.username}');
           return user;
         } catch (e) {
-          print('解析用户数据失败: $e');
-          print('错误堆栈: ${StackTrace.current}');
+          AppLogger.log('解析用户数据失败: $e');
+          AppLogger.log('错误堆栈: ${StackTrace.current}');
           return null;
         }
       } else {
-        print('未找到ID为 $id 的用户');
+        AppLogger.log('未找到ID为 $id 的用户');
         return null;
       }
     } catch (e) {
-      print('根据ID获取用户失败: $e');
-      print('错误堆栈: ${StackTrace.current}');
+      AppLogger.log('根据ID获取用户失败: $e');
+      AppLogger.log('错误堆栈: ${StackTrace.current}');
       return null;
     }
   }
@@ -103,34 +104,34 @@ class UserDataSource {
   // 创建新用户
   Future<String?> createUser(UserModel user) async {
     try {
-      print('准备创建新用户: ${user.username}');
+      AppLogger.log('准备创建新用户: ${user.username}');
       final db = await DatabaseHelper.instance.database;
-      
+
       // 准备用户数据
       final userData = user.toMap();
-      print('用户数据准备完成: $userData');
-      
+      AppLogger.log('用户数据准备完成: $userData');
+
       // 插入用户数据
       await db.insert(
         DatabaseHelper.tableUser,
         userData,
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
-      
-      print('用户创建成功，ID: ${user.id}');
-      
+
+      AppLogger.log('用户创建成功，ID: ${user.id}');
+
       // 验证用户是否创建成功
       final createdUser = await getUserById(user.id);
       if (createdUser != null) {
-        print('验证用户创建: 成功找到用户 ${createdUser.username}');
+        AppLogger.log('验证用户创建: 成功找到用户 ${createdUser.username}');
       } else {
-        print('警告：用户创建后无法验证，可能未成功插入');
+        AppLogger.log('警告：用户创建后无法验证，可能未成功插入');
       }
-      
+
       return user.id;
     } catch (e) {
-      print('创建用户失败: $e');
-      print('错误堆栈: ${StackTrace.current}');
+      AppLogger.log('创建用户失败: $e');
+      AppLogger.log('错误堆栈: ${StackTrace.current}');
       return null;
     }
   }
@@ -138,13 +139,13 @@ class UserDataSource {
   // 更新用户信息
   Future<int> updateUser(UserModel user) async {
     final db = await _databaseHelper.database;
-    
+
     // 更新时间戳
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final updatedUser = user.copyWith(
       updatedAt: DateTime.fromMillisecondsSinceEpoch(timestamp),
     );
-    
+
     return await db.update(
       DatabaseHelper.tableUser,
       updatedUser.toMap(),
@@ -156,13 +157,13 @@ class UserDataSource {
   // 删除用户
   Future<int> deleteUser(String id) async {
     final db = await _databaseHelper.database;
-    
+
     // 如果删除的是当前用户，清除当前用户ID
     final currentUserId = await getCurrentUserId();
     if (currentUserId == id) {
       await clearCurrentUserId();
     }
-    
+
     return await db.delete(
       DatabaseHelper.tableUser,
       where: 'id = ?',
@@ -173,8 +174,9 @@ class UserDataSource {
   // 获取所有用户
   Future<List<UserModel>> getAllUsers() async {
     final db = await _databaseHelper.database;
-    final List<Map<String, dynamic>> maps = await db.query(DatabaseHelper.tableUser);
-    
+    final List<Map<String, dynamic>> maps =
+        await db.query(DatabaseHelper.tableUser);
+
     return List.generate(maps.length, (i) {
       return UserModel.fromMap(maps[i]);
     });

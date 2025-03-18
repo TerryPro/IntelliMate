@@ -87,7 +87,9 @@ class Travel extends Equatable {
       'endDate': endDate.toIso8601String(),
       'status': status.index,
       'tasks': tasks.map((task) => task.toJson()).toList(),
-      'accommodations': accommodations.map((accommodation) => accommodation.toJson()).toList(),
+      'accommodations': accommodations
+          .map((accommodation) => accommodation.toJson())
+          .toList(),
       'budget': budget,
       'actualCost': actualCost,
       'peopleCount': peopleCount,
@@ -102,7 +104,8 @@ class Travel extends Equatable {
       id: json['id'] as String?,
       title: json['title'] as String,
       description: json['description'] as String?,
-      places: (json['places'] as List<dynamic>).map((e) => e as String).toList(),
+      places:
+          (json['places'] as List<dynamic>).map((e) => e as String).toList(),
       startDate: DateTime.parse(json['startDate'] as String),
       endDate: DateTime.parse(json['endDate'] as String),
       status: TravelStatus.values[json['status'] as int],
@@ -110,8 +113,10 @@ class Travel extends Equatable {
           .map((e) => TravelTask.fromJson(e as Map<String, dynamic>))
           .toList(),
       accommodations: (json['accommodations'] as List<dynamic>?)
-          ?.map((e) => TravelAccommodation.fromJson(e as Map<String, dynamic>))
-          .toList() ?? [],
+              ?.map((e) =>
+                  TravelAccommodation.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
       budget: (json['budget'] as num?)?.toDouble() ?? 0.0,
       actualCost: (json['actualCost'] as num?)?.toDouble(),
       peopleCount: json['peopleCount'] as int? ?? 1,
@@ -231,13 +236,13 @@ class TravelTask extends Equatable {
 }
 
 enum TravelTaskType {
-  itinerary,    // 行程规划
+  itinerary, // 行程规划
   accommodation, // 住宿管理
   transportation, // 交通管理
-  packing,      // 行李清单
-  ticket,       // 票务管理
-  expense,      // 花费记录
-  other         // 其他
+  packing, // 行李清单
+  ticket, // 票务管理
+  expense, // 花费记录
+  other // 其他
 }
 
 class TravelAccommodation extends Equatable {
@@ -341,4 +346,4 @@ class TravelAccommodation extends Equatable {
         createdAt,
         updatedAt,
       ];
-} 
+}

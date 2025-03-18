@@ -255,9 +255,9 @@ class _TravelScreenState extends State<TravelScreen> {
     final allTravels = travelProvider.allTravels;
 
     // 计算统计数据
-    int totalCities = _calculateTotalCities(allTravels);
-    int totalDays = _calculateTotalDays(allTravels);
-    double totalCost = _calculateTotalCost(allTravels);
+    final int totalCities = _calculateTotalCities(allTravels);
+    final int totalDays = _calculateTotalDays(allTravels);
+    final double totalCost = _calculateTotalCost(allTravels);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
@@ -741,7 +741,7 @@ class _TravelScreenState extends State<TravelScreen> {
                           const SizedBox(width: 4),
                           Text(
                             travel.status == TravelStatus.planning
-                                ? '待完成: ${travel.tasks.length ?? 0}项'
+                                ? '待完成: ${travel.tasks.length}项'
                                 : '${travel.photoCount ?? 0}张照片',
                             style: TextStyle(
                               color: Colors.grey[600],

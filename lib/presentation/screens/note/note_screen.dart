@@ -17,10 +17,10 @@ class _NoteScreenState extends State<NoteScreen> {
   String _selectedCategory = '全部笔记';
   final TextEditingController _searchController = TextEditingController();
   bool _isLoading = false;
-  
+
   // 分类列表
   final List<String> _categories = ['全部笔记', '工作', '学习', '生活', '灵感', '收藏'];
-  
+
   @override
   void initState() {
     super.initState();
@@ -29,22 +29,22 @@ class _NoteScreenState extends State<NoteScreen> {
       _loadNotes();
     });
   }
-  
+
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
-  
+
   // 加载笔记数据
   Future<void> _loadNotes() async {
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       final noteProvider = Provider.of<NoteProvider>(context, listen: false);
-      
+
       if (_selectedCategory == '全部笔记') {
         await noteProvider.getAllNotes();
       } else if (_selectedCategory == '收藏') {
@@ -53,16 +53,18 @@ class _NoteScreenState extends State<NoteScreen> {
         await noteProvider.getNotesByCondition(category: _selectedCategory);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('加载笔记失败: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('加载笔记失败: $e')),
+        );
+      }
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
   }
-  
+
   // 创建新笔记
   void _createNewNote() {
     Navigator.pushNamed(context, AppRoutes.writeNote).then((_) {
@@ -70,11 +72,11 @@ class _NoteScreenState extends State<NoteScreen> {
       _loadNotes();
     });
   }
-  
+
   // 编辑笔记
   void _editNote(Note note) {
     Navigator.pushNamed(
-      context, 
+      context,
       AppRoutes.writeNote,
       arguments: note,
     ).then((_) {
@@ -82,7 +84,7 @@ class _NoteScreenState extends State<NoteScreen> {
       _loadNotes();
     });
   }
-  
+
   // 删除笔记
   Future<void> _deleteNote(Note note) async {
     final confirmed = await showDialog<bool>(
@@ -103,40 +105,46 @@ class _NoteScreenState extends State<NoteScreen> {
         ],
       ),
     );
-    
+
     if (confirmed == true) {
       try {
         final noteProvider = Provider.of<NoteProvider>(context, listen: false);
         await noteProvider.deleteNote(note.id);
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('笔记已删除')),
-        );
-        
-        // 重新加载笔记
-        _loadNotes();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('笔记已删除')),
+          );
+
+          // 重新加载笔记
+          _loadNotes();
+        }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('删除笔记失败: $e')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('删除笔记失败: $e')),
+          );
+        }
       }
     }
   }
-  
+
   // 搜索笔记
   Future<void> _searchNotes(String query) async {
     if (query.isEmpty) {
       _loadNotes();
       return;
     }
-    
+
     try {
       final noteProvider = Provider.of<NoteProvider>(context, listen: false);
       await noteProvider.searchNotes(query);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('搜索笔记失败: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('搜索笔记失败: $e')),
+        );
+      }
     }
   }
 
@@ -148,13 +156,13 @@ class _NoteScreenState extends State<NoteScreen> {
         children: [
           // 自定义顶部导航栏
           _buildCustomAppBar(),
-          
+
           // 搜索
           _buildSearchBar(),
-          
+
           // 分类标签
           _buildCategoryTags(),
-          
+
           // 主体内容
           Expanded(
             child: Consumer<NoteProvider>(
@@ -162,7 +170,7 @@ class _NoteScreenState extends State<NoteScreen> {
                 if (_isLoading || noteProvider.isLoading) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                
+
                 if (noteProvider.error != null) {
                   return Center(
                     child: Column(
@@ -178,9 +186,9 @@ class _NoteScreenState extends State<NoteScreen> {
                     ),
                   );
                 }
-                
+
                 final notes = noteProvider.notes;
-                
+
                 if (notes.isEmpty) {
                   return const Center(
                     child: Column(
@@ -205,7 +213,7 @@ class _NoteScreenState extends State<NoteScreen> {
                     ),
                   );
                 }
-                
+
                 // 有笔记数据，显示笔记列表
                 return _buildNotesList(notes);
               },
@@ -215,7 +223,7 @@ class _NoteScreenState extends State<NoteScreen> {
       ),
     );
   }
-  
+
   // 构建自定义顶部导航栏
   Widget _buildCustomAppBar() {
     return Container(
@@ -355,7 +363,7 @@ class _NoteScreenState extends State<NoteScreen> {
       ),
     );
   }
-  
+
   // 构建搜索
   Widget _buildSearchBar() {
     return Padding(
@@ -387,7 +395,7 @@ class _NoteScreenState extends State<NoteScreen> {
       ),
     );
   }
-  
+
   // 构建分类标签
   Widget _buildCategoryTags() {
     return Padding(
@@ -407,19 +415,21 @@ class _NoteScreenState extends State<NoteScreen> {
                   _loadNotes();
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: isSelected ? const Color(0xFF3ECABB) : Colors.white,
                     borderRadius: BorderRadius.circular(20),
-                    border: isSelected 
-                      ? null 
-                      : Border.all(color: Colors.grey.shade300),
+                    border: isSelected
+                        ? null
+                        : Border.all(color: Colors.grey.shade300),
                   ),
                   child: Text(
                     category,
                     style: TextStyle(
                       color: isSelected ? Colors.white : Colors.grey.shade700,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                 ),
@@ -430,7 +440,7 @@ class _NoteScreenState extends State<NoteScreen> {
       ),
     );
   }
-  
+
   // 构建笔记列表
   Widget _buildNotesList(List<Note> notes) {
     return ListView.builder(
@@ -439,7 +449,7 @@ class _NoteScreenState extends State<NoteScreen> {
       itemBuilder: (context, index) => _buildNoteItem(notes[index]),
     );
   }
-  
+
   // 构建笔记项目
   Widget _buildNoteItem(Note note) {
     return GestureDetector(
@@ -482,16 +492,18 @@ class _NoteScreenState extends State<NoteScreen> {
                   ),
               ],
             ),
-            
+
             // 分类和标签
-            if (note.category != null || (note.tags != null && note.tags!.isNotEmpty)) ...[
+            if (note.category != null ||
+                (note.tags != null && note.tags!.isNotEmpty)) ...[
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
                 children: [
                   if (note.category != null)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: const Color(0xFFE8F5E9),
                         borderRadius: BorderRadius.circular(4),
@@ -506,23 +518,24 @@ class _NoteScreenState extends State<NoteScreen> {
                     ),
                   if (note.tags != null)
                     ...note.tags!.map((tag) => Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE3F2FD),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        tag,
-                        style: const TextStyle(
-                          color: Color(0xFF1976D2),
-                          fontSize: 12,
-                        ),
-                      ),
-                    )),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE3F2FD),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            tag,
+                            style: const TextStyle(
+                              color: Color(0xFF1976D2),
+                              fontSize: 12,
+                            ),
+                          ),
+                        )),
                 ],
               ),
             ],
-            
+
             // 内容预览
             const SizedBox(height: 12),
             Text(
@@ -534,7 +547,7 @@ class _NoteScreenState extends State<NoteScreen> {
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
-            
+
             // 更新时间和操作按钮
             const SizedBox(height: 12),
             Row(
@@ -579,4 +592,4 @@ class _NoteScreenState extends State<NoteScreen> {
     final formatter = DateFormat('yyyy-MM-dd HH:mm');
     return formatter.format(dateTime);
   }
-} 
+}

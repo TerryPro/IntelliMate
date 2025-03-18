@@ -39,7 +39,7 @@ class _NoteTestPageState extends State<NoteTestPage> {
   void _createNote() {
     if (_formKey.currentState!.validate()) {
       final noteProvider = Provider.of<NoteProvider>(context, listen: false);
-      
+
       // 创建笔记对象
       final note = Note(
         id: '', // ID将由存储库生成
@@ -54,21 +54,26 @@ class _NoteTestPageState extends State<NoteTestPage> {
 
       // 保存笔记
       noteProvider.createNote(note).then((_) {
-        // 重置表单
-        _titleController.clear();
-        _contentController.clear();
-        setState(() {
-          _isFavorite = false;
-          _category = null;
-        });
+        // 检查widget是否仍然挂载在树上
+        if (mounted) {
+          // 重置表单
+          _titleController.clear();
+          _contentController.clear();
+          setState(() {
+            _isFavorite = false;
+            _category = null;
+          });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('笔记创建成功！')),
-        );
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('笔记创建成功！')),
+          );
+        }
       }).catchError((error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('创建失败: $error')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('创建失败: $error')),
+          );
+        }
       });
     }
   }
@@ -181,13 +186,13 @@ class _NoteTestPageState extends State<NoteTestPage> {
                 if (provider.isLoading) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                
+
                 final notes = provider.notes;
-                
+
                 if (notes.isEmpty) {
                   return const Center(child: Text('没有笔记，请创建一个！'));
                 }
-                
+
                 return ListView.builder(
                   padding: const EdgeInsets.all(8),
                   itemCount: notes.length,
@@ -219,9 +224,11 @@ class _NoteTestPageState extends State<NoteTestPage> {
                               icon: const Icon(Icons.delete),
                               onPressed: () {
                                 provider.deleteNote(note.id).then((_) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('笔记已删除')),
-                                  );
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('笔记已删除')),
+                                    );
+                                  }
                                 });
                               },
                             ),
@@ -262,4 +269,4 @@ class _NoteTestPageState extends State<NoteTestPage> {
       ),
     );
   }
-} 
+}

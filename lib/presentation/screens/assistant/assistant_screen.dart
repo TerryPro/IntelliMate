@@ -18,10 +18,10 @@ class _AssistantScreenState extends State<AssistantScreen> {
   // 任务统计数据
   int _totalTasks = 0;
   int _completedTasks = 0;
-  
+
   // 即将到来的日程
   List<Schedule> _upcomingEvents = [];
-  
+
   bool _isLoading = true;
 
   @override
@@ -29,13 +29,13 @@ class _AssistantScreenState extends State<AssistantScreen> {
     super.initState();
     _loadData();
   }
-  
+
   // 加载数据
   Future<void> _loadData() async {
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       await _loadTaskStats();
       await _loadUpcomingEvents();
@@ -53,24 +53,25 @@ class _AssistantScreenState extends State<AssistantScreen> {
       }
     }
   }
-  
+
   // 加载任务统计
   Future<void> _loadTaskStats() async {
     final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-    
+
     // 获取今日任务
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
     final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
-    
+
     final todayTasks = await taskProvider.getTasksByCondition(
       fromDate: startOfDay,
       toDate: endOfDay,
     );
-    
+
     // 获取今日已完成任务
-    final completedTodayTasks = todayTasks.where((task) => task.isCompleted).toList();
-    
+    final completedTodayTasks =
+        todayTasks.where((task) => task.isCompleted).toList();
+
     if (mounted) {
       setState(() {
         _totalTasks = todayTasks.length;
@@ -78,14 +79,16 @@ class _AssistantScreenState extends State<AssistantScreen> {
       });
     }
   }
-  
+
   // 加载即将到来的日程
   Future<void> _loadUpcomingEvents() async {
-    final scheduleProvider = Provider.of<ScheduleProvider>(context, listen: false);
-    
+    final scheduleProvider =
+        Provider.of<ScheduleProvider>(context, listen: false);
+
     // 获取即将到来的日程（限制最多5个）
-    final upcomingEvents = await scheduleProvider.getUpcomingSchedules(limit: 5);
-    
+    final upcomingEvents =
+        await scheduleProvider.getUpcomingSchedules(limit: 5);
+
     if (mounted) {
       setState(() {
         _upcomingEvents = upcomingEvents;
@@ -99,10 +102,9 @@ class _AssistantScreenState extends State<AssistantScreen> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          
           // 顶部栏
           _buildHeader(),
-          
+
           // 内容区域 - 用Expanded包裹确保滚动区域能够填满剩余空间
           Expanded(
             child: SingleChildScrollView(
@@ -113,22 +115,22 @@ class _AssistantScreenState extends State<AssistantScreen> {
                   children: [
                     // 任务统计
                     _buildTaskStats(),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // 即将到来的日程
                     _buildUpcomingEvents(),
-                    
+
                     const SizedBox(height: 32),
-                    
+
                     // 快捷操作
                     _buildQuickActions(),
-                    
+
                     const SizedBox(height: 32),
-                    
+
                     // 功能模块
                     _buildModules(),
-                    
+
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -202,7 +204,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
         child: CircularProgressIndicator(),
       );
     }
-    
+
     return Row(
       children: [
         Expanded(
@@ -356,7 +358,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
     final startTime = DateFormat('HH:mm').format(event.startTime);
     final endTime = DateFormat('HH:mm').format(event.endTime);
     final timeDisplay = '$startTime - $endTime';
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -426,8 +428,8 @@ class _AssistantScreenState extends State<AssistantScreen> {
                 onTap: () {
                   // 编辑日程事件
                   Navigator.pushNamed(
-                    context, 
-                    AppRoutes.addSchedule,  // 使用已有的添加日程页面
+                    context,
+                    AppRoutes.addSchedule, // 使用已有的添加日程页面
                     arguments: event,
                   );
                 },
@@ -460,18 +462,20 @@ class _AssistantScreenState extends State<AssistantScreen> {
                         ),
                         TextButton(
                           onPressed: () async {
-                            Navigator.pop(context); // 关闭对话框
-                            
+                            // 在异步操作前获取context的引用
+                            final currentContext = context;
+                            Navigator.pop(currentContext); // 关闭对话框
+
                             // 获取ScheduleProvider并删除日程
-                            final scheduleProvider = Provider.of<ScheduleProvider>(
-                              context, 
-                              listen: false
-                            );
-                            
+                            final scheduleProvider =
+                                Provider.of<ScheduleProvider>(currentContext,
+                                    listen: false);
+
                             try {
                               await scheduleProvider.deleteSchedule(event.id);
                               if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
+                                // 使用State的context而不是捕获的context
+                                ScaffoldMessenger.of(this.context).showSnackBar(
                                   const SnackBar(content: Text('日程已删除')),
                                 );
                                 // 重新加载数据
@@ -479,7 +483,8 @@ class _AssistantScreenState extends State<AssistantScreen> {
                               }
                             } catch (e) {
                               if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
+                                // 使用State的context而不是捕获的context
+                                ScaffoldMessenger.of(this.context).showSnackBar(
                                   SnackBar(content: Text('删除失败: $e')),
                                 );
                               }
@@ -687,7 +692,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
             ),
             _buildModuleItem(
               title: '系统设置',
-              icon: FontAwesomeIcons.cog,
+              icon: FontAwesomeIcons.gear,
               startColor: const Color(0xFF9CA3AF), // from-gray-400
               endColor: const Color(0xFF6B7280), // to-gray-500
               onTap: () {
@@ -759,4 +764,4 @@ class _AssistantScreenState extends State<AssistantScreen> {
       ),
     );
   }
-} 
+}

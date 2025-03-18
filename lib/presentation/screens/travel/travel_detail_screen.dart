@@ -10,7 +10,7 @@ import 'package:intellimate/presentation/screens/travel/widgets/travel_accommoda
 
 class TravelDetailScreen extends StatefulWidget {
   final Travel travel;
-  
+
   const TravelDetailScreen({
     super.key,
     required this.travel,
@@ -20,18 +20,19 @@ class TravelDetailScreen extends StatefulWidget {
   State<TravelDetailScreen> createState() => _TravelDetailScreenState();
 }
 
-class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTickerProviderStateMixin {
+class _TravelDetailScreenState extends State<TravelDetailScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  
+
   // 标签列表
   final List<String> _tabs = ['行程', '住宿', '交通', '花费', '照片', '笔记'];
-  
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabs.length, vsync: this);
   }
-  
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -45,7 +46,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
         children: [
           // 顶部封面和信息
           _buildHeader(),
-          
+
           // 标签栏
           Container(
             color: Colors.white,
@@ -58,7 +59,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
               tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
             ),
           ),
-          
+
           // 标签内容
           Expanded(
             child: TabBarView(
@@ -75,7 +76,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
           ),
         ],
       ),
-      
+
       // 浮动按钮
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.primary,
@@ -87,22 +88,23 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
       ),
     );
   }
-  
+
   // 构建顶部封面和信息
   Widget _buildHeader() {
     // 格式化日期
     final dateFormat = DateFormat('yyyy.MM.dd');
     final startDateStr = dateFormat.format(widget.travel.startDate);
     final endDateStr = dateFormat.format(widget.travel.endDate);
-    
+
     // 计算旅行天数
-    final duration = widget.travel.endDate.difference(widget.travel.startDate).inDays + 1;
+    final duration =
+        widget.travel.endDate.difference(widget.travel.startDate).inDays + 1;
     final durationText = '$duration天${duration > 1 ? '${duration - 1}晚' : ''}';
-    
+
     // 根据旅行状态设置标签颜色和文本
     Color statusColor;
     String statusText;
-    
+
     switch (widget.travel.status) {
       case TravelStatus.planning:
         statusColor = Colors.amber;
@@ -117,7 +119,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
         statusText = '已完成';
         break;
     }
-    
+
     return Stack(
       children: [
         // 背景图片
@@ -138,7 +140,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
             );
           },
         ),
-        
+
         // 渐变遮罩
         Container(
           height: 200,
@@ -153,7 +155,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
             ),
           ),
         ),
-        
+
         // 返回按钮和更多选项
         Positioned(
           top: MediaQuery.of(context).padding.top,
@@ -171,7 +173,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
                     Navigator.pop(context);
                   },
                 ),
-                
+
                 // 更多选项
                 PopupMenuButton<String>(
                   icon: const Icon(Icons.more_vert, color: Colors.white),
@@ -224,7 +226,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
             ),
           ),
         ),
-        
+
         // 旅行信息
         Positioned(
           left: 16,
@@ -249,9 +251,9 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 8),
-              
+
               // 旅行标题
               Text(
                 widget.travel.title,
@@ -261,9 +263,9 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              
+
               const SizedBox(height: 8),
-              
+
               // 旅行日期和天数
               Row(
                 children: [
@@ -290,9 +292,9 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 8),
-              
+
               // 目的地
               Row(
                 children: [
@@ -320,7 +322,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
       ],
     );
   }
-  
+
   // 获取旅行图片
   String _getTravelImage() {
     // 根据旅行目的地或状态返回不同的图片
@@ -333,7 +335,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
         return 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e';
     }
   }
-  
+
   // 构建行程标签页
   Widget _buildItineraryTab() {
     if (widget.travel.tasks.isEmpty) {
@@ -343,13 +345,13 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
         message: '点击下方按钮添加行程安排',
       );
     }
-    
+
     return TravelTaskList(
       travelId: widget.travel.id!,
       tasks: widget.travel.tasks,
     );
   }
-  
+
   // 构建住宿标签页
   Widget _buildAccommodationTab() {
     if (widget.travel.accommodations.isEmpty) {
@@ -359,13 +361,13 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
         message: '点击下方按钮添加住宿信息',
       );
     }
-    
+
     return TravelAccommodationList(
       travelId: widget.travel.id!,
       accommodations: widget.travel.accommodations,
     );
   }
-  
+
   // 构建交通标签页
   Widget _buildTransportationTab() {
     // TODO: 实现交通标签页
@@ -375,7 +377,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
       message: '点击下方按钮添加交通信息',
     );
   }
-  
+
   // 构建花费标签页
   Widget _buildExpenseTab() {
     // TODO: 实现花费标签页
@@ -385,7 +387,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
       message: '点击下方按钮添加花费记录',
     );
   }
-  
+
   // 构建照片标签页
   Widget _buildPhotosTab() {
     // TODO: 实现照片标签页
@@ -395,7 +397,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
       message: '点击下方按钮添加照片',
     );
   }
-  
+
   // 构建笔记标签页
   Widget _buildNotesTab() {
     // TODO: 实现笔记标签页
@@ -405,7 +407,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
       message: '点击下方按钮添加旅行笔记',
     );
   }
-  
+
   // 构建空状态
   Widget _buildEmptyState({
     required IconData icon,
@@ -442,11 +444,11 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
       ),
     );
   }
-  
+
   // 显示添加选项
   void _showAddOptions(BuildContext context) {
     final currentTab = _tabs[_tabController.index];
-    
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -481,7 +483,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
       },
     );
   }
-  
+
   Widget _buildAddTaskOption() {
     return ListTile(
       leading: const Icon(Icons.add_task, color: AppColors.primary),
@@ -509,7 +511,8 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
     );
 
     if (result != null && mounted) {
-      final travelProvider = Provider.of<TravelProvider>(context, listen: false);
+      final travelProvider =
+          Provider.of<TravelProvider>(context, listen: false);
       try {
         await travelProvider.addTask(widget.travel.id!, result);
       } catch (e) {
@@ -546,7 +549,8 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
 
     final result = await showDialog<TravelAccommodation>(
       context: context,
-      builder: (context) => _AccommodationEditDialog(accommodation: accommodation),
+      builder: (context) =>
+          _AccommodationEditDialog(accommodation: accommodation),
     );
 
     if (result != null && mounted) {
@@ -610,11 +614,12 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
       ),
     ).then((result) {
       // 如果返回结果为true，表示编辑成功，刷新数据
-      if (result == true) {
+      if (result == true && mounted) {
         // 刷新旅行数据
-        final travelProvider = Provider.of<TravelProvider>(context, listen: false);
+        final travelProvider =
+            Provider.of<TravelProvider>(context, listen: false);
         travelProvider.loadAllTravels();
-        
+
         // 获取更新后的旅行数据
         travelProvider.getTravel(widget.travel.id!).then((updatedTravel) {
           if (updatedTravel != null && mounted) {
@@ -625,7 +630,7 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
       }
     });
   }
-  
+
   // 显示删除确认对话框
   void _showDeleteConfirmation() {
     showDialog(
@@ -654,13 +659,14 @@ class _TravelDetailScreenState extends State<TravelDetailScreen> with SingleTick
       ),
     );
   }
-  
+
   // 删除旅行
   void _deleteTravel() async {
     try {
-      final travelProvider = Provider.of<TravelProvider>(context, listen: false);
+      final travelProvider =
+          Provider.of<TravelProvider>(context, listen: false);
       final result = await travelProvider.deleteTravel(widget.travel.id!);
-      
+
       if (result && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('旅行已删除')),
@@ -687,7 +693,8 @@ class _AccommodationEditDialog extends StatefulWidget {
   const _AccommodationEditDialog({required this.accommodation});
 
   @override
-  State<_AccommodationEditDialog> createState() => _AccommodationEditDialogState();
+  State<_AccommodationEditDialog> createState() =>
+      _AccommodationEditDialogState();
 }
 
 class _AccommodationEditDialogState extends State<_AccommodationEditDialog> {
@@ -704,10 +711,13 @@ class _AccommodationEditDialogState extends State<_AccommodationEditDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.accommodation.name);
-    _addressController = TextEditingController(text: widget.accommodation.address);
+    _addressController =
+        TextEditingController(text: widget.accommodation.address);
     _phoneController = TextEditingController(text: widget.accommodation.phone);
-    _priceController = TextEditingController(text: widget.accommodation.price.toString());
-    _bookingNumberController = TextEditingController(text: widget.accommodation.bookingNumber);
+    _priceController =
+        TextEditingController(text: widget.accommodation.price.toString());
+    _bookingNumberController =
+        TextEditingController(text: widget.accommodation.bookingNumber);
     _notesController = TextEditingController(text: widget.accommodation.notes);
     _checkInDate = widget.accommodation.checkInDate;
     _checkOutDate = widget.accommodation.checkOutDate;
@@ -812,26 +822,33 @@ class _AccommodationEditDialogState extends State<_AccommodationEditDialog> {
               );
               return;
             }
-            
-            if (_priceController.text.isEmpty || double.tryParse(_priceController.text) == null) {
+
+            if (_priceController.text.isEmpty ||
+                double.tryParse(_priceController.text) == null) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('请输入有效的价格')),
               );
               return;
             }
-            
+
             final updatedAccommodation = widget.accommodation.copyWith(
               name: _nameController.text,
-              address: _addressController.text.isEmpty ? null : _addressController.text,
-              phone: _phoneController.text.isEmpty ? null : _phoneController.text,
+              address: _addressController.text.isEmpty
+                  ? null
+                  : _addressController.text,
+              phone:
+                  _phoneController.text.isEmpty ? null : _phoneController.text,
               checkInDate: _checkInDate,
               checkOutDate: _checkOutDate,
               price: double.parse(_priceController.text),
-              bookingNumber: _bookingNumberController.text.isEmpty ? null : _bookingNumberController.text,
-              notes: _notesController.text.isEmpty ? null : _notesController.text,
+              bookingNumber: _bookingNumberController.text.isEmpty
+                  ? null
+                  : _bookingNumberController.text,
+              notes:
+                  _notesController.text.isEmpty ? null : _notesController.text,
               updatedAt: DateTime.now(),
             );
-            
+
             Navigator.pop(context, updatedAccommodation);
           },
           child: const Text('保存'),
@@ -843,14 +860,14 @@ class _AccommodationEditDialogState extends State<_AccommodationEditDialog> {
   Future<void> _selectDate(BuildContext context, bool isCheckIn) async {
     final initialDate = isCheckIn ? _checkInDate : _checkOutDate;
     final firstDate = isCheckIn ? DateTime(2000) : _checkInDate;
-    
+
     final date = await showDatePicker(
       context: context,
       initialDate: initialDate,
       firstDate: firstDate,
       lastDate: DateTime(2100),
     );
-    
+
     if (date != null) {
       setState(() {
         if (isCheckIn) {
@@ -887,7 +904,8 @@ class _TaskEditDialogState extends State<_TaskEditDialog> {
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.task.title);
-    _descriptionController = TextEditingController(text: widget.task.description);
+    _descriptionController =
+        TextEditingController(text: widget.task.description);
     _locationController = TextEditingController(text: widget.task.location);
     _startTime = widget.task.startTime;
     _endTime = widget.task.endTime;
@@ -980,7 +998,7 @@ class _TaskEditDialogState extends State<_TaskEditDialog> {
               );
               return;
             }
-            
+
             final updatedTask = widget.task.copyWith(
               title: _titleController.text,
               description: _descriptionController.text,
@@ -989,7 +1007,7 @@ class _TaskEditDialogState extends State<_TaskEditDialog> {
               endTime: _endTime,
               isCompleted: _isCompleted,
             );
-            
+
             Navigator.pop(context, updatedTask);
           },
           child: const Text('保存'),
@@ -1000,20 +1018,20 @@ class _TaskEditDialogState extends State<_TaskEditDialog> {
 
   Future<void> _selectDateTime(BuildContext context, bool isStart) async {
     final currentDate = isStart ? _startTime : _endTime;
-    
+
     final date = await showDatePicker(
       context: context,
       initialDate: currentDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
-    
+
     if (date != null && context.mounted) {
       final time = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.fromDateTime(currentDate),
       );
-      
+
       if (time != null) {
         setState(() {
           final newDateTime = DateTime(
@@ -1023,7 +1041,7 @@ class _TaskEditDialogState extends State<_TaskEditDialog> {
             time.hour,
             time.minute,
           );
-          
+
           if (isStart) {
             _startTime = newDateTime;
             if (_endTime.isBefore(_startTime)) {
@@ -1042,4 +1060,4 @@ class _TaskEditDialogState extends State<_TaskEditDialog> {
       }
     }
   }
-} 
+}

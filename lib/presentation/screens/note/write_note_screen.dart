@@ -14,7 +14,7 @@ class WriteNoteScreen extends StatefulWidget {
 class _WriteNoteScreenState extends State<WriteNoteScreen> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
-  
+
   String _selectedCategory = '工作';
   List<String> _selectedTags = [];
   bool _isFavorite = false;
@@ -22,25 +22,22 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
   String? _error;
   bool _isEditing = false;
   Note? _note;
-  
-  // 附件列表
-  final List<String> _attachments = [];
-  
+
   // 分类列表
   final List<String> _categories = ['工作', '学习', '生活', '灵感'];
-  
+
   // 标签列表
   final List<String> _availableTags = ['重要', '技术', '会议', '计划', '创意', '问题'];
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initNoteData();
     });
   }
-  
+
   void _initNoteData() {
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is Note) {
@@ -59,14 +56,14 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
       });
     }
   }
-  
+
   @override
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
     super.dispose();
   }
-  
+
   Future<void> _saveNote() async {
     if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -74,22 +71,22 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
       );
       return;
     }
-    
+
     if (_contentController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('请输入内容')),
       );
       return;
     }
-    
+
     setState(() {
       _isLoading = true;
       _error = null;
     });
-    
+
     try {
       final noteProvider = Provider.of<NoteProvider>(context, listen: false);
-      
+
       if (_isEditing && _note != null) {
         final updatedNote = Note(
           id: _note!.id,
@@ -101,7 +98,7 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
           createdAt: _note!.createdAt,
           updatedAt: DateTime.now(),
         );
-        
+
         await noteProvider.updateNote(updatedNote);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -120,7 +117,7 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
-        
+
         await noteProvider.createNote(newNote);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -142,7 +139,7 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
       });
     }
   }
-  
+
   void _addTag() {
     showDialog(
       context: context,
@@ -165,12 +162,11 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
               },
               child: Chip(
                 label: Text(tag),
-                backgroundColor: isSelected 
-                    ? const Color(0xFFD5F5F2) 
-                    : Colors.grey.shade200,
+                backgroundColor:
+                    isSelected ? const Color(0xFFD5F5F2) : Colors.grey.shade200,
                 labelStyle: TextStyle(
-                  color: isSelected 
-                      ? const Color(0xFF26B0A1) 
+                  color: isSelected
+                      ? const Color(0xFF26B0A1)
                       : Colors.grey.shade700,
                 ),
               ),
@@ -186,26 +182,6 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
       ),
     );
   }
-  
-  void _addAttachment() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('添加附件功能尚未实现'),
-      ),
-    );
-  }
-  
-  void _togglePrivacy() {
-    setState(() {
-      _isFavorite = !_isFavorite;
-    });
-  }
-  
-  void _toggleReminder() {
-    setState(() {
-      // 提醒设置逻辑
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -216,7 +192,7 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
         ),
       );
     }
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -228,7 +204,7 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
             onSaveTap: _saveNote,
             isLoading: _isLoading,
           ),
-          
+
           // 笔记内容
           Expanded(
             child: SingleChildScrollView(
@@ -251,7 +227,7 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
       ),
     );
   }
-  
+
   Widget _buildTitleInput() {
     return Column(
       children: [
@@ -277,7 +253,7 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
       ],
     );
   }
-  
+
   Widget _buildContentInput() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -298,7 +274,7 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
       ),
     );
   }
-  
+
   Widget _buildTagsSection() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -341,7 +317,7 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
       ),
     );
   }
-  
+
   Widget _buildCategorySection() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -407,4 +383,4 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
       ),
     );
   }
-} 
+}

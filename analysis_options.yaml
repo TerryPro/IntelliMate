@@ -21,8 +21,27 @@ linter:
   # `// ignore_for_file: name_of_lint` syntax on the line or in the file
   # producing the lint.
   rules:
-    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
-    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+    # 代码风格规则
+    # prefer_single_quotes: true  # 使用单引号
+    prefer_const_constructors: true  # 使用const构造函数
+    prefer_const_declarations: true  # 使用const声明
+    prefer_final_locals: true  # 本地变量使用final
+    prefer_final_fields: true  # 类字段使用final
+    unnecessary_this: true  # 避免不必要的this
+    avoid_print: true  # 避免使用print
+    
+    # 性能规则
+    avoid_unnecessary_containers: true  # 避免不必要的Container
+    avoid_function_literals_in_foreach_calls: false  # 允许在forEach中使用函数字面量
+    
+    # 错误预防规则
+    avoid_empty_else: true  # 避免空的else语句
+    avoid_type_to_string: true  # 避免使用.toString()获取类型名称
+    cancel_subscriptions: true  # 确保取消订阅
+    close_sinks: true  # 确保关闭sinks
+    
+    # 文档规则
+    public_member_api_docs: false  # 不强制要求公共成员API文档
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

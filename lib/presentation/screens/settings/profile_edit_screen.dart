@@ -22,39 +22,39 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _bioController = TextEditingController();
-  
+
   String _gender = '男';
   DateTime _birthday = DateTime(1990, 1, 1);
   String? _avatarUrl;
   bool _isLoading = false;
-  
+
   @override
   void initState() {
     super.initState();
     _loadUserData();
   }
-  
+
   // 加载用户数据
   Future<void> _loadUserData() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    
+
     if (userProvider.currentUser != null) {
       final user = userProvider.currentUser!;
-      
+
       setState(() {
         _nicknameController.text = user.nickname;
         _phoneController.text = user.phone ?? '';
         _emailController.text = user.email ?? '';
         _bioController.text = user.signature ?? '';
         _gender = user.gender ?? '男';
-        _birthday = user.birthday != null 
-            ? DateTime.parse(user.birthday!) 
+        _birthday = user.birthday != null
+            ? DateTime.parse(user.birthday!)
             : DateTime(1990, 1, 1);
         _avatarUrl = user.avatar;
       });
     }
   }
-  
+
   @override
   void dispose() {
     _nicknameController.dispose();
@@ -63,7 +63,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     _bioController.dispose();
     super.dispose();
   }
-  
+
   // 保存个人信息
   Future<void> _saveProfile() async {
     // 表单验证
@@ -71,15 +71,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       _showErrorSnackBar('请输入昵称');
       return;
     }
-    
+
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       final currentUser = userProvider.currentUser;
-      
+
       if (currentUser != null) {
         // 更新现有用户
         final updatedUser = User(
@@ -87,22 +87,27 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           username: currentUser.username,
           nickname: _nicknameController.text,
           avatar: _avatarUrl,
-          email: _emailController.text.isNotEmpty ? _emailController.text : null,
-          phone: _phoneController.text.isNotEmpty ? _phoneController.text : null,
+          email:
+              _emailController.text.isNotEmpty ? _emailController.text : null,
+          phone:
+              _phoneController.text.isNotEmpty ? _phoneController.text : null,
           gender: _gender,
           birthday: _birthday.toIso8601String(),
-          signature: _bioController.text.isNotEmpty ? _bioController.text : null,
+          signature:
+              _bioController.text.isNotEmpty ? _bioController.text : null,
           createdAt: currentUser.createdAt,
           updatedAt: DateTime.now(),
         );
-        
+
         final success = await userProvider.updateUser(updatedUser);
-        
-        if (success) {
-          _showSuccessSnackBar();
-          Navigator.pop(context);
-        } else {
-          _showErrorSnackBar('更新个人信息失败');
+
+        if (mounted) {
+          if (success) {
+            _showSuccessSnackBar();
+            Navigator.pop(context);
+          } else {
+            _showErrorSnackBar('更新个人信息失败');
+          }
         }
       } else {
         // 创建新用户
@@ -111,33 +116,42 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           username: _nicknameController.text,
           nickname: _nicknameController.text,
           avatar: _avatarUrl,
-          email: _emailController.text.isNotEmpty ? _emailController.text : null,
-          phone: _phoneController.text.isNotEmpty ? _phoneController.text : null,
+          email:
+              _emailController.text.isNotEmpty ? _emailController.text : null,
+          phone:
+              _phoneController.text.isNotEmpty ? _phoneController.text : null,
           gender: _gender,
           birthday: _birthday.toIso8601String(),
-          signature: _bioController.text.isNotEmpty ? _bioController.text : null,
+          signature:
+              _bioController.text.isNotEmpty ? _bioController.text : null,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
-        
+
         final createdUser = await userProvider.createUser(newUser);
-        
-        if (createdUser != null) {
-          _showSuccessSnackBar();
-          Navigator.pop(context);
-        } else {
-          _showErrorSnackBar('创建个人信息失败');
+
+        if (mounted) {
+          if (createdUser != null) {
+            _showSuccessSnackBar();
+            Navigator.pop(context);
+          } else {
+            _showErrorSnackBar('创建个人信息失败');
+          }
         }
       }
     } catch (e) {
-      _showErrorSnackBar('保存个人信息时发生错误: $e');
+      if (mounted) {
+        _showErrorSnackBar('保存个人信息时发生错误: $e');
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
-  
+
   // 显示错误提示
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -147,7 +161,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       ),
     );
   }
-  
+
   // 显示成功提示
   void _showSuccessSnackBar() {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -157,7 +171,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       ),
     );
   }
-  
+
   // 选择生日
   Future<void> _selectBirthday() async {
     final DateTime? picked = await showDatePicker(
@@ -166,14 +180,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
-    
+
     if (picked != null && picked != _birthday) {
       setState(() {
         _birthday = picked;
       });
     }
   }
-  
+
   // 选择头像
   Future<void> _selectAvatar() async {
     try {
@@ -209,7 +223,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       _showErrorSnackBar('选择头像失败: $e');
     }
   }
-  
+
   // 选择图片
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -220,29 +234,34 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         maxWidth: 800,
         maxHeight: 800,
       );
-      
-      if (image != null) {
+
+      if (image != null && mounted) {
         // 保存图片到应用目录
         final Directory appDir = await getApplicationDocumentsDirectory();
-        final String fileName = 'avatar_${DateTime.now().millisecondsSinceEpoch}${path.extension(image.path)}';
+        final String fileName =
+            'avatar_${DateTime.now().millisecondsSinceEpoch}${path.extension(image.path)}';
         final String savedPath = path.join(appDir.path, fileName);
-        
+
         // 复制图片到应用目录
         final File savedImage = await File(image.path).copy(savedPath);
-        
+
         setState(() {
           _avatarUrl = savedImage.path;
         });
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('头像已更新，点击保存完成修改'),
-            backgroundColor: Colors.green,
-          ),
-        );
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('头像已更新，点击保存完成修改'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       }
     } catch (e) {
-      _showErrorSnackBar('处理图片失败: $e');
+      if (mounted) {
+        _showErrorSnackBar('处理图片失败: $e');
+      }
     }
   }
 
@@ -254,7 +273,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         children: [
           // 自定义顶部导航栏
           _buildCustomAppBar(),
-          
+
           // 主体内容
           if (_isLoading)
             const Expanded(
@@ -271,7 +290,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     children: [
                       // 头像
                       _buildAvatarSection(),
-                      
+
                       // 昵称
                       _buildInputField(
                         label: '昵称',
@@ -279,13 +298,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         icon: Icons.person,
                         hintText: '请输入昵称',
                       ),
-                      
+
                       // 性别
                       _buildGenderSelector(),
-                      
+
                       // 生日
                       _buildBirthdaySelector(),
-                      
+
                       // 手机号
                       _buildInputField(
                         label: '手机号',
@@ -294,7 +313,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         hintText: '请输入手机号',
                         keyboardType: TextInputType.phone,
                       ),
-                      
+
                       // 邮箱
                       _buildInputField(
                         label: '邮箱',
@@ -303,10 +322,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         hintText: '请输入邮箱',
                         keyboardType: TextInputType.emailAddress,
                       ),
-                      
+
                       // 个性签名
                       _buildBioField(),
-                      
+
                       // 隐私提示
                       _buildPrivacyTip(),
                     ],
@@ -318,7 +337,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       ),
     );
   }
-  
+
   // 构建自定义顶部导航栏
   Widget _buildCustomAppBar() {
     return Container(
@@ -406,7 +425,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       ),
     );
   }
-  
+
   // 构建头像部分
   Widget _buildAvatarSection() {
     return Container(
@@ -423,7 +442,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 color: Colors.grey[200],
                 image: _avatarUrl != null
                     ? DecorationImage(
-                        image: _avatarUrl!.startsWith('http') 
+                        image: _avatarUrl!.startsWith('http')
                             ? NetworkImage(_avatarUrl!) as ImageProvider
                             : FileImage(File(_avatarUrl!)),
                         fit: BoxFit.cover,
@@ -459,7 +478,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       ),
     );
   }
-  
+
   // 构建输入字段
   Widget _buildInputField({
     required String label,
@@ -516,7 +535,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       ),
     );
   }
-  
+
   // 构建性别选择器
   Widget _buildGenderSelector() {
     return Container(
@@ -590,7 +609,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       ),
     );
   }
-  
+
   // 构建生日选择器
   Widget _buildBirthdaySelector() {
     return Container(
@@ -650,7 +669,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       ),
     );
   }
-  
+
   // 构建个性签名字段
   Widget _buildBioField() {
     return Container(
@@ -704,7 +723,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       ),
     );
   }
-  
+
   // 构建隐私提示
   Widget _buildPrivacyTip() {
     return Container(
@@ -750,4 +769,4 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       ),
     );
   }
-} 
+}

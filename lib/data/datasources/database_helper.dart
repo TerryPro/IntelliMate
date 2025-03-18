@@ -42,7 +42,6 @@ class DatabaseHelper {
     final String databasesPath = await getDatabasesPath();
     final String path = join(databasesPath, _databaseName);
 
-
     try {
       // 打开数据库，如果不存在则创建
       final db = await openDatabase(
@@ -51,7 +50,7 @@ class DatabaseHelper {
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
       );
-      
+
       return db;
     } catch (e) {
       rethrow;
@@ -63,80 +62,72 @@ class DatabaseHelper {
     if (_initialized) {
       return;
     }
-    
+
     try {
       final db = await database;
-      
+
       // 检查表是否存在
-      final tables = await db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'");
+      final tables = await db
+          .rawQuery("SELECT name FROM sqlite_master WHERE type='table'");
       final tableNames = tables.map((t) => t['name'] as String).toList();
-      
+
       // 检查用户表是否存在
-      bool hasUserTable = tableNames.contains(tableUser);
+      final bool hasUserTable = tableNames.contains(tableUser);
       if (!hasUserTable) {
         await _createUserTable(db);
       } else {
-        
         // 验证用户表结构
         await _verifyUserTableStructure(db);
       }
-      
+
       // 检查特定表是否存在
-      bool hasNoteTable = tableNames.contains(tableNote);
+      final bool hasNoteTable = tableNames.contains(tableNote);
       if (!hasNoteTable) {
         await _createNoteTable(db);
-      } else {
-      }
-      
-      bool hasTaskTable = tableNames.contains(tableTask);
+      } else {}
+
+      final bool hasTaskTable = tableNames.contains(tableTask);
       if (!hasTaskTable) {
         await _createTaskTable(db);
-      } else {
-      }
-      
-      bool hasDailyNoteTable = tableNames.contains(tableDailyNote);
+      } else {}
+
+      final bool hasDailyNoteTable = tableNames.contains(tableDailyNote);
       if (!hasDailyNoteTable) {
         await _createDailyNoteTable(db);
-      } else {
-      }
-      
-      bool hasScheduleTable = tableNames.contains(tableSchedule);
+      } else {}
+
+      final bool hasScheduleTable = tableNames.contains(tableSchedule);
       if (!hasScheduleTable) {
         await _createScheduleTable(db);
-      } else {
-      }
-      
-      bool hasMemoTable = tableNames.contains(tableMemo);
+      } else {}
+
+      final bool hasMemoTable = tableNames.contains(tableMemo);
       if (!hasMemoTable) {
         await _createMemoTable(db);
-      } else {
-      }
-      
-      bool hasFinanceTable = tableNames.contains(tableFinance);
+      } else {}
+
+      final bool hasFinanceTable = tableNames.contains(tableFinance);
       if (!hasFinanceTable) {
         await _createFinanceTable(db);
-      } else {
-      }
-      
-      bool hasGoalTable = tableNames.contains(tableGoal);
+      } else {}
+
+      final bool hasGoalTable = tableNames.contains(tableGoal);
       if (!hasGoalTable) {
         await _createGoalTable(db);
-      } else {
-      }
-      
-      bool hasTravelTable = tableNames.contains(tableTravel);
+      } else {}
+
+      final bool hasTravelTable = tableNames.contains(tableTravel);
       if (!hasTravelTable) {
         await _createTravelTable(db);
-      } else {
-      }
-      
+      } else {}
+
       _initialized = true;
     } catch (e) {
       _initialized = false;
       rethrow;
     }
   }
-  
+
   // 创建用户表
   Future<void> _createUserTable(Database db) async {
     try {
@@ -159,7 +150,7 @@ class DatabaseHelper {
       rethrow;
     }
   }
-  
+
   // 创建笔记表
   Future<void> _createNoteTable(Database db) async {
     try {
@@ -179,7 +170,7 @@ class DatabaseHelper {
       rethrow;
     }
   }
-  
+
   // 创建任务表
   Future<void> _createTaskTable(Database db) async {
     try {
@@ -332,7 +323,7 @@ class DatabaseHelper {
         updated_at TEXT NOT NULL
       )
     ''');
-    
+
     // 创建旅游任务表
     await db.execute('''
       CREATE TABLE IF NOT EXISTS ${tableTravel}_tasks (
@@ -354,14 +345,14 @@ class DatabaseHelper {
   // 数据库创建回调
   Future<void> _onCreate(Database db, int version) async {
     try {
-      await _createUserTable(db);  // 首先创建用户表
+      await _createUserTable(db); // 首先创建用户表
       await _createNoteTable(db);
       await _createTaskTable(db);
       await _createDailyNoteTable(db);
       await _createScheduleTable(db);
       await _createMemoTable(db);
       await _createFinanceTable(db);
-      await _createGoalTable(db);  // 添加创建目标表
+      await _createGoalTable(db); // 添加创建目标表
       await _createTravelTable(db); // 添加创建旅游表
     } catch (e) {
       rethrow;
@@ -386,10 +377,10 @@ class DatabaseHelper {
       await _database!.close();
       _database = null;
     }
-    
+
     final String databasesPath = await getDatabasesPath();
     final String path = join(databasesPath, _databaseName);
-    
+
     await databaseFactory.deleteDatabase(path);
     _initialized = false;
   }
@@ -399,44 +390,47 @@ class DatabaseHelper {
     try {
       // 获取用户表信息
       final tableInfo = await db.rawQuery("PRAGMA table_info($tableUser)");
-      
+
       // 检查时间戳字段类型
       bool needsRebuild = false;
-      final createdAtColumn = tableInfo.firstWhere((col) => col['name'] == 'created_at', orElse: () => {});
-      final updatedAtColumn = tableInfo.firstWhere((col) => col['name'] == 'updated_at', orElse: () => {});
-      
+      final createdAtColumn = tableInfo
+          .firstWhere((col) => col['name'] == 'created_at', orElse: () => {});
+      final updatedAtColumn = tableInfo
+          .firstWhere((col) => col['name'] == 'updated_at', orElse: () => {});
+
       if (createdAtColumn.isEmpty || updatedAtColumn.isEmpty) {
         needsRebuild = true;
       } else {
         // 检查字段类型
-        final createdAtType = createdAtColumn['type']?.toString().toUpperCase() ?? '';
-        final updatedAtType = updatedAtColumn['type']?.toString().toUpperCase() ?? '';
-        
-        
+        final createdAtType =
+            createdAtColumn['type']?.toString().toUpperCase() ?? '';
+        final updatedAtType =
+            updatedAtColumn['type']?.toString().toUpperCase() ?? '';
+
         if (createdAtType != 'INTEGER' || updatedAtType != 'INTEGER') {
           needsRebuild = true;
         }
       }
-      
+
       if (needsRebuild) {
         await _rebuildUserTable(db);
       }
     } catch (e) {
+      rethrow;
     }
   }
-  
+
   // 重建用户表
   Future<void> _rebuildUserTable(Database db) async {
-    
     try {
       // 开始事务
       await db.transaction((txn) async {
         // 1. 备份现有数据
         final existingData = await txn.query(tableUser);
-        
+
         // 2. 重命名现有表
         await txn.execute('ALTER TABLE $tableUser RENAME TO ${tableUser}_old');
-        
+
         // 3. 创建新表
         await txn.execute('''
           CREATE TABLE $tableUser (
@@ -453,34 +447,36 @@ class DatabaseHelper {
             updated_at INTEGER NOT NULL
           )
         ''');
-        
+
         // 4. 迁移数据
         for (var record in existingData) {
           // 处理时间戳字段
           var createdAt = record['created_at'];
           var updatedAt = record['updated_at'];
-          
+
           // 如果是字符串，尝试转换为毫秒时间戳
           if (createdAt is String) {
             try {
-              createdAt = int.tryParse(createdAt) ?? DateTime.now().millisecondsSinceEpoch;
+              createdAt = int.tryParse(createdAt) ??
+                  DateTime.now().millisecondsSinceEpoch;
             } catch (_) {
               createdAt = DateTime.now().millisecondsSinceEpoch;
             }
           } else {
             createdAt ??= DateTime.now().millisecondsSinceEpoch;
           }
-          
+
           if (updatedAt is String) {
             try {
-              updatedAt = int.tryParse(updatedAt) ?? DateTime.now().millisecondsSinceEpoch;
+              updatedAt = int.tryParse(updatedAt) ??
+                  DateTime.now().millisecondsSinceEpoch;
             } catch (_) {
               updatedAt = DateTime.now().millisecondsSinceEpoch;
             }
           } else {
             updatedAt ??= DateTime.now().millisecondsSinceEpoch;
           }
-          
+
           // 创建新记录
           final newRecord = {
             'id': record['id'],
@@ -495,13 +491,12 @@ class DatabaseHelper {
             'created_at': createdAt,
             'updated_at': updatedAt,
           };
-          
+
           await txn.insert(tableUser, newRecord);
         }
-        
+
         // 5. 删除旧表
         await txn.execute('DROP TABLE IF EXISTS ${tableUser}_old');
-        
       });
     } catch (e) {
       rethrow;

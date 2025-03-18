@@ -13,14 +13,14 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  
+
   bool _obscureCurrentPassword = true;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
-  
+
   String _passwordStrength = '中';
   double _strengthLevel = 2; // 1-弱, 2-中, 3-强
-  
+
   @override
   void dispose() {
     _currentPasswordController.dispose();
@@ -28,7 +28,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
     _confirmPasswordController.dispose();
     super.dispose();
   }
-  
+
   // 检查密码强度
   void _checkPasswordStrength(String password) {
     if (password.isEmpty) {
@@ -38,21 +38,22 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
       });
       return;
     }
-    
+
     // 简单的密码强度检查逻辑
-    bool hasUppercase = password.contains(RegExp(r'[A-Z]'));
-    bool hasLowercase = password.contains(RegExp(r'[a-z]'));
-    bool hasDigits = password.contains(RegExp(r'[0-9]'));
-    bool hasSpecialChars = password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
-    bool hasMinLength = password.length >= 8;
-    
+    final bool hasUppercase = password.contains(RegExp(r'[A-Z]'));
+    final bool hasLowercase = password.contains(RegExp(r'[a-z]'));
+    final bool hasDigits = password.contains(RegExp(r'[0-9]'));
+    final bool hasSpecialChars =
+        password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+    final bool hasMinLength = password.length >= 8;
+
     int strength = 0;
     if (hasUppercase) strength++;
     if (hasLowercase) strength++;
     if (hasDigits) strength++;
     if (hasSpecialChars) strength++;
     if (hasMinLength) strength++;
-    
+
     setState(() {
       if (strength <= 2) {
         _passwordStrength = '弱';
@@ -66,7 +67,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
       }
     });
   }
-  
+
   // 保存密码
   void _savePassword() {
     // 表单验证
@@ -74,32 +75,32 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
       _showErrorSnackBar('请输入当前密码');
       return;
     }
-    
+
     if (_newPasswordController.text.isEmpty) {
       _showErrorSnackBar('请输入新密码');
       return;
     }
-    
+
     if (_confirmPasswordController.text.isEmpty) {
       _showErrorSnackBar('请确认新密码');
       return;
     }
-    
+
     if (_newPasswordController.text != _confirmPasswordController.text) {
       _showErrorSnackBar('两次输入的密码不一致');
       return;
     }
-    
+
     // 密码强度检查
     if (_strengthLevel < 2) {
       _showErrorSnackBar('密码强度太弱，请设置更复杂的密码');
       return;
     }
-    
+
     // 模拟密码修改成功
     _showSuccessDialog();
   }
-  
+
   // 显示错误提示
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -109,7 +110,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
       ),
     );
   }
-  
+
   // 显示成功对话框
   void _showSuccessDialog() {
     showDialog(
@@ -138,7 +139,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
         children: [
           // 自定义顶部导航栏
           _buildCustomAppBar(),
-          
+
           // 主体内容
           Expanded(
             child: SingleChildScrollView(
@@ -148,7 +149,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
                   children: [
                     // 安全图标
                     _buildSecurityIcon(),
-                    
+
                     // 当前密码
                     _buildPasswordField(
                       label: '当前密码',
@@ -161,7 +162,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
                         });
                       },
                     ),
-                    
+
                     // 新密码
                     _buildPasswordField(
                       label: '新密码',
@@ -176,7 +177,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
                       onChanged: _checkPasswordStrength,
                       showStrength: true,
                     ),
-                    
+
                     // 确认新密码
                     _buildPasswordField(
                       label: '确认新密码',
@@ -189,10 +190,10 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
                         });
                       },
                     ),
-                    
+
                     // 密码要求提示
                     _buildPasswordRequirements(),
-                    
+
                     // 忘记密码
                     _buildForgotPassword(),
                   ],
@@ -204,7 +205,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
       ),
     );
   }
-  
+
   // 构建自定义顶部导航栏
   Widget _buildCustomAppBar() {
     return Container(
@@ -292,7 +293,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
       ),
     );
   }
-  
+
   // 构建安全图标
   Widget _buildSecurityIcon() {
     return Column(
@@ -333,7 +334,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
       ],
     );
   }
-  
+
   // 构建密码输入框
   Widget _buildPasswordField({
     required String label,
@@ -430,7 +431,9 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
                         child: Container(
                           height: 4,
                           decoration: BoxDecoration(
-                            color: _strengthLevel >= 1 ? Colors.green : Colors.grey.shade200,
+                            color: _strengthLevel >= 1
+                                ? Colors.green
+                                : Colors.grey.shade200,
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -440,7 +443,9 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
                         child: Container(
                           height: 4,
                           decoration: BoxDecoration(
-                            color: _strengthLevel >= 2 ? Colors.amber : Colors.grey.shade200,
+                            color: _strengthLevel >= 2
+                                ? Colors.amber
+                                : Colors.grey.shade200,
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -450,7 +455,9 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
                         child: Container(
                           height: 4,
                           decoration: BoxDecoration(
-                            color: _strengthLevel >= 3 ? Colors.red : Colors.grey.shade200,
+                            color: _strengthLevel >= 3
+                                ? Colors.red
+                                : Colors.grey.shade200,
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -464,7 +471,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
       ),
     );
   }
-  
+
   // 获取密码强度颜色
   Color _getStrengthColor() {
     switch (_strengthLevel) {
@@ -478,7 +485,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
         return Colors.grey;
     }
   }
-  
+
   // 构建密码要求提示
   Widget _buildPasswordRequirements() {
     return Container(
@@ -522,7 +529,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
       ),
     );
   }
-  
+
   // 构建密码要求项
   Widget _buildRequirementItem(String text) {
     return Padding(
@@ -550,7 +557,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
       ),
     );
   }
-  
+
   // 构建忘记密码
   Widget _buildForgotPassword() {
     return Center(
@@ -568,4 +575,4 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
       ),
     );
   }
-} 
+}

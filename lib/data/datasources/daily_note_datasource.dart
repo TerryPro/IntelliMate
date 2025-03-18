@@ -67,7 +67,7 @@ class DailyNoteDataSourceImpl implements DailyNoteDataSource {
   }) async {
     await _ensureDatabaseReady();
     final db = await _databaseHelper.database;
-    
+
     try {
       final List<Map<String, dynamic>> maps = await db.query(
         DatabaseHelper.tableDailyNote,
@@ -75,7 +75,7 @@ class DailyNoteDataSourceImpl implements DailyNoteDataSource {
         offset: offset,
         orderBy: orderBy ?? 'created_at ${descending ? 'DESC' : 'ASC'}',
       );
-      
+
       return List.generate(maps.length, (i) {
         return DailyNoteModel.fromMap(maps[i]);
       });
@@ -89,7 +89,7 @@ class DailyNoteDataSourceImpl implements DailyNoteDataSource {
   Future<DailyNoteModel?> getDailyNoteById(String id) async {
     await _ensureDatabaseReady();
     final db = await _databaseHelper.database;
-    
+
     try {
       final List<Map<String, dynamic>> maps = await db.query(
         DatabaseHelper.tableDailyNote,
@@ -100,7 +100,7 @@ class DailyNoteDataSourceImpl implements DailyNoteDataSource {
       if (maps.isEmpty) {
         return null;
       }
-      
+
       return DailyNoteModel.fromMap(maps.first);
     } catch (e) {
       rethrow;
@@ -112,38 +112,35 @@ class DailyNoteDataSourceImpl implements DailyNoteDataSource {
   Future<DailyNoteModel> createDailyNote(DailyNoteModel dailyNote) async {
     await _ensureDatabaseReady();
     final db = await _databaseHelper.database;
-    
+
     // 生成新ID
     final String id = const Uuid().v4();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    
+
     final DailyNoteModel newDailyNote = dailyNote.copyWith(
       id: id,
       createdAt: DateTime.fromMillisecondsSinceEpoch(timestamp),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(timestamp),
     );
-    
+
     try {
-      
       // ignore: unused_local_variable
       final result = await db.insert(
         DatabaseHelper.tableDailyNote,
         newDailyNote.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
-      
-      
+
       // 验证日常点滴是否真的保存了
       final verifyResult = await db.query(
         DatabaseHelper.tableDailyNote,
         where: 'id = ?',
         whereArgs: [id],
       );
-      
+
       if (verifyResult.isNotEmpty) {
-      } else {
-      }
-      
+      } else {}
+
       return newDailyNote;
     } catch (e) {
       rethrow;
@@ -155,13 +152,13 @@ class DailyNoteDataSourceImpl implements DailyNoteDataSource {
   Future<int> updateDailyNote(DailyNoteModel dailyNote) async {
     await _ensureDatabaseReady();
     final db = await _databaseHelper.database;
-    
+
     // 更新时间戳
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final updatedDailyNote = dailyNote.copyWith(
       updatedAt: DateTime.fromMillisecondsSinceEpoch(timestamp),
     );
-    
+
     try {
       final result = await db.update(
         DatabaseHelper.tableDailyNote,
@@ -169,7 +166,7 @@ class DailyNoteDataSourceImpl implements DailyNoteDataSource {
         where: 'id = ?',
         whereArgs: [dailyNote.id],
       );
-      
+
       return result;
     } catch (e) {
       rethrow;
@@ -181,14 +178,14 @@ class DailyNoteDataSourceImpl implements DailyNoteDataSource {
   Future<int> deleteDailyNote(String id) async {
     await _ensureDatabaseReady();
     final db = await _databaseHelper.database;
-    
+
     try {
       final result = await db.delete(
         DatabaseHelper.tableDailyNote,
         where: 'id = ?',
         whereArgs: [id],
       );
-      
+
       return result;
     } catch (e) {
       rethrow;
@@ -200,7 +197,7 @@ class DailyNoteDataSourceImpl implements DailyNoteDataSource {
   Future<List<DailyNoteModel>> searchDailyNotes(String query) async {
     await _ensureDatabaseReady();
     final db = await _databaseHelper.database;
-    
+
     try {
       final List<Map<String, dynamic>> maps = await db.query(
         DatabaseHelper.tableDailyNote,
@@ -208,7 +205,7 @@ class DailyNoteDataSourceImpl implements DailyNoteDataSource {
         whereArgs: ['%$query%', '%$query%'],
         orderBy: 'created_at DESC',
       );
-      
+
       return List.generate(maps.length, (i) {
         return DailyNoteModel.fromMap(maps[i]);
       });
@@ -228,14 +225,14 @@ class DailyNoteDataSourceImpl implements DailyNoteDataSource {
   Future<List<DailyNoteModel>> getDailyNotesWithCodeSnippets() async {
     await _ensureDatabaseReady();
     final db = await _databaseHelper.database;
-    
+
     try {
       final List<Map<String, dynamic>> maps = await db.query(
         DatabaseHelper.tableDailyNote,
         where: 'code_snippet IS NOT NULL AND code_snippet != ""',
         orderBy: 'created_at DESC',
       );
-      
+
       return List.generate(maps.length, (i) {
         return DailyNoteModel.fromMap(maps[i]);
       });
@@ -259,41 +256,40 @@ class DailyNoteDataSourceImpl implements DailyNoteDataSource {
   }) async {
     await _ensureDatabaseReady();
     final db = await _databaseHelper.database;
-    
+
     // 构建查询条件
-    List<String> whereConditions = [];
-    List<dynamic> whereArgs = [];
-    
+    final List<String> whereConditions = [];
+    final List<dynamic> whereArgs = [];
+
     if (mood != null) {
       whereConditions.add('mood = ?');
       whereArgs.add(mood);
     }
-    
+
     if (weather != null) {
       whereConditions.add('weather = ?');
       whereArgs.add(weather);
     }
-    
+
     if (isPrivate != null) {
       whereConditions.add('is_private = ?');
       whereArgs.add(isPrivate ? 1 : 0);
     }
-    
+
     if (fromDate != null) {
       whereConditions.add('created_at >= ?');
       whereArgs.add(fromDate.millisecondsSinceEpoch);
     }
-    
+
     if (toDate != null) {
       whereConditions.add('created_at <= ?');
       whereArgs.add(toDate.millisecondsSinceEpoch);
     }
-    
+
     // 组合条件
-    String whereClause = whereConditions.isEmpty 
-        ? '' 
-        : whereConditions.join(' AND ');
-    
+    final String whereClause =
+        whereConditions.isEmpty ? '' : whereConditions.join(' AND ');
+
     try {
       final List<Map<String, dynamic>> maps = await db.query(
         DatabaseHelper.tableDailyNote,
@@ -303,7 +299,7 @@ class DailyNoteDataSourceImpl implements DailyNoteDataSource {
         offset: offset,
         orderBy: orderBy ?? 'created_at ${descending ? 'DESC' : 'ASC'}',
       );
-      
+
       return List.generate(maps.length, (i) {
         return DailyNoteModel.fromMap(maps[i]);
       });
@@ -311,4 +307,4 @@ class DailyNoteDataSourceImpl implements DailyNoteDataSource {
       rethrow;
     }
   }
-} 
+}
