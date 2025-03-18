@@ -730,7 +730,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFF3ECABB).withOpacity(0.1),
+              color: const Color(0xFF3ECABB).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(

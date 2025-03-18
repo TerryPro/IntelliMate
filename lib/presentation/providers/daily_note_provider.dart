@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:intellimate/domain/core/result.dart';
 import 'package:intellimate/domain/entities/daily_note.dart';
 import 'package:intellimate/domain/usecases/daily_note/create_daily_note.dart';
 import 'package:intellimate/domain/usecases/daily_note/delete_daily_note.dart';
@@ -163,13 +162,11 @@ class DailyNoteProvider extends ChangeNotifier {
       result.fold(
         onSuccess: (data) {
           // 修改为直接使用data返回的DailyNote模型
-          if (data != null) {
-            success = true;
-            final index = _dailyNotes.indexWhere((note) => note.id == dailyNote.id);
-            if (index != -1) {
-              _dailyNotes[index] = dailyNote;
-              notifyListeners();
-            }
+          success = true;
+          final index = _dailyNotes.indexWhere((note) => note.id == dailyNote.id);
+          if (index != -1) {
+            _dailyNotes[index] = dailyNote;
+            notifyListeners();
           }
         },
         onFailure: (error) {
@@ -199,11 +196,9 @@ class DailyNoteProvider extends ChangeNotifier {
       result.fold(
         onSuccess: (data) {
           // 我们假设如果返回了数据，则操作成功
-          if (data != null) {
-            success = true;
-            _dailyNotes.removeWhere((note) => note.id == id);
-            notifyListeners();
-          }
+          success = true;
+          _dailyNotes.removeWhere((note) => note.id == id);
+          notifyListeners();
         },
         onFailure: (error) {
           _setError(error);

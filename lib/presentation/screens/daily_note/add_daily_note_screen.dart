@@ -6,6 +6,7 @@ import 'package:intellimate/presentation/widgets/custom_app_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:intellimate/utils/app_logger.dart';
 
 class AddDailyNoteScreen extends StatefulWidget {
   const AddDailyNoteScreen({super.key});
@@ -53,7 +54,7 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
                 _selectedImage = file;
               }
             } catch (e) {
-              print('加载已有图片失败: $e');
+              AppLogger.log('加载已有图片失败: $e');
             }
           }
         });
@@ -249,7 +250,7 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
           // 加载指示器
           if (_isLoading)
             Container(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               child: const Center(
                 child: CircularProgressIndicator(),
               ),

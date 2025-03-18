@@ -17,12 +17,10 @@ class UserModel extends User {
 
   // 从Map创建模型对象（用于数据库读取）
   factory UserModel.fromMap(Map<String, dynamic> map) {
-    print('解析用户数据: $map');
     
     // 辅助函数：安全地解析时间戳
     DateTime parseTimestamp(dynamic value) {
       if (value == null) {
-        print('时间戳为空，使用当前时间');
         return DateTime.now();
       }
       
@@ -42,14 +40,11 @@ class UserModel extends User {
             return dateTime;
           }
           
-          print('无法解析字符串时间戳: $value，使用当前时间');
           return DateTime.now();
         } else {
-          print('未知时间戳类型: ${value.runtimeType}，使用当前时间');
           return DateTime.now();
         }
       } catch (e) {
-        print('解析时间戳失败: $e，使用当前时间');
         return DateTime.now();
       }
     }

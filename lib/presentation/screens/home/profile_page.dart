@@ -166,7 +166,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     Text(
                       _bio,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 14,
                       ),
                       maxLines: 2,
@@ -220,7 +220,7 @@ class _ProfilePageState extends State<ProfilePage> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             fontSize: 12,
           ),
         ),

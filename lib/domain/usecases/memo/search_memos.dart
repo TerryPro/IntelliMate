@@ -1,4 +1,3 @@
-import 'package:intellimate/domain/entities/memo.dart';
 import 'package:intellimate/domain/repositories/memo_repository.dart';
 import 'package:intellimate/domain/core/result.dart';
 import 'package:intellimate/data/models/memo_model.dart';

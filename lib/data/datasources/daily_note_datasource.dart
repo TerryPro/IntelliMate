@@ -125,6 +125,7 @@ class DailyNoteDataSourceImpl implements DailyNoteDataSource {
     
     try {
       
+      // ignore: unused_local_variable
       final result = await db.insert(
         DatabaseHelper.tableDailyNote,
         newDailyNote.toMap(),

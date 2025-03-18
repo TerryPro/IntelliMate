@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:intellimate/domain/core/result.dart';
 import 'package:intellimate/domain/entities/schedule.dart';
 import 'package:intellimate/domain/usecases/schedule/create_schedule.dart';
 import 'package:intellimate/domain/usecases/schedule/delete_schedule.dart';

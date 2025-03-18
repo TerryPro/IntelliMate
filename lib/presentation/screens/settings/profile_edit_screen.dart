@@ -431,7 +431,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     : null,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
+                    color: Colors.grey.withValues(alpha: 0.3),
                     spreadRadius: 1,
                     blurRadius: 6,
                     offset: const Offset(0, 3),
@@ -488,7 +488,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1),
                   spreadRadius: 1,
                   blurRadius: 6,
                   offset: const Offset(0, 2),
@@ -540,7 +540,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1),
                   spreadRadius: 1,
                   blurRadius: 6,
                   offset: const Offset(0, 2),
@@ -616,7 +616,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
+                    color: Colors.grey.withValues(alpha: 0.1),
                     spreadRadius: 1,
                     blurRadius: 6,
                     offset: const Offset(0, 2),
@@ -673,7 +673,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1),
                   spreadRadius: 1,
                   blurRadius: 6,
                   offset: const Offset(0, 2),

@@ -1,4 +1,3 @@
-import 'package:intellimate/domain/entities/task.dart';
 import 'package:intellimate/domain/repositories/task_repository.dart';
 import 'package:intellimate/domain/core/result.dart';
 import 'package:intellimate/data/models/task_model.dart';

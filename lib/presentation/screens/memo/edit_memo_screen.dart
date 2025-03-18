@@ -196,75 +196,6 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
     }
   }
 
-  Future<void> _deleteMemo() async {
-    if (_memo == null) {
-      return;
-    }
-
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('确认删除'),
-        content: const Text('确定要删除这条备忘录吗？此操作不可恢复。'),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
-            child: const Text('删除'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm != true) {
-      return;
-    }
-
-    setState(() {});
-
-    try {
-      final memoProvider = Provider.of<MemoProvider>(context, listen: false);
-      final success = await memoProvider.deleteMemo(_memo!.id);
-
-      if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('备忘录已删除'),
-            backgroundColor: AppColors.primary,
-          ),
-        );
-        Navigator.pop(context, true);
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('删除失败，请重试'),
-            backgroundColor: Colors.red.shade400,
-          ),
-        );
-        setState(() {});
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('发生错误: ${e.toString()}'),
-            backgroundColor: Colors.red.shade400,
-          ),
-        );
-        setState(() {});
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final isEditing = _memo != null;
@@ -327,7 +258,7 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
           // 加载指示器
           if (_isSaving)
             Container(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               child: const Center(
                 child: CircularProgressIndicator(
                   color: Colors.white,
@@ -347,7 +278,7 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -446,7 +377,7 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),

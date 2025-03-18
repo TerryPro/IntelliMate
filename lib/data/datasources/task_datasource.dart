@@ -134,7 +134,7 @@ class TaskDataSourceImpl extends TaskDataSource {
     
     try {
       
-      final result = await db.insert(
+      await db.insert(
         DatabaseHelper.tableTask,
         newTask.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,

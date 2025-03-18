@@ -281,16 +281,20 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
 
       _quickNoteController.clear();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('点滴已发布'),
-          backgroundColor: Color(0xFF3ECABB),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('点滴已发布'),
+            backgroundColor: Color(0xFF3ECABB),
+          ),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('发布失败: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('发布失败: $e')),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -449,7 +453,7 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -494,7 +498,7 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Center(
@@ -783,8 +787,6 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
 
   // 构建点滴项
   Widget _buildDailyNoteItem(DailyNote note) {
-    final timeFormat = DateFormat('HH:mm');
-
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -792,7 +794,7 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

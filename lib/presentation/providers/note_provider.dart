@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:intellimate/domain/core/result.dart';
 import 'package:intellimate/domain/entities/note.dart';
 import 'package:intellimate/domain/usecases/note/create_note.dart';
 import 'package:intellimate/domain/usecases/note/delete_note.dart';

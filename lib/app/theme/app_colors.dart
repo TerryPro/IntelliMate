@@ -4,16 +4,16 @@ import 'package:flutter/material.dart';
 extension ColorExtension on Color {
   /// 用于替代withOpacity，但允许更多自定义参数
   Color withValues({
-    double? red,
-    double? green,
-    double? blue,
+    int? red,
+    int? green,
+    int? blue,
     double? alpha,
   }) {
     return Color.fromRGBO(
-      red?.toInt() ?? this.red,
-      green?.toInt() ?? this.green,
-      blue?.toInt() ?? this.blue,
-      alpha != null ? alpha / 255 : opacity,
+      red ?? r.toInt(), 
+      green ?? g.toInt(), 
+      blue ?? b.toInt(),
+      alpha ?? a,
     );
   }
 }
@@ -54,9 +54,9 @@ class AppColors {
   // 获取颜色的透明度变体
   static Color getColorWithOpacity(Color color, double opacity) {
     return Color.fromRGBO(
-      color.red,
-      color.green, 
-      color.blue,
+      color.r.toInt(),
+      color.g.toInt(), 
+      color.b.toInt(),
       opacity,
     );
   }

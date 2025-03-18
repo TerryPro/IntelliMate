@@ -367,7 +367,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
           // 加载指示器
           if (_isLoading)
             Container(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               child: const Center(
                 child: CircularProgressIndicator(),
               ),
@@ -376,7 +376,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
           // 错误提示
           if (_error != null)
             Container(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               child: Center(
                 child: Container(
                   margin: const EdgeInsets.all(20),

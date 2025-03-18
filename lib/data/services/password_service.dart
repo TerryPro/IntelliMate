@@ -28,7 +28,6 @@ class PasswordService {
       
       return true;
     } catch (e) {
-      print('设置密码失败: $e');
       return false;
     }
   }
@@ -39,7 +38,6 @@ class PasswordService {
       final storedPassword = await _secureStorage.read(key: _passwordKey);
       return storedPassword == password;
     } catch (e) {
-      print('验证密码失败: $e');
       return false;
     }
   }
@@ -54,7 +52,6 @@ class PasswordService {
       
       return true;
     } catch (e) {
-      print('清除密码失败: $e');
       return false;
     }
   }

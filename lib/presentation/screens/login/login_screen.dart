@@ -1,12 +1,15 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:intellimate/app/theme/app_colors.dart';
-import 'package:intellimate/presentation/providers/password_provider.dart';
-import 'package:intellimate/presentation/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-import 'dart:math';
+import 'package:intellimate/app/theme/app_colors.dart';
 import 'package:intellimate/data/models/user_model.dart';
+import 'package:intellimate/presentation/providers/password_provider.dart';
+import 'package:intellimate/presentation/providers/user_provider.dart';
 import 'package:intellimate/presentation/screens/home/home_screen.dart';
+
+// 导入日志工具类
+import 'package:intellimate/utils/app_logger.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -82,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
           
           if (currentUser == null) {
             // 创建新用户
-            print('未找到现有用户，创建新用户');
+            AppLogger.log('未找到现有用户，创建新用户');
             final id = const Uuid().v4();
             final now = DateTime.now();
             
@@ -100,9 +103,9 @@ class _LoginScreenState extends State<LoginScreen> {
               updatedAt: now,
             );
             
-            print('准备创建用户: $user');
+            AppLogger.log('准备创建用户: $user');
             final createdUser = await _userProvider.createUser(user);
-            print('用户创建结果: ${createdUser != null ? '成功' : '失败'}');
+            AppLogger.log('用户创建结果: ${createdUser != null ? '成功' : '失败'}');
             
             if (createdUser == null) {
               throw Exception('创建用户失败，请重试');
@@ -110,47 +113,51 @@ class _LoginScreenState extends State<LoginScreen> {
             
             // 设置为当前用户
             await _userProvider.login(createdUser.id);
-            print('用户登录成功，ID: ${createdUser.id}');
+            AppLogger.log('用户登录成功，ID: ${createdUser.id}');
             
             // 立即验证用户是否真的创建成功
             final verifiedUser = await _userProvider.getCurrentUser();
             if (verifiedUser == null) {
               throw Exception('用户创建成功，但无法获取，请重试');
             }
-            print('成功验证新用户: ${verifiedUser.username}');
+            AppLogger.log('成功验证新用户: ${verifiedUser.username}');
           } else {
             // 如果已有用户，直接登录
-            print('找到现有用户: ${currentUser.username}，使用该用户登录');
+            AppLogger.log('找到现有用户: ${currentUser.username}，使用该用户登录');
             await _userProvider.login(currentUser.id);
           }
         } else {
           // 已有密码，验证密码
           final isValid = await _passwordProvider.verifyPassword(_passwordController.text);
           if (!isValid) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('密码错误，请重试')),
-            );
-            setState(() {
-              _isLoading = false;
-            });
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('密码错误，请重试')),
+              );
+              setState(() {
+                _isLoading = false;
+              });
+            }
             return;
           }
           
           // 获取当前用户
           final user = await _userProvider.getCurrentUser();
-          print('验证密码后获取用户: ${user?.username ?? "未找到"}');
+          AppLogger.log('验证密码后获取用户: ${user?.username ?? "未找到"}');
           
           if (user == null) {
             // 如果没有找到用户，很可能是之前的数据库初始化问题
-            print('未找到用户信息，可能是之前数据库初始化失败，尝试重置');
+            AppLogger.log('未找到用户信息，可能是之前数据库初始化失败，尝试重置');
             await _passwordProvider.clearPassword();
             
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('未找到用户信息，请重新注册')),
-            );
-            setState(() {
-              _isLoading = false;
-            });
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('未找到用户信息，请重新注册')),
+              );
+              setState(() {
+                _isLoading = false;
+              });
+            }
             return;
           }
         }
@@ -163,12 +170,14 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       } catch (e) {
-        print('登录过程中发生错误: $e');
-        print('错误堆栈: ${StackTrace.current}');
+        AppLogger.log('登录过程中发生错误: $e');
+        AppLogger.log('错误堆栈: ${StackTrace.current}');
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('登录失败: ${e.toString()}')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('登录失败: ${e.toString()}')),
+          );
+        }
       } finally {
         if (mounted) {
           setState(() {
@@ -257,7 +266,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 hintText: '请输入您的昵称',
                                 hintStyle: const TextStyle(color: Colors.white70),
                                 filled: true,
-                                fillColor: Colors.white.withOpacity(0.2),
+                                fillColor: Colors.white.withValues(alpha: 0.2),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide.none,
@@ -299,7 +308,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           hintText: _isFirstTimeUser ? '请设置密码' : '请输入密码',
                           hintStyle: const TextStyle(color: Colors.white70),
                           filled: true,
-                          fillColor: Colors.white.withOpacity(0.2),
+                          fillColor: Colors.white.withValues(alpha: 0.2),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -345,7 +354,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 hintText: '请确认密码',
                                 hintStyle: const TextStyle(color: Colors.white70),
                                 filled: true,
-                                fillColor: Colors.white.withOpacity(0.2),
+                                fillColor: Colors.white.withValues(alpha: 0.2),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide.none,

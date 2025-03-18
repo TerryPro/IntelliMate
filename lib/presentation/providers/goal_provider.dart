@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:intellimate/domain/core/result.dart';
 import 'package:intellimate/domain/entities/goal.dart';
 import 'package:intellimate/domain/repositories/goal_repository.dart';
 

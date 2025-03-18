@@ -50,7 +50,7 @@ class UnifiedAppBar extends StatelessWidget {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -71,7 +71,7 @@ class UnifiedAppBar extends StatelessWidget {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -165,7 +165,7 @@ class AppBarRefreshButton extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: backgroundColor.withOpacity(0.2),
+          color: backgroundColor.withValues(alpha: 0.2),
           shape: BoxShape.circle,
         ),
         child: Icon(
@@ -199,7 +199,7 @@ class AppBarSearchButton extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: backgroundColor.withOpacity(0.2),
+          color: backgroundColor.withValues(alpha: 0.2),
           shape: BoxShape.circle,
         ),
         child: Icon(
@@ -233,7 +233,7 @@ class AppBarMoreButton extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: backgroundColor.withOpacity(0.2),
+          color: backgroundColor.withValues(alpha: 0.2),
           shape: BoxShape.circle,
         ),
         child: Icon(
@@ -284,7 +284,7 @@ class CustomManagementAppBar extends StatelessWidget {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -313,7 +313,7 @@ class CustomManagementAppBar extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(

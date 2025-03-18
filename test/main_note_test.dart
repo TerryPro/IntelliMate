@@ -7,6 +7,9 @@ import 'package:intellimate/app/theme/app_theme.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'dart:io' show Platform;
 
+// 导入日志工具类
+import 'package:intellimate/utils/app_logger.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
@@ -15,9 +18,9 @@ void main() async {
     // 在桌面平台上初始化sqflite_ffi
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
-    print('使用 sqflite_ffi 初始化 databaseFactory (桌面平台)');
+    AppLogger.log('使用 sqflite_ffi 初始化 databaseFactory (桌面平台)');
   } else {
-    print('使用默认 sqflite 实现 (移动平台)');
+    AppLogger.log('使用默认 sqflite 实现 (移动平台)');
   }
   
   // 初始化依赖注入

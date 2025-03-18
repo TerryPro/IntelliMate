@@ -1,4 +1,3 @@
-import 'package:intellimate/domain/entities/schedule.dart';
 import 'package:intellimate/domain/repositories/schedule_repository.dart';
 import 'package:intellimate/domain/core/result.dart';
 import 'package:intellimate/data/models/schedule_model.dart';

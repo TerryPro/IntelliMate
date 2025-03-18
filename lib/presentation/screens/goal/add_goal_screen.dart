@@ -28,7 +28,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   double _progress = 0.0;
 
   bool _isLoading = false;
-  bool _isDeleting = false;
+  final bool _isDeleting = false;
 
   // 分类列表
   final List<String> _categories = ['周目标', '月目标', '年度目标'];
@@ -136,61 +136,6 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-        });
-      }
-    }
-  }
-
-  // 删除目标
-  Future<void> _deleteGoal() async {
-    if (!_isEditMode) return;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('确认删除'),
-        content: const Text('确定要删除这个目标吗？此操作不可恢复。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
-            child: const Text('删除'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true) {
-      return;
-    }
-
-    setState(() {
-      _isDeleting = true;
-    });
-
-    try {
-      final goalProvider = Provider.of<GoalProvider>(context, listen: false);
-      await goalProvider.deleteGoal(widget.goal!.id);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('目标已删除')),
-        );
-        Navigator.pop(context, true);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('删除失败: $e')),
-        );
-        setState(() {
-          _isDeleting = false;
         });
       }
     }
@@ -620,7 +565,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
               inactiveTrackColor: Colors.grey[200],
               trackHeight: 4,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-              overlayColor: AppColors.primary.withOpacity(0.2),
+              overlayColor: AppColors.primary.withValues(alpha: 0.2),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
             ),
             child: Slider(

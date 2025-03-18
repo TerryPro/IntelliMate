@@ -125,7 +125,7 @@ class NoteDataSourceImpl extends NoteDataSource {
     
     try {
       
-      final result = await db.insert(
+      await db.insert(
         DatabaseHelper.tableNote,
         newNote.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
