@@ -2,6 +2,7 @@ import 'package:intellimate/data/datasources/schedule_datasource.dart';
 import 'package:intellimate/data/models/schedule_model.dart';
 import 'package:intellimate/domain/entities/schedule.dart';
 import 'package:intellimate/domain/repositories/schedule_repository.dart';
+import 'package:intellimate/domain/core/result.dart';
 
 class ScheduleRepositoryImpl implements ScheduleRepository {
   final ScheduleDataSource _dataSource;
@@ -9,12 +10,20 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
   ScheduleRepositoryImpl(this._dataSource);
   
   @override
-  Future<Schedule?> getScheduleById(String id) async {
-    return await _dataSource.getScheduleById(id);
+  Future<Result<ScheduleModel>> getScheduleById(String id) async {
+    try {
+      final schedule = await _dataSource.getScheduleById(id);
+      if (schedule == null) {
+        return Result.failure("找不到ID为$id的日程");
+      }
+      return Result.success(schedule);
+    } catch (e) {
+      return Result.failure("获取日程详情失败: $e");
+    }
   }
   
   @override
-  Future<Schedule> createSchedule({
+  Future<Result<ScheduleModel>> createSchedule({
     required String title,
     String? description,
     required DateTime startTime,
@@ -27,113 +36,174 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
     List<String>? participants,
     String? reminder,
   }) async {
-    final schedule = ScheduleModel(
-      id: '', // 会在数据源中生成
-      title: title,
-      description: description,
-      startTime: startTime,
-      endTime: endTime,
-      location: location,
-      isAllDay: isAllDay,
-      category: category,
-      isRepeated: isRepeated,
-      repeatType: repeatType,
-      participants: participants,
-      reminder: reminder,
-      createdAt: DateTime.now(), // 会在数据源中更新
-      updatedAt: DateTime.now(), // 会在数据源中更新
-    );
-    
-    return await _dataSource.createSchedule(schedule);
+    try {
+      final schedule = ScheduleModel(
+        id: '', // 会在数据源中生成
+        title: title,
+        description: description,
+        startTime: startTime,
+        endTime: endTime,
+        location: location,
+        isAllDay: isAllDay,
+        category: category,
+        isRepeated: isRepeated,
+        repeatType: repeatType,
+        participants: participants,
+        reminder: reminder,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      
+      final result = await _dataSource.createSchedule(schedule);
+      return Result.success(result);
+    } catch (e) {
+      return Result.failure("创建日程失败: $e");
+    }
   }
   
   @override
-  Future<bool> updateSchedule(Schedule schedule) async {
-    final scheduleModel = ScheduleModel.fromEntity(schedule);
-    final result = await _dataSource.updateSchedule(scheduleModel);
-    return result > 0;
+  Future<Result<ScheduleModel>> updateSchedule(Schedule schedule) async {
+    try {
+      final scheduleModel = ScheduleModel.fromEntity(schedule);
+      final affected = await _dataSource.updateSchedule(scheduleModel);
+      if (affected > 0) {
+        // 获取更新后的数据
+        final updated = await _dataSource.getScheduleById(schedule.id);
+        if (updated != null) {
+          return Result.success(updated);
+        }
+        return Result.success(scheduleModel);
+      } else {
+        return Result.failure("更新日程失败: 没有记录被更新");
+      }
+    } catch (e) {
+      return Result.failure("更新日程失败: $e");
+    }
   }
   
   @override
-  Future<bool> deleteSchedule(String id) async {
-    final result = await _dataSource.deleteSchedule(id);
-    return result > 0;
+  Future<Result<bool>> deleteSchedule(String id) async {
+    try {
+      final result = await _dataSource.deleteSchedule(id);
+      if (result > 0) {
+        return Result.success(true);
+      } else {
+        return Result.failure("删除日程失败: 没有记录被删除");
+      }
+    } catch (e) {
+      return Result.failure("删除日程失败: $e");
+    }
   }
   
   @override
-  Future<List<Schedule>> getAllSchedules({
+  Future<Result<List<ScheduleModel>>> getAllSchedules({
     int? limit,
     int? offset,
     String? orderBy,
     bool descending = true,
   }) async {
-    return await _dataSource.getAllSchedules(
-      limit: limit,
-      offset: offset,
-      orderBy: orderBy,
-      descending: descending,
-    );
+    try {
+      final schedules = await _dataSource.getAllSchedules(
+        limit: limit,
+        offset: offset,
+        orderBy: orderBy,
+        descending: descending,
+      );
+      return Result.success(schedules);
+    } catch (e) {
+      return Result.failure("获取所有日程失败: $e");
+    }
   }
   
   @override
-  Future<List<Schedule>> getSchedulesByDateRange(
+  Future<Result<List<ScheduleModel>>> getSchedulesByDateRange(
     DateTime startDate,
     DateTime endDate, {
     bool includeAllDay = true,
     String? category,
     bool? isRepeated,
   }) async {
-    return await _dataSource.getSchedulesByDateRange(
-      startDate,
-      endDate,
-      includeAllDay: includeAllDay,
-      category: category,
-      isRepeated: isRepeated,
-    );
+    try {
+      final schedules = await _dataSource.getSchedulesByDateRange(
+        startDate,
+        endDate,
+        includeAllDay: includeAllDay,
+        category: category,
+        isRepeated: isRepeated,
+      );
+      return Result.success(schedules);
+    } catch (e) {
+      return Result.failure("获取日期范围内的日程失败: $e");
+    }
   }
   
   @override
-  Future<List<Schedule>> getSchedulesByDate(
+  Future<Result<List<ScheduleModel>>> getSchedulesByDate(
     DateTime date, {
     bool includeAllDay = true,
     String? category,
   }) async {
-    return await _dataSource.getSchedulesByDate(
-      date,
-      includeAllDay: includeAllDay,
-      category: category,
-    );
+    try {
+      final schedules = await _dataSource.getSchedulesByDate(
+        date,
+        includeAllDay: includeAllDay,
+        category: category,
+      );
+      return Result.success(schedules);
+    } catch (e) {
+      return Result.failure("获取指定日期的日程失败: $e");
+    }
   }
   
   @override
-  Future<List<Schedule>> searchSchedules(String query) async {
-    return await _dataSource.searchSchedules(query);
+  Future<Result<List<ScheduleModel>>> searchSchedules(String query) async {
+    try {
+      final schedules = await _dataSource.searchSchedules(query);
+      return Result.success(schedules);
+    } catch (e) {
+      return Result.failure("搜索日程失败: $e");
+    }
   }
   
   @override
-  Future<List<Schedule>> getSchedulesByCategory(String category) async {
-    return await _dataSource.getSchedulesByCategory(category);
+  Future<Result<List<ScheduleModel>>> getSchedulesByCategory(String category) async {
+    try {
+      final schedules = await _dataSource.getSchedulesByCategory(category);
+      return Result.success(schedules);
+    } catch (e) {
+      return Result.failure("获取分类日程失败: $e");
+    }
   }
   
   @override
-  Future<List<Schedule>> getTodaySchedules({
+  Future<Result<List<ScheduleModel>>> getTodaySchedules({
     bool includeAllDay = true,
     String? category,
   }) async {
-    return await _dataSource.getTodaySchedules(
-      includeAllDay: includeAllDay,
-      category: category,
-    );
+    try {
+      final schedules = await _dataSource.getTodaySchedules(
+        includeAllDay: includeAllDay,
+        category: category,
+      );
+      return Result.success(schedules);
+    } catch (e) {
+      return Result.failure("获取今日日程失败: $e");
+    }
   }
   
   @override
-  Future<List<Schedule>> getUpcomingSchedules({
+  Future<Result<List<ScheduleModel>>> getUpcomingSchedules({
     int limit = 10,
     String? category,
   }) async {
-    return await _dataSource.getUpcomingSchedules(
-      limit: limit,
-      category: category,
-    );
+    try {
+      final schedules = await _dataSource.getUpcomingSchedules(
+        limit: limit,
+        category: category,
+      );
+      return Result.success(schedules);
+    } catch (e) {
+      return Result.failure("获取未来日程失败: $e");
+    }
   }
 } 

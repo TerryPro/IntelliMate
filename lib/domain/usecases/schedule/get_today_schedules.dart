@@ -1,18 +1,24 @@
 import 'package:intellimate/domain/entities/schedule.dart';
 import 'package:intellimate/domain/repositories/schedule_repository.dart';
+import 'package:intellimate/domain/core/result.dart';
+import 'package:intellimate/data/models/schedule_model.dart';
 
 class GetTodaySchedules {
   final ScheduleRepository repository;
 
   GetTodaySchedules(this.repository);
 
-  Future<List<Schedule>> call({
+  Future<Result<List<ScheduleModel>>> call({
     bool includeAllDay = true,
     String? category,
   }) async {
-    return await repository.getTodaySchedules(
-      includeAllDay: includeAllDay,
-      category: category,
-    );
+    try {
+      return await repository.getTodaySchedules(
+        includeAllDay: includeAllDay,
+        category: category,
+      );
+    } catch (e) {
+      return Result.failure("获取今日日程失败: $e");
+    }
   }
 } 

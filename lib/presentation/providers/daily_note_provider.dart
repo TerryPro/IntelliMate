@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:intellimate/domain/core/result.dart';
 import 'package:intellimate/domain/entities/daily_note.dart';
 import 'package:intellimate/domain/usecases/daily_note/create_daily_note.dart';
 import 'package:intellimate/domain/usecases/daily_note/delete_daily_note.dart';
@@ -60,8 +61,11 @@ class DailyNoteProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      final result = await _getAllDailyNotesUseCase.execute();
-      _dailyNotes = result;
+      final result = await _getAllDailyNotesUseCase.call();
+      result.fold(
+        onSuccess: (notes) => _dailyNotes = notes,
+        onFailure: (error) => _setError(error)
+      );
     } catch (e) {
       _setError('获取日常点滴失败: $e');
     } finally {
@@ -75,9 +79,19 @@ class DailyNoteProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      final result = await _getDailyNoteByIdUseCase.execute(id);
-      _selectedDailyNote = result;
-      return result;
+      final result = await _getDailyNoteByIdUseCase.call(id);
+      DailyNote? note;
+      result.fold(
+        onSuccess: (data) {
+          _selectedDailyNote = data;
+          note = data;
+        },
+        onFailure: (error) {
+          _setError(error);
+          note = null;
+        }
+      );
+      return note;
     } catch (e) {
       _setError('获取日常点滴失败: $e');
       return null;
@@ -104,25 +118,30 @@ class DailyNoteProvider extends ChangeNotifier {
       // 创建临时ID，实际ID将由数据库生成
       final now = DateTime.now();
 
-      final dailyNote = DailyNote(
-        id: 'temp_id', // 临时ID，会被数据库替换
-        author: author,
+      final result = await _createDailyNoteUseCase.call(
         content: content,
-        images: images,
-        location: location,
+        date: now,
         mood: mood,
         weather: weather,
         isPrivate: isPrivate,
-        likes: 0,
-        comments: 0,
-        codeSnippet: codeSnippet,
-        createdAt: now,
-        updatedAt: now,
+        images: images,
+        codeSnippets: codeSnippet != null ? [codeSnippet] : null,
       );
-
-      final createdDailyNote = await _createDailyNoteUseCase.execute(dailyNote);
-      _dailyNotes.insert(0, createdDailyNote);
-      notifyListeners();
+      
+      DailyNote? createdDailyNote;
+      
+      result.fold(
+        onSuccess: (data) {
+          createdDailyNote = data;
+          _dailyNotes.insert(0, data);
+          notifyListeners();
+        },
+        onFailure: (error) {
+          _setError(error);
+          createdDailyNote = null;
+        }
+      );
+      
       return createdDailyNote;
     } catch (e) {
       _setError('创建日常点滴失败: $e');
@@ -138,16 +157,27 @@ class DailyNoteProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      final success = await _updateDailyNoteUseCase.execute(dailyNote);
-      if (success) {
-        print(_dailyNotes);
-        print(dailyNote);
-        final index = _dailyNotes.indexWhere((note) => note.id == dailyNote.id);
-        if (index != -1) {
-          _dailyNotes[index] = dailyNote;
-          notifyListeners();
+      final result = await _updateDailyNoteUseCase.call(dailyNote);
+      bool success = false;
+      
+      result.fold(
+        onSuccess: (data) {
+          // 修改为直接使用data返回的DailyNote模型
+          if (data != null) {
+            success = true;
+            final index = _dailyNotes.indexWhere((note) => note.id == dailyNote.id);
+            if (index != -1) {
+              _dailyNotes[index] = dailyNote;
+              notifyListeners();
+            }
+          }
+        },
+        onFailure: (error) {
+          _setError(error);
+          success = false;
         }
-      } else {}
+      );
+      
       return success;
     } catch (e) {
       _setError('更新日常点滴失败: $e');
@@ -163,11 +193,24 @@ class DailyNoteProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      final success = await _deleteDailyNoteUseCase.execute(id);
-      if (success) {
-        _dailyNotes.removeWhere((note) => note.id == id);
-        notifyListeners();
-      } else {}
+      final result = await _deleteDailyNoteUseCase.call(id);
+      bool success = false;
+      
+      result.fold(
+        onSuccess: (data) {
+          // 我们假设如果返回了数据，则操作成功
+          if (data != null) {
+            success = true;
+            _dailyNotes.removeWhere((note) => note.id == id);
+            notifyListeners();
+          }
+        },
+        onFailure: (error) {
+          _setError(error);
+          success = false;
+        }
+      );
+      
       return success;
     } catch (e) {
       _setError('删除日常点滴失败: $e');
@@ -183,8 +226,20 @@ class DailyNoteProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      final results = await _searchDailyNotesUseCase.execute(query);
-      return results;
+      final result = await _searchDailyNotesUseCase.call(query);
+      List<DailyNote> notes = [];
+      
+      result.fold(
+        onSuccess: (data) {
+          notes = data;
+        },
+        onFailure: (error) {
+          _setError(error);
+          notes = [];
+        }
+      );
+      
+      return notes;
     } catch (e) {
       _setError('搜索日常点滴失败: $e');
       return [];
@@ -199,8 +254,20 @@ class DailyNoteProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      final results = await _getPrivateDailyNotesUseCase.execute();
-      return results;
+      final result = await _getPrivateDailyNotesUseCase.call();
+      List<DailyNote> notes = [];
+      
+      result.fold(
+        onSuccess: (data) {
+          notes = data;
+        },
+        onFailure: (error) {
+          _setError(error);
+          notes = [];
+        }
+      );
+      
+      return notes;
     } catch (e) {
       _setError('获取私密日常点滴失败: $e');
       return [];
@@ -215,8 +282,20 @@ class DailyNoteProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      final results = await _getDailyNotesWithCodeSnippetsUseCase.execute();
-      return results;
+      final result = await _getDailyNotesWithCodeSnippetsUseCase.call();
+      List<DailyNote> notes = [];
+      
+      result.fold(
+        onSuccess: (data) {
+          notes = data;
+        },
+        onFailure: (error) {
+          _setError(error);
+          notes = [];
+        }
+      );
+      
+      return notes;
     } catch (e) {
       _setError('获取包含代码片段的日常点滴失败: $e');
       return [];
@@ -241,7 +320,7 @@ class DailyNoteProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      final results = await _getDailyNotesByConditionUseCase.execute(
+      final result = await _getDailyNotesByConditionUseCase.call(
         mood: mood,
         weather: weather,
         isPrivate: isPrivate,
@@ -252,7 +331,19 @@ class DailyNoteProvider extends ChangeNotifier {
         orderBy: orderBy,
         descending: descending,
       );
-      return results;
+      
+      List<DailyNote> notes = [];
+      result.fold(
+        onSuccess: (data) {
+          notes = data;
+        },
+        onFailure: (error) {
+          _setError(error);
+          notes = [];
+        }
+      );
+      
+      return notes;
     } catch (e) {
       _setError('根据条件获取日常点滴失败: $e');
       return [];

@@ -1,12 +1,14 @@
 import 'package:intellimate/domain/entities/daily_note.dart';
 import 'package:intellimate/domain/repositories/daily_note_repository.dart';
+import 'package:intellimate/domain/core/result.dart';
+import 'package:intellimate/data/models/daily_note_model.dart';
 
 class GetDailyNotesByCondition {
   final DailyNoteRepository repository;
 
   GetDailyNotesByCondition(this.repository);
 
-  Future<List<DailyNote>> execute({
+  Future<Result<List<DailyNoteModel>>> call({
     String? mood,
     String? weather,
     bool? isPrivate,
@@ -17,16 +19,20 @@ class GetDailyNotesByCondition {
     String? orderBy,
     bool descending = true,
   }) async {
-    return await repository.getDailyNotesByCondition(
-      mood: mood,
-      weather: weather,
-      isPrivate: isPrivate,
-      fromDate: fromDate,
-      toDate: toDate,
-      limit: limit,
-      offset: offset,
-      orderBy: orderBy,
-      descending: descending,
-    );
+    try {
+      return await repository.getDailyNotesByCondition(
+        mood: mood,
+        weather: weather,
+        isPrivate: isPrivate,
+        fromDate: fromDate,
+        toDate: toDate,
+        limit: limit,
+        offset: offset,
+        orderBy: orderBy,
+        descending: descending,
+      );
+    } catch (e) {
+      return Result.failure("根据条件获取日常点滴失败: $e");
+    }
   }
 } 

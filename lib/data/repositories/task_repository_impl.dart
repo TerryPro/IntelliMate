@@ -2,6 +2,7 @@ import 'package:intellimate/data/datasources/task_datasource.dart';
 import 'package:intellimate/data/models/task_model.dart';
 import 'package:intellimate/domain/entities/task.dart';
 import 'package:intellimate/domain/repositories/task_repository.dart';
+import 'package:intellimate/domain/core/result.dart';
 
 class TaskRepositoryImpl implements TaskRepository {
   final TaskDataSource dataSource;
@@ -9,85 +10,158 @@ class TaskRepositoryImpl implements TaskRepository {
   TaskRepositoryImpl({required this.dataSource});
 
   @override
-  Future<List<Task>> getAllTasks({
+  Future<Result<List<TaskModel>>> getAllTasks({
     int? limit,
     int? offset,
     String? orderBy,
     bool descending = true,
   }) async {
-    return await dataSource.getAllTasks(
-      limit: limit,
-      offset: offset,
-      orderBy: orderBy,
-      descending: descending,
-    );
-  }
-
-  @override
-  Future<Task?> getTaskById(String id) async {
-    return await dataSource.getTaskById(id);
-  }
-
-  @override
-  Future<Task> createTask(Task task) async {
-    print('TaskRepository: 开始创建任务');
     try {
-      final taskModel = TaskModel.fromEntity(task);
-      print('TaskRepository: 实体转换为模型成功, 标题: ${taskModel.title}');
-      final result = await dataSource.createTask(taskModel);
-      print('TaskRepository: 数据源创建任务成功, ID: ${result.id}');
-      return result;
+      final tasks = await dataSource.getAllTasks(
+        limit: limit,
+        offset: offset,
+        orderBy: orderBy,
+        descending: descending,
+      );
+      return Result.success(tasks);
     } catch (e) {
-      print('TaskRepository: 创建任务失败: $e');
-      rethrow;
+      return Result.failure("获取所有任务失败: $e");
     }
   }
 
   @override
-  Future<bool> updateTask(Task task) async {
-    final taskModel = TaskModel.fromEntity(task);
-    final result = await dataSource.updateTask(taskModel);
-    return result > 0;
+  Future<Result<TaskModel>> getTaskById(String id) async {
+    try {
+      final task = await dataSource.getTaskById(id);
+      if (task == null) {
+        return Result.failure("找不到ID为$id的任务");
+      }
+      return Result.success(task);
+    } catch (e) {
+      return Result.failure("获取任务详情失败: $e");
+    }
   }
 
   @override
-  Future<bool> deleteTask(String id) async {
-    final result = await dataSource.deleteTask(id);
-    return result > 0;
+  Future<Result<TaskModel>> createTask({
+    required String title,
+    String? description,
+    DateTime? dueDate,
+    String? category,
+    int? priority,
+  }) async {
+    try {
+      final now = DateTime.now();
+      final taskModel = TaskModel(
+        id: '', // 会在数据源中生成
+        title: title,
+        description: description,
+        dueDate: dueDate,
+        isCompleted: false,
+        category: category,
+        priority: priority,
+        createdAt: now,
+        updatedAt: now,
+      );
+      
+      final result = await dataSource.createTask(taskModel);
+      return Result.success(result);
+    } catch (e) {
+      return Result.failure("创建任务失败: $e");
+    }
   }
 
   @override
-  Future<List<Task>> searchTasks(String query) async {
-    return await dataSource.searchTasks(query);
+  Future<Result<TaskModel>> updateTask(Task task) async {
+    try {
+      final taskModel = TaskModel.fromEntity(task);
+      final affected = await dataSource.updateTask(taskModel);
+      if (affected > 0) {
+        return Result.success(taskModel);
+      } else {
+        return Result.failure("更新任务失败: 没有任务被更新");
+      }
+    } catch (e) {
+      return Result.failure("更新任务失败: $e");
+    }
   }
 
   @override
-  Future<List<Task>> getCompletedTasks() async {
-    return await dataSource.getCompletedTasks();
+  Future<Result<bool>> deleteTask(String id) async {
+    try {
+      final affected = await dataSource.deleteTask(id);
+      if (affected > 0) {
+        return Result.success(true);
+      } else {
+        return Result.failure("删除任务失败: 没有任务被删除");
+      }
+    } catch (e) {
+      return Result.failure("删除任务失败: $e");
+    }
   }
 
   @override
-  Future<List<Task>> getIncompleteTasks() async {
-    return await dataSource.getIncompleteTasks();
+  Future<Result<List<TaskModel>>> searchTasks(String query) async {
+    try {
+      final tasks = await dataSource.searchTasks(query);
+      return Result.success(tasks);
+    } catch (e) {
+      return Result.failure("搜索任务失败: $e");
+    }
   }
 
   @override
-  Future<List<Task>> getTasksByCategory(String category) async {
-    return await dataSource.getTasksByCategory(category);
+  Future<Result<List<TaskModel>>> getCompletedTasks() async {
+    try {
+      final tasks = await dataSource.getCompletedTasks();
+      return Result.success(tasks);
+    } catch (e) {
+      return Result.failure("获取已完成任务失败: $e");
+    }
   }
 
   @override
-  Future<List<Task>> getTasksByPriority(int priority) async {
-    return await dataSource.getTasksByPriority(priority);
+  Future<Result<List<TaskModel>>> getIncompleteTasks() async {
+    try {
+      final tasks = await dataSource.getIncompleteTasks();
+      return Result.success(tasks);
+    } catch (e) {
+      return Result.failure("获取未完成任务失败: $e");
+    }
   }
 
   @override
-  Future<List<Task>> getTasksByDueDate(DateTime dueDate) async {
-    return await dataSource.getTasksByDueDate(dueDate);
+  Future<Result<List<TaskModel>>> getTasksByCategory(String category) async {
+    try {
+      final tasks = await dataSource.getTasksByCategory(category);
+      return Result.success(tasks);
+    } catch (e) {
+      return Result.failure("获取分类任务失败: $e");
+    }
   }
 
   @override
-  Future<List<Task>> getTasksByCondition({
+  Future<Result<List<TaskModel>>> getTasksByPriority(int priority) async {
+    try {
+      final tasks = await dataSource.getTasksByPriority(priority);
+      return Result.success(tasks);
+    } catch (e) {
+      return Result.failure("获取优先级任务失败: $e");
+    }
+  }
+
+  @override
+  Future<Result<List<TaskModel>>> getTasksByDueDate(DateTime dueDate) async {
+    try {
+      final tasks = await dataSource.getTasksByDueDate(dueDate);
+      return Result.success(tasks);
+    } catch (e) {
+      return Result.failure("获取截止日期任务失败: $e");
+    }
+  }
+
+  @override
+  Future<Result<List<TaskModel>>> getTasksByCondition({
     String? category,
     bool? isCompleted,
     int? priority,
@@ -98,16 +172,21 @@ class TaskRepositoryImpl implements TaskRepository {
     String? orderBy,
     bool descending = true,
   }) async {
-    return await dataSource.getTasksByCondition(
-      category: category,
-      isCompleted: isCompleted,
-      priority: priority,
-      fromDate: fromDate,
-      toDate: toDate,
-      limit: limit,
-      offset: offset,
-      orderBy: orderBy,
-      descending: descending,
-    );
+    try {
+      final tasks = await dataSource.getTasksByCondition(
+        category: category,
+        isCompleted: isCompleted,
+        priority: priority,
+        fromDate: fromDate,
+        toDate: toDate,
+        limit: limit,
+        offset: offset,
+        orderBy: orderBy,
+        descending: descending,
+      );
+      return Result.success(tasks);
+    } catch (e) {
+      return Result.failure("根据条件获取任务失败: $e");
+    }
   }
 } 

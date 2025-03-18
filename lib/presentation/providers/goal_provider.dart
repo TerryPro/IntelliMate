@@ -1,4 +1,5 @@
- import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
+import 'package:intellimate/domain/core/result.dart';
 import 'package:intellimate/domain/entities/goal.dart';
 import 'package:intellimate/domain/repositories/goal_repository.dart';
 
@@ -24,7 +25,11 @@ class GoalProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _goals = await _goalRepository.getAllGoals();
+      final result = await _goalRepository.getAllGoals();
+      result.fold(
+        onSuccess: (data) => _goals = data,
+        onFailure: (error) => _error = error
+      );
     } catch (e) {
       _error = '加载目标失败: ${e.toString()}';
     } finally {
@@ -40,7 +45,11 @@ class GoalProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _goals = await _goalRepository.getGoalsByCategory(category);
+      final result = await _goalRepository.getGoalsByCategory(category);
+      result.fold(
+        onSuccess: (data) => _goals = data,
+        onFailure: (error) => _error = error
+      );
     } catch (e) {
       _error = '加载目标失败: ${e.toString()}';
     } finally {
@@ -56,7 +65,11 @@ class GoalProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _goals = await _goalRepository.getGoalsByStatus(status);
+      final result = await _goalRepository.getGoalsByStatus(status);
+      result.fold(
+        onSuccess: (data) => _goals = data,
+        onFailure: (error) => _error = error
+      );
     } catch (e) {
       _error = '加载目标失败: ${e.toString()}';
     } finally {
@@ -72,8 +85,28 @@ class GoalProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final newGoal = await _goalRepository.createGoal(goal);
-      _goals.add(newGoal);
+      final result = await _goalRepository.createGoal(
+        title: goal.title,
+        description: goal.description,
+        startDate: goal.startDate,
+        endDate: goal.endDate,
+        progress: goal.progress,
+        status: goal.status,
+        category: goal.category,
+        milestones: goal.milestones,
+      );
+      
+      Goal? newGoal;
+      result.fold(
+        onSuccess: (data) {
+          newGoal = data;
+          _goals.add(data);
+        },
+        onFailure: (error) {
+          _error = error;
+          newGoal = null;
+        }
+      );
       return newGoal;
     } catch (e) {
       _error = '创建目标失败: ${e.toString()}';
@@ -91,13 +124,23 @@ class GoalProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final success = await _goalRepository.updateGoal(goal);
-      if (success) {
-        final index = _goals.indexWhere((g) => g.id == goal.id);
-        if (index != -1) {
-          _goals[index] = goal;
+      final result = await _goalRepository.updateGoal(goal);
+      bool success = false;
+      
+      result.fold(
+        onSuccess: (data) {
+          success = true;
+          final index = _goals.indexWhere((g) => g.id == goal.id);
+          if (index != -1) {
+            _goals[index] = goal;
+          }
+        },
+        onFailure: (error) {
+          _error = error;
+          success = false;
         }
-      }
+      );
+      
       return success;
     } catch (e) {
       _error = '更新目标失败: ${e.toString()}';
@@ -115,26 +158,36 @@ class GoalProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final success = await _goalRepository.updateGoalProgress(id, progress);
-      if (success) {
-        final index = _goals.indexWhere((g) => g.id == id);
-        if (index != -1) {
-          final goal = _goals[index];
-          _goals[index] = Goal(
-            id: goal.id,
-            title: goal.title,
-            description: goal.description,
-            startDate: goal.startDate,
-            endDate: goal.endDate,
-            progress: progress,
-            status: goal.status,
-            category: goal.category,
-            milestones: goal.milestones,
-            createdAt: goal.createdAt,
-            updatedAt: DateTime.now(),
-          );
+      final result = await _goalRepository.updateGoalProgress(id, progress);
+      bool success = false;
+      
+      result.fold(
+        onSuccess: (data) {
+          success = true;
+          final index = _goals.indexWhere((g) => g.id == id);
+          if (index != -1) {
+            final goal = _goals[index];
+            _goals[index] = Goal(
+              id: goal.id,
+              title: goal.title,
+              description: goal.description,
+              startDate: goal.startDate,
+              endDate: goal.endDate,
+              progress: progress,
+              status: goal.status,
+              category: goal.category,
+              milestones: goal.milestones,
+              createdAt: goal.createdAt,
+              updatedAt: DateTime.now(),
+            );
+          }
+        },
+        onFailure: (error) {
+          _error = error;
+          success = false;
         }
-      }
+      );
+      
       return success;
     } catch (e) {
       _error = '更新目标进度失败: ${e.toString()}';
@@ -152,26 +205,36 @@ class GoalProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final success = await _goalRepository.updateGoalStatus(id, status);
-      if (success) {
-        final index = _goals.indexWhere((g) => g.id == id);
-        if (index != -1) {
-          final goal = _goals[index];
-          _goals[index] = Goal(
-            id: goal.id,
-            title: goal.title,
-            description: goal.description,
-            startDate: goal.startDate,
-            endDate: goal.endDate,
-            progress: goal.progress,
-            status: status,
-            category: goal.category,
-            milestones: goal.milestones,
-            createdAt: goal.createdAt,
-            updatedAt: DateTime.now(),
-          );
+      final result = await _goalRepository.updateGoalStatus(id, status);
+      bool success = false;
+      
+      result.fold(
+        onSuccess: (data) {
+          success = true;
+          final index = _goals.indexWhere((g) => g.id == id);
+          if (index != -1) {
+            final goal = _goals[index];
+            _goals[index] = Goal(
+              id: goal.id,
+              title: goal.title,
+              description: goal.description,
+              startDate: goal.startDate,
+              endDate: goal.endDate,
+              progress: goal.progress,
+              status: status,
+              category: goal.category,
+              milestones: goal.milestones,
+              createdAt: goal.createdAt,
+              updatedAt: DateTime.now(),
+            );
+          }
+        },
+        onFailure: (error) {
+          _error = error;
+          success = false;
         }
-      }
+      );
+      
       return success;
     } catch (e) {
       _error = '更新目标状态失败: ${e.toString()}';
@@ -189,10 +252,22 @@ class GoalProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final success = await _goalRepository.deleteGoal(id);
-      if (success) {
-        _goals.removeWhere((goal) => goal.id == id);
-      }
+      final result = await _goalRepository.deleteGoal(id);
+      bool success = false;
+      
+      result.fold(
+        onSuccess: (data) {
+          success = data;
+          if (success) {
+            _goals.removeWhere((goal) => goal.id == id);
+          }
+        },
+        onFailure: (error) {
+          _error = error;
+          success = false;
+        }
+      );
+      
       return success;
     } catch (e) {
       _error = '删除目标失败: ${e.toString()}';
@@ -213,7 +288,11 @@ class GoalProvider with ChangeNotifier {
       if (query.isEmpty) {
         await loadGoals();
       } else {
-        _goals = await _goalRepository.searchGoals(query);
+        final result = await _goalRepository.searchGoals(query);
+        result.fold(
+          onSuccess: (data) => _goals = data,
+          onFailure: (error) => _error = error
+        );
       }
     } catch (e) {
       _error = '搜索目标失败: ${e.toString()}';

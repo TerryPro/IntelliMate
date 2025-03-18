@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:intellimate/domain/core/result.dart';
 import 'package:intellimate/domain/entities/note.dart';
 import 'package:intellimate/domain/usecases/note/create_note.dart';
 import 'package:intellimate/domain/usecases/note/delete_note.dart';
@@ -48,8 +49,11 @@ class NoteProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final result = await getAllNotesUseCase.execute();
-      _notes = result;
+      final result = await getAllNotesUseCase.call();
+      result.fold(
+        onSuccess: (notes) => _notes = notes,
+        onFailure: (error) => _error = error
+      );
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -65,9 +69,19 @@ class NoteProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final result = await getNoteByIdUseCase.execute(id);
-      _selectedNote = result;
-      return result;
+      final result = await getNoteByIdUseCase.call(id);
+      Note? note;
+      result.fold(
+        onSuccess: (data) {
+          _selectedNote = data;
+          note = data;
+        },
+        onFailure: (error) {
+          _error = error;
+          note = null;
+        }
+      );
+      return note;
     } catch (e) {
       _error = e.toString();
       return null;
@@ -84,8 +98,20 @@ class NoteProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await createNoteUseCase.execute(note);
-      await getAllNotes(); // 重新加载笔记列表
+      final result = await createNoteUseCase.call(
+        title: note.title,
+        content: note.content,
+        tags: note.tags,
+        category: note.category,
+        isFavorite: note.isFavorite,
+      );
+      result.fold(
+        onSuccess: (_) => getAllNotes(), // 重新加载笔记列表
+        onFailure: (error) {
+          _error = error;
+          throw Exception(error);
+        }
+      );
     } catch (e) {
       _error = e.toString();
       _isLoading = false;
@@ -101,15 +127,23 @@ class NoteProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await updateNoteUseCase.execute(note);
-      // 更新本地缓存
-      final index = _notes.indexWhere((n) => n.id == note.id);
-      if (index != -1) {
-        _notes[index] = note;
-      }
-      if (_selectedNote?.id == note.id) {
-        _selectedNote = note;
-      }
+      final result = await updateNoteUseCase.call(note);
+      result.fold(
+        onSuccess: (_) {
+          // 更新本地缓存
+          final index = _notes.indexWhere((n) => n.id == note.id);
+          if (index != -1) {
+            _notes[index] = note;
+          }
+          if (_selectedNote?.id == note.id) {
+            _selectedNote = note;
+          }
+        },
+        onFailure: (error) {
+          _error = error;
+          throw Exception(error);
+        }
+      );
     } catch (e) {
       _error = e.toString();
       rethrow;
@@ -126,12 +160,20 @@ class NoteProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await deleteNoteUseCase.execute(id);
-      // 从本地缓存中移除
-      _notes.removeWhere((note) => note.id == id);
-      if (_selectedNote?.id == id) {
-        _selectedNote = null;
-      }
+      final result = await deleteNoteUseCase.call(id);
+      result.fold(
+        onSuccess: (_) {
+          // 从本地缓存中移除
+          _notes.removeWhere((note) => note.id == id);
+          if (_selectedNote?.id == id) {
+            _selectedNote = null;
+          }
+        },
+        onFailure: (error) {
+          _error = error;
+          throw Exception(error);
+        }
+      );
     } catch (e) {
       _error = e.toString();
       rethrow;
@@ -152,8 +194,11 @@ class NoteProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final result = await searchNotesUseCase.execute(query);
-      _notes = result;
+      final result = await searchNotesUseCase.call(query);
+      result.fold(
+        onSuccess: (notes) => _notes = notes,
+        onFailure: (error) => _error = error
+      );
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -179,68 +224,74 @@ class NoteProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // 使用getAllNotesUseCase，然后在内存中过滤
-      final allNotes = await getAllNotesUseCase.execute();
+      // 先获取所有笔记，然后在内存中筛选
+      final result = await getAllNotesUseCase.call();
       
-      _notes = allNotes.where((note) {
-        bool matches = true;
-        
-        if (category != null) {
-          matches = matches && note.category == category;
-        }
-        
-        if (isFavorite != null) {
-          matches = matches && note.isFavorite == isFavorite;
-        }
-        
-        if (tags != null && tags.isNotEmpty) {
-          matches = matches && (note.tags != null && 
-            tags.any((tag) => note.tags!.contains(tag)));
-        }
-        
-        if (fromDate != null) {
-          matches = matches && note.createdAt.isAfter(fromDate);
-        }
-        
-        if (toDate != null) {
-          matches = matches && note.createdAt.isBefore(toDate);
-        }
-        
-        return matches;
-      }).toList();
-      
-      // 排序
-      if (orderBy != null) {
-        _notes.sort((a, b) {
-          int compare = 0;
+      result.fold(
+        onFailure: (error) {
+          _error = error;
+        },
+        onSuccess: (allNotes) {
+          _notes = allNotes.where((note) {
+            bool matches = true;
+            
+            if (category != null) {
+              matches = matches && note.category == category;
+            }
+            
+            if (isFavorite != null) {
+              matches = matches && note.isFavorite == isFavorite;
+            }
+            
+            if (tags != null && tags.isNotEmpty) {
+              matches = matches && (note.tags != null && 
+                tags.any((tag) => note.tags!.contains(tag)));
+            }
+            
+            if (fromDate != null) {
+              matches = matches && note.createdAt.isAfter(fromDate);
+            }
+            
+            if (toDate != null) {
+              matches = matches && note.createdAt.isBefore(toDate);
+            }
+            
+            return matches;
+          }).toList();
           
-          switch (orderBy) {
-            case 'title':
-              compare = a.title.compareTo(b.title);
-              break;
-            case 'created_at':
-              compare = a.createdAt.compareTo(b.createdAt);
-              break;
-            case 'updated_at':
-              compare = a.updatedAt.compareTo(b.updatedAt);
-              break;
-            default:
-              compare = a.createdAt.compareTo(b.createdAt);
+          // 排序
+          if (orderBy != null) {
+            _notes.sort((a, b) {
+              int compare = 0;
+              
+              switch (orderBy) {
+                case 'title':
+                  compare = a.title.compareTo(b.title);
+                  break;
+                case 'created_at':
+                  compare = a.createdAt.compareTo(b.createdAt);
+                  break;
+                case 'updated_at':
+                  compare = a.updatedAt.compareTo(b.updatedAt);
+                  break;
+                default:
+                  compare = a.createdAt.compareTo(b.createdAt);
+              }
+              
+              return descending ? -compare : compare;
+            });
           }
           
-          return descending ? -compare : compare;
-        });
-      }
-      
-      // 应用limit和offset
-      if (offset != null && offset > 0 && offset < _notes.length) {
-        _notes = _notes.sublist(offset);
-      }
-      
-      if (limit != null && limit > 0 && limit < _notes.length) {
-        _notes = _notes.sublist(0, limit);
-      }
-      
+          // 应用limit和offset
+          if (offset != null && offset > 0 && offset < _notes.length) {
+            _notes = _notes.sublist(offset);
+          }
+          
+          if (limit != null && limit > 0 && limit < _notes.length) {
+            _notes = _notes.sublist(0, limit);
+          }
+        }
+      );
     } catch (e) {
       _error = e.toString();
     } finally {

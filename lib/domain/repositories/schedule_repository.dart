@@ -1,11 +1,13 @@
 import 'package:intellimate/domain/entities/schedule.dart';
+import 'package:intellimate/domain/core/result.dart';
+import 'package:intellimate/data/models/schedule_model.dart';
 
 abstract class ScheduleRepository {
   // 获取单个日程
-  Future<Schedule?> getScheduleById(String id);
+  Future<Result<ScheduleModel>> getScheduleById(String id);
   
   // 创建日程
-  Future<Schedule> createSchedule({
+  Future<Result<ScheduleModel>> createSchedule({
     required String title,
     String? description,
     required DateTime startTime,
@@ -20,13 +22,13 @@ abstract class ScheduleRepository {
   });
   
   // 更新日程
-  Future<bool> updateSchedule(Schedule schedule);
+  Future<Result<ScheduleModel>> updateSchedule(Schedule schedule);
   
   // 删除日程
-  Future<bool> deleteSchedule(String id);
+  Future<Result<bool>> deleteSchedule(String id);
   
   // 获取所有日程
-  Future<List<Schedule>> getAllSchedules({
+  Future<Result<List<ScheduleModel>>> getAllSchedules({
     int? limit,
     int? offset,
     String? orderBy,
@@ -34,7 +36,7 @@ abstract class ScheduleRepository {
   });
   
   // 获取指定日期范围内的日程
-  Future<List<Schedule>> getSchedulesByDateRange(
+  Future<Result<List<ScheduleModel>>> getSchedulesByDateRange(
     DateTime startDate,
     DateTime endDate, {
     bool includeAllDay = true,
@@ -43,26 +45,26 @@ abstract class ScheduleRepository {
   });
   
   // 获取指定日期的日程
-  Future<List<Schedule>> getSchedulesByDate(
+  Future<Result<List<ScheduleModel>>> getSchedulesByDate(
     DateTime date, {
     bool includeAllDay = true,
     String? category,
   });
   
   // 搜索日程
-  Future<List<Schedule>> searchSchedules(String query);
+  Future<Result<List<ScheduleModel>>> searchSchedules(String query);
   
   // 根据分类获取日程
-  Future<List<Schedule>> getSchedulesByCategory(String category);
+  Future<Result<List<ScheduleModel>>> getSchedulesByCategory(String category);
   
   // 获取今日日程
-  Future<List<Schedule>> getTodaySchedules({
+  Future<Result<List<ScheduleModel>>> getTodaySchedules({
     bool includeAllDay = true,
     String? category,
   });
   
   // 获取未来日程
-  Future<List<Schedule>> getUpcomingSchedules({
+  Future<Result<List<ScheduleModel>>> getUpcomingSchedules({
     int limit = 10,
     String? category,
   });

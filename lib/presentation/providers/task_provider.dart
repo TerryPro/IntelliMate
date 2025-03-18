@@ -6,8 +6,6 @@ import 'package:intellimate/domain/usecases/task/get_all_tasks_usecase.dart';
 import 'package:intellimate/domain/usecases/task/get_task_by_id_usecase.dart';
 import 'package:intellimate/domain/usecases/task/get_tasks_by_condition_usecase.dart';
 import 'package:intellimate/domain/usecases/task/update_task_usecase.dart';
-import 'package:uuid/uuid.dart';
-import 'package:intellimate/data/models/task_model.dart';
 
 class TaskProvider extends ChangeNotifier {
   final CreateTaskUseCase _createTaskUseCase;
@@ -49,8 +47,13 @@ class TaskProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      _tasks = await _getAllTasksUseCase.execute();
-      notifyListeners();
+      final result = await _getAllTasksUseCase.call();
+      if (result.isSuccess && result.data != null) {
+        _tasks = result.data!;
+        notifyListeners();
+      } else {
+        _setError(result.error ?? '加载任务失败');
+      }
     } catch (e) {
       _setError('加载任务失败: $e');
     } finally {
@@ -64,8 +67,13 @@ class TaskProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      final task = await _getTaskByIdUseCase.execute(id);
-      return task;
+      final result = await _getTaskByIdUseCase.call(id);
+      if (result.isSuccess && result.data != null) {
+        return result.data;
+      } else {
+        _setError(result.error ?? '获取任务失败');
+        return null;
+      }
     } catch (e) {
       _setError('获取任务失败: $e');
       return null;
@@ -87,26 +95,22 @@ class TaskProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      // 创建临时ID，实际ID将由数据库生成
-      final tempId = const Uuid().v4();
-      final now = DateTime.now();
-
-      final task = Task(
-        id: tempId,
+      final result = await _createTaskUseCase.call(
         title: title,
         description: description,
         dueDate: dueDate,
-        isCompleted: isCompleted,
         category: category,
         priority: priority,
-        createdAt: now,
-        updatedAt: now,
       );
-
-      final createdTask = await _createTaskUseCase.execute(task);
-      _tasks.add(createdTask);
-      notifyListeners();
-      return createdTask;
+      
+      if (result.isSuccess && result.data != null) {
+        _tasks.add(result.data!);
+        notifyListeners();
+        return result.data;
+      } else {
+        _setError(result.error ?? '创建任务失败');
+        return null;
+      }
     } catch (e) {
       _setError('创建任务失败: $e');
       return null;
@@ -121,16 +125,18 @@ class TaskProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      final success = await _updateTaskUseCase.execute(task);
-      if (success) {
+      final result = await _updateTaskUseCase.call(task);
+      if (result.isSuccess && result.data != null) {
         final index = _tasks.indexWhere((t) => t.id == task.id);
         if (index != -1) {
-          final taskModel = TaskModel.fromEntity(task);
-          _tasks[index] = taskModel;
+          _tasks[index] = result.data!;
           notifyListeners();
         }
+        return true;
+      } else {
+        _setError(result.error ?? '更新任务失败');
+        return false;
       }
-      return success;
     } catch (e) {
       _setError('更新任务失败: $e');
       return false;
@@ -145,12 +151,15 @@ class TaskProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      final success = await _deleteTaskUseCase.execute(id);
-      if (success) {
+      final result = await _deleteTaskUseCase.call(id);
+      if (result.isSuccess && result.data != null && result.data!) {
         _tasks.removeWhere((task) => task.id == id);
         notifyListeners();
+        return true;
+      } else {
+        _setError(result.error ?? '删除任务失败');
+        return false;
       }
-      return success;
     } catch (e) {
       _setError('删除任务失败: $e');
       return false;
@@ -175,7 +184,7 @@ class TaskProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      final tasks = await _getTasksByConditionUseCase.execute(
+      final result = await _getTasksByConditionUseCase.call(
         category: category,
         isCompleted: isCompleted,
         priority: priority,
@@ -186,7 +195,13 @@ class TaskProvider extends ChangeNotifier {
         orderBy: orderBy,
         descending: descending,
       );
-      return tasks;
+      
+      if (result.isSuccess && result.data != null) {
+        return result.data!;
+      } else {
+        _setError(result.error ?? '获取任务失败');
+        return [];
+      }
     } catch (e) {
       _setError('获取任务失败: $e');
       return [];
@@ -246,19 +261,20 @@ class TaskProvider extends ChangeNotifier {
       );
 
       // 调用用例进行更新
-      final success = await _updateTaskUseCase.execute(updatedTask);
+      final result = await _updateTaskUseCase.call(updatedTask);
       
-      if (success) {
+      if (result.isSuccess && result.data != null) {
         // 手动更新本地列表中的任务
         final index = _tasks.indexWhere((t) => t.id == id);
         if (index != -1) {
-          final taskModel = TaskModel.fromEntity(updatedTask);
-          _tasks[index] = taskModel;
+          _tasks[index] = result.data!;
           notifyListeners();
         }
+        return true;
+      } else {
+        _setError(result.error ?? '更新任务状态失败');
+        return false;
       }
-      
-      return success;
     } catch (e) {
       _setError('更新任务状态失败: $e');
       return false;

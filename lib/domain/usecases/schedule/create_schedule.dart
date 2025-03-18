@@ -1,12 +1,14 @@
 import 'package:intellimate/domain/entities/schedule.dart';
 import 'package:intellimate/domain/repositories/schedule_repository.dart';
+import 'package:intellimate/domain/core/result.dart';
+import 'package:intellimate/data/models/schedule_model.dart';
 
 class CreateSchedule {
   final ScheduleRepository repository;
 
   CreateSchedule(this.repository);
 
-  Future<Schedule> call({
+  Future<Result<ScheduleModel>> call({
     required String title,
     String? description,
     required DateTime startTime,
@@ -19,18 +21,22 @@ class CreateSchedule {
     List<String>? participants,
     String? reminder,
   }) async {
-    return await repository.createSchedule(
-      title: title,
-      description: description,
-      startTime: startTime,
-      endTime: endTime,
-      location: location,
-      isAllDay: isAllDay,
-      category: category,
-      isRepeated: isRepeated,
-      repeatType: repeatType,
-      participants: participants,
-      reminder: reminder,
-    );
+    try {
+      return await repository.createSchedule(
+        title: title,
+        description: description,
+        startTime: startTime,
+        endTime: endTime,
+        location: location,
+        isAllDay: isAllDay,
+        category: category,
+        isRepeated: isRepeated,
+        repeatType: repeatType,
+        participants: participants,
+        reminder: reminder,
+      );
+    } catch (e) {
+      return Result.failure("创建日程失败: $e");
+    }
   }
 } 

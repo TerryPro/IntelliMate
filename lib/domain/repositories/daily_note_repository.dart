@@ -1,8 +1,10 @@
 import 'package:intellimate/domain/entities/daily_note.dart';
+import 'package:intellimate/domain/core/result.dart';
+import 'package:intellimate/data/models/daily_note_model.dart';
 
 abstract class DailyNoteRepository {
   // 获取所有日常点滴
-  Future<List<DailyNote>> getAllDailyNotes({
+  Future<Result<List<DailyNoteModel>>> getAllDailyNotes({
     int? limit,
     int? offset,
     String? orderBy,
@@ -10,28 +12,37 @@ abstract class DailyNoteRepository {
   });
   
   // 根据ID获取日常点滴
-  Future<DailyNote?> getDailyNoteById(String id);
+  Future<Result<DailyNoteModel>> getDailyNoteById(String id);
   
   // 创建日常点滴
-  Future<DailyNote> createDailyNote(DailyNote dailyNote);
+  Future<Result<DailyNoteModel>> createDailyNote({
+    required String content,
+    required DateTime date,
+    String? mood,
+    String? weather,
+    bool isPrivate = false,
+    List<String>? images,
+    List<String>? codeSnippets,
+    List<String>? tags,
+  });
   
   // 更新日常点滴
-  Future<bool> updateDailyNote(DailyNote dailyNote);
+  Future<Result<DailyNoteModel>> updateDailyNote(DailyNote dailyNote);
   
   // 删除日常点滴
-  Future<bool> deleteDailyNote(String id);
+  Future<Result<bool>> deleteDailyNote(String id);
   
   // 搜索日常点滴
-  Future<List<DailyNote>> searchDailyNotes(String query);
+  Future<Result<List<DailyNoteModel>>> searchDailyNotes(String query);
   
   // 获取私密日常点滴
-  Future<List<DailyNote>> getPrivateDailyNotes();
+  Future<Result<List<DailyNoteModel>>> getPrivateDailyNotes();
   
   // 获取包含代码片段的日常点滴
-  Future<List<DailyNote>> getDailyNotesWithCodeSnippets();
+  Future<Result<List<DailyNoteModel>>> getDailyNotesWithCodeSnippets();
   
   // 根据条件获取日常点滴
-  Future<List<DailyNote>> getDailyNotesByCondition({
+  Future<Result<List<DailyNoteModel>>> getDailyNotesByCondition({
     String? mood,
     String? weather,
     bool? isPrivate,

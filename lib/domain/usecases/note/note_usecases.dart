@@ -1,5 +1,7 @@
 import 'package:intellimate/domain/entities/note.dart';
 import 'package:intellimate/domain/repositories/note_repository.dart';
+import 'package:intellimate/domain/core/result.dart';
+import 'package:intellimate/data/models/note_model.dart';
 
 /// 获取所有笔记用例
 class GetAllNotesUseCase {
@@ -7,18 +9,22 @@ class GetAllNotesUseCase {
 
   GetAllNotesUseCase(this._repository);
 
-  Future<List<Note>> call({
+  Future<Result<List<NoteModel>>> call({
     int? limit,
     int? offset,
     String? orderBy,
     bool descending = true,
   }) async {
-    return await _repository.getAllNotes(
-      limit: limit,
-      offset: offset,
-      orderBy: orderBy,
-      descending: descending,
-    );
+    try {
+      return await _repository.getAllNotes(
+        limit: limit,
+        offset: offset,
+        orderBy: orderBy,
+        descending: descending,
+      );
+    } catch (e) {
+      return Result.failure("获取所有笔记失败: $e");
+    }
   }
 }
 
@@ -28,8 +34,12 @@ class GetNoteByIdUseCase {
 
   GetNoteByIdUseCase(this._repository);
 
-  Future<Note?> call(String id) async {
-    return await _repository.getNoteById(id);
+  Future<Result<NoteModel>> call(String id) async {
+    try {
+      return await _repository.getNoteById(id);
+    } catch (e) {
+      return Result.failure("获取笔记详情失败: $e");
+    }
   }
 }
 
@@ -39,8 +49,24 @@ class CreateNoteUseCase {
 
   CreateNoteUseCase(this._repository);
 
-  Future<Note> call(Note note) async {
-    return await _repository.createNote(note);
+  Future<Result<NoteModel>> call({
+    required String title,
+    required String content,
+    List<String>? tags,
+    String? category,
+    bool isFavorite = false,
+  }) async {
+    try {
+      return await _repository.createNote(
+        title: title,
+        content: content,
+        tags: tags,
+        category: category,
+        isFavorite: isFavorite,
+      );
+    } catch (e) {
+      return Result.failure("创建笔记失败: $e");
+    }
   }
 }
 
@@ -50,8 +76,12 @@ class UpdateNoteUseCase {
 
   UpdateNoteUseCase(this._repository);
 
-  Future<bool> call(Note note) async {
-    return await _repository.updateNote(note);
+  Future<Result<NoteModel>> call(Note note) async {
+    try {
+      return await _repository.updateNote(note);
+    } catch (e) {
+      return Result.failure("更新笔记失败: $e");
+    }
   }
 }
 
@@ -61,8 +91,12 @@ class DeleteNoteUseCase {
 
   DeleteNoteUseCase(this._repository);
 
-  Future<bool> call(String id) async {
-    return await _repository.deleteNote(id);
+  Future<Result<bool>> call(String id) async {
+    try {
+      return await _repository.deleteNote(id);
+    } catch (e) {
+      return Result.failure("删除笔记失败: $e");
+    }
   }
 }
 
@@ -72,8 +106,12 @@ class SearchNotesUseCase {
 
   SearchNotesUseCase(this._repository);
 
-  Future<List<Note>> call(String query) async {
-    return await _repository.searchNotes(query);
+  Future<Result<List<NoteModel>>> call(String query) async {
+    try {
+      return await _repository.searchNotes(query);
+    } catch (e) {
+      return Result.failure("搜索笔记失败: $e");
+    }
   }
 }
 
@@ -83,8 +121,12 @@ class GetFavoriteNotesUseCase {
 
   GetFavoriteNotesUseCase(this._repository);
 
-  Future<List<Note>> call() async {
-    return await _repository.getFavoriteNotes();
+  Future<Result<List<NoteModel>>> call() async {
+    try {
+      return await _repository.getFavoriteNotes();
+    } catch (e) {
+      return Result.failure("获取收藏笔记失败: $e");
+    }
   }
 }
 
@@ -94,8 +136,12 @@ class GetNotesByCategoryUseCase {
 
   GetNotesByCategoryUseCase(this._repository);
 
-  Future<List<Note>> call(String category) async {
-    return await _repository.getNotesByCategory(category);
+  Future<Result<List<NoteModel>>> call(String category) async {
+    try {
+      return await _repository.getNotesByCategory(category);
+    } catch (e) {
+      return Result.failure("获取分类笔记失败: $e");
+    }
   }
 }
 
@@ -105,7 +151,7 @@ class GetNotesByConditionUseCase {
 
   GetNotesByConditionUseCase(this._repository);
 
-  Future<List<Note>> call({
+  Future<Result<List<NoteModel>>> call({
     String? category,
     bool? isFavorite,
     List<String>? tags,
@@ -116,16 +162,20 @@ class GetNotesByConditionUseCase {
     String? orderBy,
     bool descending = true,
   }) async {
-    return await _repository.getNotesByCondition(
-      category: category,
-      isFavorite: isFavorite,
-      tags: tags,
-      fromDate: fromDate,
-      toDate: toDate,
-      limit: limit,
-      offset: offset,
-      orderBy: orderBy,
-      descending: descending,
-    );
+    try {
+      return await _repository.getNotesByCondition(
+        category: category,
+        isFavorite: isFavorite,
+        tags: tags,
+        fromDate: fromDate,
+        toDate: toDate,
+        limit: limit,
+        offset: offset,
+        orderBy: orderBy,
+        descending: descending,
+      );
+    } catch (e) {
+      return Result.failure("根据条件获取笔记失败: $e");
+    }
   }
 } 

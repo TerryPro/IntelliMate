@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:intellimate/domain/core/result.dart';
 import 'package:intellimate/domain/entities/schedule.dart';
 import 'package:intellimate/domain/usecases/schedule/create_schedule.dart';
 import 'package:intellimate/domain/usecases/schedule/delete_schedule.dart';
@@ -13,53 +14,77 @@ import 'package:intellimate/domain/usecases/schedule/search_schedules.dart';
 import 'package:intellimate/domain/usecases/schedule/update_schedule.dart';
 
 class ScheduleProvider extends ChangeNotifier {
-  final GetScheduleById _getScheduleByIdUseCase;
   final CreateSchedule _createScheduleUseCase;
-  final UpdateSchedule _updateScheduleUseCase;
   final DeleteSchedule _deleteScheduleUseCase;
   final GetAllSchedules _getAllSchedulesUseCase;
-  final GetSchedulesByDateRange _getSchedulesByDateRangeUseCase;
-  final GetSchedulesByDate _getSchedulesByDateUseCase;
-  final SearchSchedules _searchSchedulesUseCase;
+  final GetScheduleById _getScheduleByIdUseCase;
   final GetSchedulesByCategory _getSchedulesByCategoryUseCase;
+  final GetSchedulesByDate _getSchedulesByDateUseCase;
+  final GetSchedulesByDateRange _getSchedulesByDateRangeUseCase;
   final GetTodaySchedules _getTodaySchedulesUseCase;
   final GetUpcomingSchedules _getUpcomingSchedulesUseCase;
-
-  ScheduleProvider({
-    required GetScheduleById getScheduleByIdUseCase,
-    required CreateSchedule createScheduleUseCase,
-    required UpdateSchedule updateScheduleUseCase,
-    required DeleteSchedule deleteScheduleUseCase,
-    required GetAllSchedules getAllSchedulesUseCase,
-    required GetSchedulesByDateRange getSchedulesByDateRangeUseCase,
-    required GetSchedulesByDate getSchedulesByDateUseCase,
-    required SearchSchedules searchSchedulesUseCase,
-    required GetSchedulesByCategory getSchedulesByCategoryUseCase,
-    required GetTodaySchedules getTodaySchedulesUseCase,
-    required GetUpcomingSchedules getUpcomingSchedulesUseCase,
-  }) : _getScheduleByIdUseCase = getScheduleByIdUseCase,
-       _createScheduleUseCase = createScheduleUseCase,
-       _updateScheduleUseCase = updateScheduleUseCase,
-       _deleteScheduleUseCase = deleteScheduleUseCase,
-       _getAllSchedulesUseCase = getAllSchedulesUseCase,
-       _getSchedulesByDateRangeUseCase = getSchedulesByDateRangeUseCase,
-       _getSchedulesByDateUseCase = getSchedulesByDateUseCase,
-       _searchSchedulesUseCase = searchSchedulesUseCase,
-       _getSchedulesByCategoryUseCase = getSchedulesByCategoryUseCase,
-       _getTodaySchedulesUseCase = getTodaySchedulesUseCase,
-       _getUpcomingSchedulesUseCase = getUpcomingSchedulesUseCase;
+  final SearchSchedules _searchSchedulesUseCase;
+  final UpdateSchedule _updateScheduleUseCase;
 
   // 状态变量
-  bool _isLoading = false;
-  String? _error;
   List<Schedule> _schedules = [];
   Schedule? _selectedSchedule;
+  bool _isLoading = false;
+  String? _error;
 
-  // Getters
-  bool get isLoading => _isLoading;
-  String? get error => _error;
+  // Getter
   List<Schedule> get schedules => _schedules;
   Schedule? get selectedSchedule => _selectedSchedule;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+
+  ScheduleProvider({
+    required CreateSchedule createScheduleUseCase,
+    required DeleteSchedule deleteScheduleUseCase,
+    required GetAllSchedules getAllSchedulesUseCase,
+    required GetScheduleById getScheduleByIdUseCase,
+    required GetSchedulesByCategory getSchedulesByCategoryUseCase,
+    required GetSchedulesByDate getSchedulesByDateUseCase,
+    required GetSchedulesByDateRange getSchedulesByDateRangeUseCase,
+    required GetTodaySchedules getTodaySchedulesUseCase,
+    required GetUpcomingSchedules getUpcomingSchedulesUseCase,
+    required SearchSchedules searchSchedulesUseCase,
+    required UpdateSchedule updateScheduleUseCase,
+  })  : _createScheduleUseCase = createScheduleUseCase,
+        _deleteScheduleUseCase = deleteScheduleUseCase,
+        _getAllSchedulesUseCase = getAllSchedulesUseCase,
+        _getScheduleByIdUseCase = getScheduleByIdUseCase,
+        _getSchedulesByCategoryUseCase = getSchedulesByCategoryUseCase,
+        _getSchedulesByDateUseCase = getSchedulesByDateUseCase,
+        _getSchedulesByDateRangeUseCase = getSchedulesByDateRangeUseCase,
+        _getTodaySchedulesUseCase = getTodaySchedulesUseCase,
+        _getUpcomingSchedulesUseCase = getUpcomingSchedulesUseCase,
+        _searchSchedulesUseCase = searchSchedulesUseCase,
+        _updateScheduleUseCase = updateScheduleUseCase;
+
+  // 获取所有日程
+  Future<List<Schedule>> getAllSchedules() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final result = await _getAllSchedulesUseCase.call();
+      result.fold(
+        onSuccess: (data) => _schedules = data,
+        onFailure: (error) => _error = error
+      );
+      
+      _isLoading = false;
+      notifyListeners();
+      return _schedules;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return [];
+    }
+  }
 
   // 根据ID获取日程
   Future<Schedule?> getScheduleById(String id) async {
@@ -68,8 +93,20 @@ class ScheduleProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final schedule = await _getScheduleByIdUseCase(id);
-      _selectedSchedule = schedule;
+      final result = await _getScheduleByIdUseCase.call(id);
+      
+      Schedule? schedule;
+      result.fold(
+        onSuccess: (data) {
+          _selectedSchedule = data;
+          schedule = data;
+        },
+        onFailure: (error) {
+          _error = error;
+          schedule = null;
+        }
+      );
+      
       _isLoading = false;
       notifyListeners();
       return schedule;
@@ -84,13 +121,13 @@ class ScheduleProvider extends ChangeNotifier {
   // 创建日程
   Future<Schedule?> createSchedule({
     required String title,
-    String? description,
     required DateTime startTime,
     required DateTime endTime,
-    String? location,
     required bool isAllDay,
-    String? category,
     required bool isRepeated,
+    String? description,
+    String? location,
+    String? category,
     String? repeatType,
     List<String>? participants,
     String? reminder,
@@ -100,25 +137,35 @@ class ScheduleProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final schedule = await _createScheduleUseCase(
+      final result = await _createScheduleUseCase.call(
         title: title,
-        description: description,
         startTime: startTime,
         endTime: endTime,
-        location: location,
         isAllDay: isAllDay,
-        category: category,
         isRepeated: isRepeated,
+        description: description,
+        location: location,
+        category: category,
         repeatType: repeatType,
         participants: participants,
         reminder: reminder,
       );
       
-      // 更新状态
-      _schedules = [..._schedules, schedule];
+      Schedule? createdSchedule;
+      result.fold(
+        onSuccess: (data) {
+          createdSchedule = data;
+          _schedules.add(data);
+        },
+        onFailure: (error) {
+          _error = error;
+          createdSchedule = null;
+        }
+      );
+      
       _isLoading = false;
       notifyListeners();
-      return schedule;
+      return createdSchedule;
     } catch (e) {
       _error = e.toString();
       _isLoading = false;
@@ -134,20 +181,25 @@ class ScheduleProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final success = await _updateScheduleUseCase(schedule);
+      final result = await _updateScheduleUseCase.call(schedule);
       
-      if (success) {
-        // 更新本地列表
-        final index = _schedules.indexWhere((s) => s.id == schedule.id);
-        if (index != -1) {
-          _schedules[index] = schedule;
+      bool success = false;
+      result.fold(
+        onSuccess: (data) {
+          success = true;
+          final index = _schedules.indexWhere((s) => s.id == schedule.id);
+          if (index != -1) {
+            _schedules[index] = schedule;
+          }
+          if (_selectedSchedule?.id == schedule.id) {
+            _selectedSchedule = schedule;
+          }
+        },
+        onFailure: (error) {
+          _error = error;
+          success = false;
         }
-        
-        // 如果是当前选中的日程，也更新它
-        if (_selectedSchedule?.id == schedule.id) {
-          _selectedSchedule = schedule;
-        }
-      }
+      );
       
       _isLoading = false;
       notifyListeners();
@@ -167,17 +219,24 @@ class ScheduleProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final success = await _deleteScheduleUseCase(id);
+      final result = await _deleteScheduleUseCase.call(id);
       
-      if (success) {
-        // 从列表中移除
-        _schedules.removeWhere((schedule) => schedule.id == id);
-        
-        // 如果是当前选中的日程，清除选中状态
-        if (_selectedSchedule?.id == id) {
-          _selectedSchedule = null;
+      bool success = false;
+      result.fold(
+        onSuccess: (data) {
+          success = data;
+          if (success) {
+            _schedules.removeWhere((schedule) => schedule.id == id);
+            if (_selectedSchedule?.id == id) {
+              _selectedSchedule = null;
+            }
+          }
+        },
+        onFailure: (error) {
+          _error = error;
+          success = false;
         }
-      }
+      );
       
       _isLoading = false;
       notifyListeners();
@@ -190,59 +249,37 @@ class ScheduleProvider extends ChangeNotifier {
     }
   }
 
-  // 获取所有日程
-  Future<List<Schedule>> getAllSchedules({
-    int? limit,
-    int? offset,
-    String? orderBy,
-    bool descending = true,
-  }) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      final schedules = await _getAllSchedulesUseCase(
-        limit: limit,
-        offset: offset,
-        orderBy: orderBy,
-        descending: descending,
-      );
-      
-      _schedules = schedules;
-      _isLoading = false;
-      notifyListeners();
-      return schedules;
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return [];
-    }
-  }
-
-  // 获取指定日期范围内的日程
+  // 按日期范围获取日程
   Future<List<Schedule>> getSchedulesByDateRange(
     DateTime startDate,
     DateTime endDate, {
     bool includeAllDay = true,
     String? category,
-    bool? isRepeated,
   }) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final schedules = await _getSchedulesByDateRangeUseCase(
+      final result = await _getSchedulesByDateRangeUseCase.call(
         startDate,
         endDate,
         includeAllDay: includeAllDay,
         category: category,
-        isRepeated: isRepeated,
       );
       
-      _schedules = schedules;
+      List<Schedule> schedules = [];
+      result.fold(
+        onSuccess: (data) {
+          schedules = data;
+          _schedules = data;
+        },
+        onFailure: (error) {
+          _error = error;
+          schedules = [];
+        }
+      );
+      
       _isLoading = false;
       notifyListeners();
       return schedules;
@@ -265,13 +302,24 @@ class ScheduleProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final schedules = await _getSchedulesByDateUseCase(
+      final result = await _getSchedulesByDateUseCase.call(
         date,
         includeAllDay: includeAllDay,
         category: category,
       );
       
-      _schedules = schedules;
+      List<Schedule> schedules = [];
+      result.fold(
+        onSuccess: (data) {
+          schedules = data;
+          _schedules = data;
+        },
+        onFailure: (error) {
+          _error = error;
+          schedules = [];
+        }
+      );
+      
       _isLoading = false;
       notifyListeners();
       return schedules;
@@ -290,9 +338,20 @@ class ScheduleProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final schedules = await _searchSchedulesUseCase(query);
+      final result = await _searchSchedulesUseCase.call(query);
       
-      _schedules = schedules;
+      List<Schedule> schedules = [];
+      result.fold(
+        onSuccess: (data) {
+          schedules = data;
+          _schedules = data;
+        },
+        onFailure: (error) {
+          _error = error;
+          schedules = [];
+        }
+      );
+      
       _isLoading = false;
       notifyListeners();
       return schedules;
@@ -311,9 +370,20 @@ class ScheduleProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final schedules = await _getSchedulesByCategoryUseCase(category);
+      final result = await _getSchedulesByCategoryUseCase.call(category);
       
-      _schedules = schedules;
+      List<Schedule> schedules = [];
+      result.fold(
+        onSuccess: (data) {
+          schedules = data;
+          _schedules = data;
+        },
+        onFailure: (error) {
+          _error = error;
+          schedules = [];
+        }
+      );
+      
       _isLoading = false;
       notifyListeners();
       return schedules;
@@ -325,7 +395,7 @@ class ScheduleProvider extends ChangeNotifier {
     }
   }
 
-  // 获取今日日程
+  // 获取今天的日程
   Future<List<Schedule>> getTodaySchedules({
     bool includeAllDay = true,
     String? category,
@@ -335,12 +405,23 @@ class ScheduleProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final schedules = await _getTodaySchedulesUseCase(
+      final result = await _getTodaySchedulesUseCase.call(
         includeAllDay: includeAllDay,
         category: category,
       );
       
-      _schedules = schedules;
+      List<Schedule> schedules = [];
+      result.fold(
+        onSuccess: (data) {
+          schedules = data;
+          _schedules = data;
+        },
+        onFailure: (error) {
+          _error = error;
+          schedules = [];
+        }
+      );
+      
       _isLoading = false;
       notifyListeners();
       return schedules;
@@ -362,12 +443,23 @@ class ScheduleProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final schedules = await _getUpcomingSchedulesUseCase(
+      final result = await _getUpcomingSchedulesUseCase.call(
         limit: limit,
         category: category,
       );
       
-      _schedules = schedules;
+      List<Schedule> schedules = [];
+      result.fold(
+        onSuccess: (data) {
+          schedules = data;
+          _schedules = data;
+        },
+        onFailure: (error) {
+          _error = error;
+          schedules = [];
+        }
+      );
+      
       _isLoading = false;
       notifyListeners();
       return schedules;
@@ -379,15 +471,174 @@ class ScheduleProvider extends ChangeNotifier {
     }
   }
 
-  // 清除错误
-  void clearError() {
+  // 获取明天的日程
+  Future<List<Schedule>> getTomorrowSchedules() async {
+    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    return getSchedulesByDate(tomorrow);
+  }
+
+  // 获取本周的日程
+  Future<Map<DateTime, List<Schedule>>> getThisWeekSchedules() async {
+    final now = DateTime.now();
+    final firstDayOfWeek = DateTime(
+      now.year,
+      now.month,
+      now.day - (now.weekday - 1),
+    );
+    final lastDayOfWeek = firstDayOfWeek.add(const Duration(days: 6));
+    
+    // 获取本周内所有日程
+    final weekSchedules = await getSchedulesByDateRange(
+      firstDayOfWeek,
+      lastDayOfWeek,
+    );
+
+    // 按日期分组
+    final Map<DateTime, List<Schedule>> schedulesMap = {};
+    for (var i = 0; i < 7; i++) {
+      final day = firstDayOfWeek.add(Duration(days: i));
+      final dayKey = DateTime(day.year, day.month, day.day);
+      
+      final daySchedules = weekSchedules.where((schedule) {
+        final scheduleDate = DateTime(
+          schedule.startTime.year,
+          schedule.startTime.month,
+          schedule.startTime.day,
+        );
+        return scheduleDate.isAtSameMomentAs(dayKey);
+      }).toList();
+      
+      schedulesMap[dayKey] = daySchedules;
+    }
+    
+    return schedulesMap;
+  }
+
+  // 获取本月的日程
+  Future<Map<DateTime, List<Schedule>>> getThisMonthSchedules() async {
+    final now = DateTime.now();
+    final firstDayOfMonth = DateTime(now.year, now.month, 1);
+    final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
+    
+    // 获取本月内所有日程
+    final monthSchedules = await getSchedulesByDateRange(
+      firstDayOfMonth,
+      lastDayOfMonth,
+    );
+
+    // 按日期分组
+    final Map<DateTime, List<Schedule>> schedulesMap = {};
+    for (var i = 0; i < lastDayOfMonth.day; i++) {
+      final day = firstDayOfMonth.add(Duration(days: i));
+      final dayKey = DateTime(day.year, day.month, day.day);
+      
+      final daySchedules = monthSchedules.where((schedule) {
+        final scheduleDate = DateTime(
+          schedule.startTime.year,
+          schedule.startTime.month,
+          schedule.startTime.day,
+        );
+        return scheduleDate.isAtSameMomentAs(dayKey);
+      }).toList();
+      
+      schedulesMap[dayKey] = daySchedules;
+    }
+    
+    return schedulesMap;
+  }
+
+  // 获取未来7天的日程
+  Future<List<Schedule>> getNext7DaysSchedules() async {
+    final now = DateTime.now();
+    final future7Days = now.add(const Duration(days: 7));
+    
+    _isLoading = true;
     _error = null;
+    notifyListeners();
+
+    try {
+      // 在本地过滤未来7天的日程
+      await getAllSchedules();
+      final next7DaysSchedules = _schedules.where((schedule) {
+        return schedule.startTime.isAfter(now) && 
+               schedule.startTime.isBefore(future7Days);
+      }).toList();
+      return next7DaysSchedules;
+    } catch (e) {
+      _error = '获取未来7天日程失败: $e';
+      _isLoading = false;
+      notifyListeners();
+      return [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // 获取未完成的日程
+  Future<List<Schedule>> getIncompleteSchedules() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      // 在本地过滤未完成的日程（假设未完成的日程是结束时间在当前时间之后的日程）
+      await getAllSchedules();
+      final now = DateTime.now();
+      final incompleteSchedules = _schedules.where((schedule) {
+        return schedule.endTime.isAfter(now);
+      }).toList();
+      return incompleteSchedules;
+    } catch (e) {
+      _error = '获取未完成日程失败: $e';
+      _isLoading = false;
+      notifyListeners();
+      return [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // 获取重要的日程
+  Future<List<Schedule>> getImportantSchedules() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      // 在本地过滤重要的日程（这里可以根据实际需求定义重要日程的标准）
+      // 例如：假设category为"important"的是重要日程
+      await getAllSchedules();
+      final importantSchedules = _schedules.where((schedule) {
+        return schedule.category == 'important';
+      }).toList();
+      return importantSchedules;
+    } catch (e) {
+      _error = '获取重要日程失败: $e';
+      _isLoading = false;
+      notifyListeners();
+      return [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // 设置加载状态
+  void _setLoading(bool loading) {
+    _isLoading = loading;
     notifyListeners();
   }
 
-  // 设置选中的日程
-  void setSelectedSchedule(Schedule? schedule) {
-    _selectedSchedule = schedule;
+  // 设置错误信息
+  void _setError(String error) {
+    _error = error;
     notifyListeners();
+  }
+
+  // 清除错误信息
+  void _clearError() {
+    _error = null;
   }
 } 
