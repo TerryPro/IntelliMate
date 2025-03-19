@@ -3,8 +3,8 @@ import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/domain/entities/task.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
 import 'package:intellimate/presentation/providers/task_provider.dart';
-import 'package:intellimate/domain/core/task_config.dart';
 import 'package:provider/provider.dart';
+import 'package:intellimate/presentation/screens/task/task_panel.dart';
 
 class TaskScreen extends StatefulWidget {
   const TaskScreen({super.key});
@@ -330,256 +330,25 @@ class _TaskScreenState extends State<TaskScreen> {
 
   // 构建任务列表
   Widget _buildTaskList(List<Task> tasks) {
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: tasks.length,
-      itemBuilder: (context, index) {
-        final task = tasks[index];
-        return _buildTaskItem(task);
+    final provider = Provider.of<TaskProvider>(context, listen: false);
+    return TaskPanel(
+      tasks: tasks,
+      onToggleCompletion: _toggleTaskCompletion,
+      onDeleteTask: _deleteTask,
+      onEditTask: (String taskId) async {
+        final result = await Navigator.pushNamed(
+          context,
+          AppRoutes.addTask,
+          arguments: taskId,
+        );
+        if (result == true && mounted) {
+          _loadTasks();
+        }
       },
-    );
-  }
-
-  // 构建任务项
-  Widget _buildTaskItem(Task task) {
-    // 格式化日期
-    String formatDate(DateTime date) {
-      if (isSameDay(date, DateTime.now())) {
-        return '今天';
-      } else if (isSameDay(date, DateTime.now().add(const Duration(days: 1)))) {
-        return '明天';
-      } else {
-        return '${date.month}月${date.day}日';
-      }
-    }
-
-    // 使用TaskConfig获取优先级信息
-
-    return Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: task.isCompleted ? Colors.grey.shade300 : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border(
-            left: BorderSide(
-              color: TaskConfig.getCategoryColor(task.category),
-              width: 4,
-            ),
-          ),
-          boxShadow: const [
-            BoxShadow(
-              color: AppColors.blackWithOpacity05,
-              blurRadius: 4,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // 任务内容
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 任务元数据（优先级、分类）
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Wrap(
-                            spacing: 8,
-                            children: [
-                              if (task.priority != null)
-                                _buildMetadataChip(
-                                  Icons.flag,
-                                  TaskConfig.getPriorityText(task.priority!),
-                                  TaskConfig.getPriorityColor(task.priority!),
-                                ),
-                              if (task.category != null &&
-                                  task.category!.isNotEmpty)
-                                _buildMetadataChip(
-                                  Icons.category,
-                                  task.category!,
-                                  Colors.grey.shade500,
-                                ),
-                            ],
-                          ),
-                          // 完成状态指示器
-                          _buildMetadataChip(
-                            task.isCompleted
-                                ? Icons.check_circle
-                                : Icons.pending,
-                            task.isCompleted ? "已完成" : "进行中",
-                            task.isCompleted ? Colors.green : Colors.orange,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      // 任务标题
-                      Text(
-                        task.title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      if (task.description != null &&
-                          task.description!.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          task.description!,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-
-            // 时间信息和操作按钮
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // 时间信息
-                if (task.dueDate != null)
-                  _buildMetadataChip(
-                    Icons.calendar_today,
-                    formatDate(task.dueDate!),
-                    Colors.grey.shade500,
-                  ),
-                Row(
-                  children: [
-                    // 完成按钮
-                    GestureDetector(
-                      onTap: () => _toggleTaskCompletion(task),
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          task.isCompleted ? Icons.refresh : Icons.check,
-                          color: Colors.grey.shade500,
-                          size: 16,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-
-                    // 编辑按钮
-                    GestureDetector(
-                      onTap: () async {
-                        final result = await Navigator.pushNamed(
-                          context,
-                          AppRoutes.addTask,
-                          arguments: task.id,
-                        );
-                        if (result == true && mounted) {
-                          _loadTasks();
-                        }
-                      },
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.edit,
-                          size: 16,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-
-                    // 删除按钮
-                    GestureDetector(
-                      onTap: () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text('确认删除'),
-                              content: const Text('确定要删除这个任务吗？'),
-                              actions: <Widget>[
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(false),
-                                  child: const Text('取消'),
-                                ),
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(true),
-                                  child: const Text('删除'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-
-                        if (confirm == true) {
-                          _deleteTask(task.id);
-                        }
-                      },
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.delete,
-                          size: 16,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ));
-  }
-
-  // 构建元数据标签
-  Widget _buildMetadataChip(IconData icon, String label, Color color) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          size: 12,
-          color: color,
-        ),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: color,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
+      isLoading: _isLoading,
+      error: provider.error,
+      onRetry: _loadTasks,
+      selectedFilter: _selectedFilter,
     );
   }
 }

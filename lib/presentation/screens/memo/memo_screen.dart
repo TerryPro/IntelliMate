@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
+import 'package:intellimate/domain/core/memo_config.dart';
 import 'package:intellimate/domain/entities/memo.dart';
 import 'package:intellimate/presentation/providers/memo_provider.dart';
 import 'package:intellimate/presentation/widgets/custom_app_bar.dart';
@@ -18,7 +19,7 @@ class _MemoScreenState extends State<MemoScreen> {
   bool _isLoading = true;
   List<Memo> _memos = [];
   String _selectedCategory = '全部';
-  final List<String> _categories = ['全部', '工作', '学习', '生活', '其他'];
+  final List<String> _categories = ['全部'] + MemoConfig.categories;
   final TextEditingController _searchController = TextEditingController();
   final bool _isSearching = false;
 
@@ -488,36 +489,14 @@ class _MemoScreenState extends State<MemoScreen> {
     );
   }
 
-  // 获取类别图标
-  IconData _getCategoryIcon(String category) {
-    switch (category) {
-      case '工作':
-        return Icons.work;
-      case '学习':
-        return Icons.school;
-      case '生活':
-        return Icons.home;
-      case '健康':
-        return Icons.favorite;
-      default:
-        return Icons.note;
-    }
-  }
-
   // 获取类别颜色
   Color _getCategoryColor(String category) {
-    switch (category) {
-      case '工作':
-        return Colors.blue;
-      case '学习':
-        return Colors.purple;
-      case '生活':
-        return Colors.green;
-      case '健康':
-        return Colors.orange;
-      default:
-        return Colors.grey;
-    }
+    return MemoConfig.getCategoryColor(category);
+  }
+
+  // 获取类别图标
+  IconData _getCategoryIcon(String category) {
+    return MemoConfig.getCategoryIcon(category);
   }
 
   // 格式化日期

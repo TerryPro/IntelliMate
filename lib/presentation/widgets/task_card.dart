@@ -19,7 +19,7 @@ class TaskCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 获取优先级颜色
-    Color priorityColor = TaskConfig.getPriorityColor(task.priority);
+    final Color priorityColor = TaskConfig.getPriorityColor(task.priority);
 
     return GestureDetector(
       onTap: onTap,

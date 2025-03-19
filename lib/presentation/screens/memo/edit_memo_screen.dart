@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
+import 'package:intellimate/domain/core/memo_config.dart';
 import 'package:intellimate/domain/entities/memo.dart';
 import 'package:intellimate/presentation/providers/memo_provider.dart';
 import 'package:intellimate/presentation/widgets/custom_app_bar.dart';
@@ -17,7 +18,7 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
 
-  String _selectedCategory = '工作';
+  String _selectedCategory = MemoConfig.categories[0];
   bool _isLoading = true;
   bool _isSaving = false;
   // 删除_isDeleting状态变量
@@ -25,7 +26,7 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
   Memo? _memo;
   String? _memoId;
 
-  final List<String> _categories = ['工作', '学习', '生活', '其他'];
+  final List<String> _categories = MemoConfig.categories;
 
   @override
   void didChangeDependencies() {
@@ -319,7 +320,7 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: _categories.map((category) {
+          children: MemoConfig.categories.map((category) {
             final isSelected = category == _selectedCategory;
             return GestureDetector(
               onTap: () {
@@ -332,7 +333,7 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
                     const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? const Color(0xFF3ECABB)
+                      ? MemoConfig.getCategoryColor(category)
                       : Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -340,19 +341,13 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      category == '工作'
-                          ? Icons.work
-                          : category == '学习'
-                              ? Icons.school
-                              : category == '生活'
-                                  ? Icons.home
-                                  : Icons.category, // 默认图标
+                      MemoConfig.getCategoryIcon(category),
                       size: 16,
                       color: isSelected ? Colors.white : Colors.grey.shade700,
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      category,
+                      MemoConfig.getCategoryText(category),
                       style: TextStyle(
                         color: isSelected ? Colors.white : Colors.grey.shade700,
                       ),
