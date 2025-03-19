@@ -36,11 +36,13 @@ linter:
     
     # 错误预防规则
     avoid_empty_else: true  # 避免空的else语句
+    # avoid_returning_null_for_future: true  # 避免为Future返回null
     avoid_type_to_string: true  # 避免使用.toString()获取类型名称
     cancel_subscriptions: true  # 确保取消订阅
     close_sinks: true  # 确保关闭sinks
     
     # 文档规则
+    # package_api_docs: false  # 不强制要求包级API文档
     public_member_api_docs: false  # 不强制要求公共成员API文档
 
 # Additional information about this file can be found at

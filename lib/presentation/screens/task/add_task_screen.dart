@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 
 class AddTaskScreen extends StatefulWidget {
   final String? taskId;
-  
+
   const AddTaskScreen({super.key, this.taskId});
 
   @override
@@ -17,26 +17,32 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  
+
   DateTime? _dueDate = DateTime.now();
   String _dueDateText = '今天';
-  
+
   int _priority = 3; // 默认高优先级
   String _category = '工作';
   String? _reminder = '截止当天 09:00';
-  
-  final List<String> _reminderOptions = ['无', '截止当天 09:00', '提前1小时', '提前1天', '自定义'];
-  
+
+  final List<String> _reminderOptions = [
+    '无',
+    '截止当天 09:00',
+    '提前1小时',
+    '提前1天',
+    '自定义'
+  ];
+
   bool _isLoading = true;
   bool _isEditing = false;
   Task? _existingTask;
   String? _errorMessage;
-  
+
   @override
   void initState() {
     super.initState();
     _isEditing = widget.taskId != null;
-    
+
     // 如果是编辑模式，加载现有任务数据
     if (_isEditing) {
       _loadExistingTask();
@@ -46,28 +52,28 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       });
     }
   }
-  
+
   // 加载现有任务数据
   Future<void> _loadExistingTask() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
-    
+
     try {
       final taskProvider = Provider.of<TaskProvider>(context, listen: false);
       final task = await taskProvider.getTaskById(widget.taskId!);
-      
+
       if (task != null) {
         setState(() {
           _existingTask = task;
-          
+
           // 填充表单数据
           _titleController.text = task.title;
           if (task.description != null) {
             _descriptionController.text = task.description!;
           }
-          
+
           if (task.dueDate != null) {
             _dueDate = task.dueDate;
             _updateDueDateText();
@@ -75,11 +81,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             _dueDate = null;
             _dueDateText = '无截止日期';
           }
-          
+
           if (task.priority != null) {
             _priority = task.priority!;
           }
-          
+
           if (task.category != null) {
             _category = task.category!;
           }
@@ -99,30 +105,31 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       });
     }
   }
-  
+
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
-  
+
   // 更新截止日期文本
   void _updateDueDateText() {
     if (_dueDate == null) {
       _dueDateText = '无截止日期';
       return;
     }
-    
+
     if (isSameDay(_dueDate!, DateTime.now())) {
       _dueDateText = '今天';
-    } else if (isSameDay(_dueDate!, DateTime.now().add(const Duration(days: 1)))) {
+    } else if (isSameDay(
+        _dueDate!, DateTime.now().add(const Duration(days: 1)))) {
       _dueDateText = '明天';
     } else {
       _dueDateText = '${_dueDate!.year}年${_dueDate!.month}月${_dueDate!.day}日';
     }
   }
-  
+
   // 保存任务
   Future<void> _saveTask() async {
     if (_formKey.currentState!.validate()) {
@@ -130,17 +137,19 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         _isLoading = true;
         _errorMessage = null;
       });
-      
+
       try {
         final taskProvider = Provider.of<TaskProvider>(context, listen: false);
         bool success = false;
-        
+
         if (_isEditing && _existingTask != null) {
           // 编辑现有任务
           final updatedTask = Task(
             id: _existingTask!.id,
             title: _titleController.text.trim(),
-            description: _descriptionController.text.isEmpty ? null : _descriptionController.text.trim(),
+            description: _descriptionController.text.isEmpty
+                ? null
+                : _descriptionController.text.trim(),
             dueDate: _dueDate,
             isCompleted: _existingTask!.isCompleted,
             category: _category,
@@ -148,22 +157,24 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             createdAt: _existingTask!.createdAt,
             updatedAt: DateTime.now(),
           );
-          
+
           success = await taskProvider.updateTask(updatedTask);
         } else {
           // 创建新任务
           final task = await taskProvider.createTask(
             title: _titleController.text.trim(),
-            description: _descriptionController.text.isEmpty ? null : _descriptionController.text.trim(),
+            description: _descriptionController.text.isEmpty
+                ? null
+                : _descriptionController.text.trim(),
             dueDate: _dueDate,
             isCompleted: false,
             category: _category,
             priority: _priority,
           );
-          
+
           success = task != null;
         }
-        
+
         if (success && mounted) {
           Navigator.pop(context, true);
         } else {
@@ -180,13 +191,14 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       }
     }
   }
-  
+
   // 选择日期
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _dueDate ?? DateTime.now(),
-      firstDate: DateTime.now().subtract(const Duration(days: 365)), // 允许选择过去的日期以支持编辑
+      firstDate:
+          DateTime.now().subtract(const Duration(days: 365)), // 允许选择过去的日期以支持编辑
       lastDate: DateTime(2030),
       builder: (context, child) {
         return Theme(
@@ -201,7 +213,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         );
       },
     );
-    
+
     if (picked != null) {
       setState(() {
         _dueDate = picked;
@@ -209,7 +221,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       });
     }
   }
-  
+
   // 清除截止日期
   void _clearDueDate() {
     setState(() {
@@ -217,7 +229,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       _dueDateText = '无截止日期';
     });
   }
-  
+
   // 判断两个日期是否是同一天
   bool isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
@@ -232,7 +244,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         ),
       );
     }
-    
+
     if (_errorMessage != null) {
       return Scaffold(
         appBar: AppBar(
@@ -247,7 +259,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         ),
       );
     }
-    
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: Column(
@@ -259,7 +271,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             onSaveTap: _saveTask,
             isLoading: _isLoading,
           ),
-          
+
           // 表单内容
           Expanded(
             child: SingleChildScrollView(
@@ -272,23 +284,23 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     // 任务标题
                     _buildTitleSection(),
                     const SizedBox(height: 20),
-                    
+
                     // 任务描述
                     _buildDescriptionSection(),
                     const SizedBox(height: 20),
-                    
+
                     // 截止日期
                     _buildDueDateSection(),
                     const SizedBox(height: 20),
-                    
+
                     // 优先级
                     _buildPrioritySection(),
                     const SizedBox(height: 20),
-                    
+
                     // 提醒
                     _buildReminderSection(),
                     const SizedBox(height: 20),
-                    
+
                     // 任务分类
                     _buildCategorySection(),
                     const SizedBox(height: 20),
@@ -301,7 +313,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       ),
     );
   }
-  
+
   // 构建标题部分
   Widget _buildTitleSection() {
     return Column(
@@ -334,7 +346,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: Color(0xFF3ECABB), width: 1),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -346,7 +359,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       ],
     );
   }
-  
+
   // 构建描述部分
   Widget _buildDescriptionSection() {
     return Column(
@@ -386,7 +399,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       ],
     );
   }
-  
+
   // 构建截止日期部分
   Widget _buildDueDateSection() {
     return Column(
@@ -407,7 +420,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               child: GestureDetector(
                 onTap: () => _selectDate(context),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
@@ -439,7 +453,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 ),
               ),
             ),
-            if (_dueDate != null) 
+            if (_dueDate != null)
               IconButton(
                 icon: const Icon(Icons.clear, color: Colors.grey),
                 onPressed: _clearDueDate,
@@ -449,7 +463,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       ],
     );
   }
-  
+
   // 构建优先级部分
   Widget _buildPrioritySection() {
     return Column(
@@ -476,7 +490,9 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
-                    color: _priority == 3 ? const Color(0xFF3ECABB) : Colors.grey.shade200,
+                    color: _priority == 3
+                        ? const Color(0xFF3ECABB)
+                        : Colors.grey.shade200,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   alignment: Alignment.center,
@@ -486,13 +502,17 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                       Icon(
                         Icons.flag,
                         size: 16,
-                        color: _priority == 3 ? Colors.white : Colors.grey.shade700,
+                        color: _priority == 3
+                            ? Colors.white
+                            : Colors.grey.shade700,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         '高',
                         style: TextStyle(
-                          color: _priority == 3 ? Colors.white : Colors.grey.shade700,
+                          color: _priority == 3
+                              ? Colors.white
+                              : Colors.grey.shade700,
                         ),
                       ),
                     ],
@@ -511,7 +531,9 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
-                    color: _priority == 2 ? const Color(0xFF3ECABB) : Colors.grey.shade200,
+                    color: _priority == 2
+                        ? const Color(0xFF3ECABB)
+                        : Colors.grey.shade200,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   alignment: Alignment.center,
@@ -521,13 +543,17 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                       Icon(
                         Icons.flag,
                         size: 16,
-                        color: _priority == 2 ? Colors.white : Colors.grey.shade700,
+                        color: _priority == 2
+                            ? Colors.white
+                            : Colors.grey.shade700,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         '中',
                         style: TextStyle(
-                          color: _priority == 2 ? Colors.white : Colors.grey.shade700,
+                          color: _priority == 2
+                              ? Colors.white
+                              : Colors.grey.shade700,
                         ),
                       ),
                     ],
@@ -546,7 +572,9 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
-                    color: _priority == 1 ? const Color(0xFF3ECABB) : Colors.grey.shade200,
+                    color: _priority == 1
+                        ? const Color(0xFF3ECABB)
+                        : Colors.grey.shade200,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   alignment: Alignment.center,
@@ -556,13 +584,17 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                       Icon(
                         Icons.flag,
                         size: 16,
-                        color: _priority == 1 ? Colors.white : Colors.grey.shade700,
+                        color: _priority == 1
+                            ? Colors.white
+                            : Colors.grey.shade700,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         '低',
                         style: TextStyle(
-                          color: _priority == 1 ? Colors.white : Colors.grey.shade700,
+                          color: _priority == 1
+                              ? Colors.white
+                              : Colors.grey.shade700,
                         ),
                       ),
                     ],
@@ -575,7 +607,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       ],
     );
   }
-  
+
   // 构建提醒部分
   Widget _buildReminderSection() {
     return Column(
@@ -654,7 +686,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       ],
     );
   }
-  
+
   // 构建任务分类部分
   Widget _buildCategorySection() {
     return Column(
@@ -673,22 +705,21 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           spacing: 12,
           runSpacing: 12,
           children: [
-            _buildCategoryChip('工作', Icons.work),
-            _buildCategoryChip('学习', Icons.school),
             _buildCategoryChip('个人', Icons.person),
             _buildCategoryChip('家庭', Icons.home),
+            _buildCategoryChip('工作', Icons.work),
+            _buildCategoryChip('学习', Icons.school),
             _buildCategoryChip('购物', Icons.shopping_cart),
-            _buildCategoryChip('旅行', Icons.flight),
           ],
         ),
       ],
     );
   }
-  
+
   // 构建分类选项
   Widget _buildCategoryChip(String label, IconData icon) {
     final isSelected = _category == label;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -721,4 +752,4 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       ),
     );
   }
-} 
+}

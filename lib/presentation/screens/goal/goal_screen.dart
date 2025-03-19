@@ -15,28 +15,28 @@ class GoalScreen extends StatefulWidget {
 
 class _GoalScreenState extends State<GoalScreen> {
   String _selectedFilter = '全部';
-  
+
   // 时间筛选选项
   final List<String> _filters = ['全部', '本周', '本月', '本季度', '本年度'];
-  
+
   // 添加新目标
   void _addGoal() {
     Navigator.pushNamed(context, AppRoutes.addGoal).then((result) {
-      if (result == true) {
+      if (result == true && mounted) {
         // 刷新数据
         Provider.of<GoalProvider>(context, listen: false).loadGoals();
       }
     });
   }
-  
+
   // 编辑目标
   void _editGoal(Goal goal) {
     Navigator.pushNamed(
-      context, 
+      context,
       AppRoutes.editGoal,
       arguments: goal,
     ).then((result) {
-      if (result == true) {
+      if (result == true && mounted) {
         // 刷新数据
         Provider.of<GoalProvider>(context, listen: false).loadGoals();
       }
@@ -59,7 +59,7 @@ class _GoalScreenState extends State<GoalScreen> {
             onPressed: () {
               Provider.of<GoalProvider>(context, listen: false).deleteGoal(id);
               Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
+              ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('目标已删除')),
               );
             },
@@ -69,72 +69,88 @@ class _GoalScreenState extends State<GoalScreen> {
       ),
     );
   }
-  
+
   // 获取已完成目标数量
   int _completedGoalsCount(List<Goal> goals) {
     return goals.where((goal) => goal.status == '已完成').length;
   }
-  
+
   // 获取进行中目标数量
   int _inProgressGoalsCount(List<Goal> goals) {
-    return goals.where((goal) => goal.status == '进行中' || goal.status == '落后').length;
+    return goals
+        .where((goal) => goal.status == '进行中' || goal.status == '落后')
+        .length;
   }
-  
+
   // 计算总体完成率
   double _overallProgress(List<Goal> goals) {
     if (goals.isEmpty) return 0;
-    
+
     final totalProgress = goals.fold(0.0, (sum, goal) => sum + goal.progress);
     return totalProgress / goals.length;
   }
-  
+
   // 根据筛选获取目标列表
   List<Goal> _getFilteredGoals(List<Goal> goals, String category) {
-    final filteredByCategory = goals.where((goal) => goal.category == category).toList();
-    
+    final filteredByCategory =
+        goals.where((goal) => goal.category == category).toList();
+
     if (_selectedFilter == '全部') {
       return filteredByCategory;
     } else if (_selectedFilter == '本周') {
       final now = DateTime.now();
       final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
       final endOfWeek = startOfWeek.add(const Duration(days: 6));
-      
-      return filteredByCategory.where((goal) => 
-        (goal.startDate.isAfter(startOfWeek) || goal.startDate.isAtSameMomentAs(startOfWeek)) && 
-        (goal.startDate.isBefore(endOfWeek) || goal.startDate.isAtSameMomentAs(endOfWeek))
-      ).toList();
+
+      return filteredByCategory
+          .where((goal) =>
+              (goal.startDate.isAfter(startOfWeek) ||
+                  goal.startDate.isAtSameMomentAs(startOfWeek)) &&
+              (goal.startDate.isBefore(endOfWeek) ||
+                  goal.startDate.isAtSameMomentAs(endOfWeek)))
+          .toList();
     } else if (_selectedFilter == '本月') {
       final now = DateTime.now();
       final startOfMonth = DateTime(now.year, now.month, 1);
-      final endOfMonth = (now.month < 12) 
+      final endOfMonth = (now.month < 12)
           ? DateTime(now.year, now.month + 1, 0)
           : DateTime(now.year + 1, 1, 0);
-      
-      return filteredByCategory.where((goal) => 
-        (goal.startDate.isAfter(startOfMonth) || goal.startDate.isAtSameMomentAs(startOfMonth)) && 
-        (goal.startDate.isBefore(endOfMonth) || goal.startDate.isAtSameMomentAs(endOfMonth))
-      ).toList();
+
+      return filteredByCategory
+          .where((goal) =>
+              (goal.startDate.isAfter(startOfMonth) ||
+                  goal.startDate.isAtSameMomentAs(startOfMonth)) &&
+              (goal.startDate.isBefore(endOfMonth) ||
+                  goal.startDate.isAtSameMomentAs(endOfMonth)))
+          .toList();
     } else if (_selectedFilter == '本季度') {
       final now = DateTime.now();
       final currentQuarter = (now.month - 1) ~/ 3 + 1;
-      final startOfQuarter = DateTime(now.year, (currentQuarter - 1) * 3 + 1, 1);
+      final startOfQuarter =
+          DateTime(now.year, (currentQuarter - 1) * 3 + 1, 1);
       final endOfQuarter = DateTime(now.year, currentQuarter * 3 + 1, 0);
-      
-      return filteredByCategory.where((goal) => 
-        (goal.startDate.isAfter(startOfQuarter) || goal.startDate.isAtSameMomentAs(startOfQuarter)) && 
-        (goal.startDate.isBefore(endOfQuarter) || goal.startDate.isAtSameMomentAs(endOfQuarter))
-      ).toList();
+
+      return filteredByCategory
+          .where((goal) =>
+              (goal.startDate.isAfter(startOfQuarter) ||
+                  goal.startDate.isAtSameMomentAs(startOfQuarter)) &&
+              (goal.startDate.isBefore(endOfQuarter) ||
+                  goal.startDate.isAtSameMomentAs(endOfQuarter)))
+          .toList();
     } else if (_selectedFilter == '本年度') {
       final now = DateTime.now();
       final startOfYear = DateTime(now.year, 1, 1);
       final endOfYear = DateTime(now.year, 12, 31);
-      
-      return filteredByCategory.where((goal) => 
-        (goal.startDate.isAfter(startOfYear) || goal.startDate.isAtSameMomentAs(startOfYear)) && 
-        (goal.startDate.isBefore(endOfYear) || goal.startDate.isAtSameMomentAs(endOfYear))
-      ).toList();
+
+      return filteredByCategory
+          .where((goal) =>
+              (goal.startDate.isAfter(startOfYear) ||
+                  goal.startDate.isAtSameMomentAs(startOfYear)) &&
+              (goal.startDate.isBefore(endOfYear) ||
+                  goal.startDate.isAtSameMomentAs(endOfYear)))
+          .toList();
     }
-    
+
     return filteredByCategory;
   }
 
@@ -145,11 +161,11 @@ class _GoalScreenState extends State<GoalScreen> {
       body: Consumer<GoalProvider>(
         builder: (context, goalProvider, child) {
           final goals = goalProvider.goals;
-          
+
           if (goalProvider.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-          
+
           if (goalProvider.error != null) {
             return Center(
               child: Column(
@@ -165,56 +181,58 @@ class _GoalScreenState extends State<GoalScreen> {
               ),
             );
           }
-          
+
           return Column(
-        children: [
-          // 使用统一的顶部导航栏
-          UnifiedAppBar(
-            title: '目标管理',
-            actions: [
-              AppBarRefreshButton(
-                onTap: () => Provider.of<GoalProvider>(context, listen: false).loadGoals(),
+            children: [
+              // 使用统一的顶部导航栏
+              UnifiedAppBar(
+                title: '目标管理',
+                actions: [
+                  AppBarRefreshButton(
+                    onTap: () =>
+                        Provider.of<GoalProvider>(context, listen: false)
+                            .loadGoals(),
+                  ),
+                  const SizedBox(width: 8),
+                  AppBarAddButton(
+                    onTap: _addGoal,
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              AppBarAddButton(
-                onTap: _addGoal,
-              ),
-            ],
-          ),
-          
-          // 主体内容
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    // 目标概览
+
+              // 主体内容
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        // 目标概览
                         _buildGoalOverview(goals),
-                    
-                    // 时间周期选择
-                    _buildTimeFilter(),
-                    
-                    // 周目标
+
+                        // 时间周期选择
+                        _buildTimeFilter(),
+
+                        // 周目标
                         _buildWeeklyGoals(goals),
-                    
-                    // 月目标
+
+                        // 月目标
                         _buildMonthlyGoals(goals),
-                    
-                    // 年度目标
+
+                        // 年度目标
                         _buildYearlyGoals(goals),
-                  ],
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-        ],
+            ],
           );
         },
       ),
     );
   }
-  
+
   // 构建目标概览
   Widget _buildGoalOverview(List<Goal> goals) {
     return Container(
@@ -262,14 +280,14 @@ class _GoalScreenState extends State<GoalScreen> {
                 iconColor: const Color(0xFF3ECABB),
                 title: '完成率',
                 value: '${_overallProgress(goals).toStringAsFixed(1)}%',
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
-  
+
   // 构建概览项
   Widget _buildOverviewItem({
     required IconData icon,
@@ -278,56 +296,56 @@ class _GoalScreenState extends State<GoalScreen> {
     required String value,
   }) {
     return Column(
-                    children: [
+      children: [
         Icon(
           icon,
           color: iconColor,
           size: 32,
         ),
         const SizedBox(height: 8),
-                          Text(
+        Text(
           title,
-                    style: TextStyle(
-                      fontSize: 14,
+          style: TextStyle(
+            fontSize: 14,
             color: Colors.grey[700],
-                    ),
-                  ),
+          ),
+        ),
         const SizedBox(height: 4),
-                      Text(
+        Text(
           value,
-                        style: const TextStyle(
+          style: const TextStyle(
             fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
-  
+
   // 构建时间筛选器
   Widget _buildTimeFilter() {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 20),
       height: 40,
       child: ListView.builder(
-      scrollDirection: Axis.horizontal,
+        scrollDirection: Axis.horizontal,
         itemCount: _filters.length,
         itemBuilder: (context, index) {
           final filter = _filters[index];
           final isSelected = filter == _selectedFilter;
-          
+
           return GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedFilter = filter;
-                });
-              },
-              child: Container(
+            onTap: () {
+              setState(() {
+                _selectedFilter = filter;
+              });
+            },
+            child: Container(
               margin: const EdgeInsets.only(right: 12),
               padding: const EdgeInsets.symmetric(horizontal: 20),
-                decoration: BoxDecoration(
+              decoration: BoxDecoration(
                 color: isSelected ? const Color(0xFF3ECABB) : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.grey.withValues(alpha: 0.1),
@@ -342,7 +360,8 @@ class _GoalScreenState extends State<GoalScreen> {
                   filter,
                   style: TextStyle(
                     color: isSelected ? Colors.white : Colors.grey[700],
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
               ),
@@ -352,37 +371,37 @@ class _GoalScreenState extends State<GoalScreen> {
       ),
     );
   }
-  
+
   // 构建周目标
   Widget _buildWeeklyGoals(List<Goal> goals) {
     final weeklyGoals = _getFilteredGoals(goals, '周目标');
-    
+
     return _buildGoalSection(
       title: '周目标',
       goals: weeklyGoals,
     );
   }
-  
+
   // 构建月目标
   Widget _buildMonthlyGoals(List<Goal> goals) {
     final monthlyGoals = _getFilteredGoals(goals, '月目标');
-    
+
     return _buildGoalSection(
       title: '月目标',
       goals: monthlyGoals,
     );
   }
-  
+
   // 构建年度目标
   Widget _buildYearlyGoals(List<Goal> goals) {
     final yearlyGoals = _getFilteredGoals(goals, '年度目标');
-    
+
     return _buildGoalSection(
       title: '年度目标',
       goals: yearlyGoals,
     );
   }
-  
+
   // 构建目标区块
   Widget _buildGoalSection({
     required String title,
@@ -392,15 +411,15 @@ class _GoalScreenState extends State<GoalScreen> {
       margin: const EdgeInsets.only(bottom: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
               Text(
                 title,
                 style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               Text(
@@ -408,11 +427,11 @@ class _GoalScreenState extends State<GoalScreen> {
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey[700],
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
+            ],
+          ),
+          const SizedBox(height: 12),
           if (goals.isEmpty)
             Container(
               padding: const EdgeInsets.all(16),
@@ -430,7 +449,7 @@ class _GoalScreenState extends State<GoalScreen> {
               ),
               child: Center(
                 child: Column(
-      children: [
+                  children: [
                     Icon(
                       Icons.flag,
                       color: Colors.grey[400],
@@ -462,11 +481,11 @@ class _GoalScreenState extends State<GoalScreen> {
       ),
     );
   }
-  
+
   // 构建目标项
   Widget _buildGoalItem(Goal goal) {
     final statusColor = _getStatusColor(goal.status);
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -490,9 +509,9 @@ class _GoalScreenState extends State<GoalScreen> {
             children: [
               Expanded(
                 child: Text(
-                      goal.title,
-                      style: const TextStyle(
-                        fontSize: 16,
+                  goal.title,
+                  style: const TextStyle(
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                   maxLines: 1,
@@ -528,7 +547,7 @@ class _GoalScreenState extends State<GoalScreen> {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-          ),
+            ),
           const SizedBox(height: 12),
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
@@ -540,16 +559,16 @@ class _GoalScreenState extends State<GoalScreen> {
             ),
           ),
           const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
                 '完成率: ${goal.progress.toStringAsFixed(1)}%',
-                    style: TextStyle(
-                      fontSize: 12,
+                style: TextStyle(
+                  fontSize: 12,
                   color: Colors.grey[700],
-                    ),
-                  ),
+                ),
+              ),
               Row(
                 children: [
                   Text(
@@ -567,7 +586,7 @@ class _GoalScreenState extends State<GoalScreen> {
                     ),
                   ),
                   Text(
-                    goal.endDate != null 
+                    goal.endDate != null
                         ? DateFormat('yyyy/MM/dd').format(goal.endDate!)
                         : '无截止日期',
                     style: TextStyle(
@@ -624,7 +643,7 @@ class _GoalScreenState extends State<GoalScreen> {
       ),
     );
   }
-  
+
   // 获取状态颜色
   Color _getStatusColor(String status) {
     switch (status) {
@@ -642,4 +661,4 @@ class _GoalScreenState extends State<GoalScreen> {
         return Colors.grey;
     }
   }
-} 
+}

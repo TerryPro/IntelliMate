@@ -5,6 +5,7 @@ import 'package:intellimate/domain/entities/memo.dart';
 import 'package:intellimate/presentation/providers/memo_provider.dart';
 import 'package:intellimate/presentation/widgets/custom_app_bar.dart';
 import 'package:provider/provider.dart';
+import 'memo_statistics.dart';
 
 class MemoScreen extends StatefulWidget {
   const MemoScreen({super.key});
@@ -259,7 +260,8 @@ class _MemoScreenState extends State<MemoScreen> {
                   color: isSelected ? AppColors.primary : Colors.white,
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                    color: isSelected ? AppColors.primary : Colors.grey.shade300,
+                    color:
+                        isSelected ? AppColors.primary : Colors.grey.shade300,
                   ),
                   boxShadow: isSelected
                       ? [
@@ -276,7 +278,8 @@ class _MemoScreenState extends State<MemoScreen> {
                   category,
                   style: TextStyle(
                     color: isSelected ? Colors.white : Colors.grey.shade700,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                     fontSize: 13,
                   ),
                 ),
@@ -290,131 +293,7 @@ class _MemoScreenState extends State<MemoScreen> {
 
   // 构建备忘录统计
   Widget _buildMemoStats() {
-    // 计算各类别的备忘录数量
-    int workCount = 0;
-    int studyCount = 0;
-    int lifeCount = 0;
-    int otherCount = 0;
-
-    for (var memo in _memos) {
-      switch (memo.category) {
-        case '工作':  
-          workCount++;
-          break;
-        case '学习':
-          studyCount++;
-          break;
-        case '生活':
-          lifeCount++;
-          break;
-        default:
-          otherCount++;
-          break;
-      }
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '备忘统计',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF333333),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatItem(
-                  count: _memos.length,
-                  label: '总备忘',
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildStatItem(
-                  count: workCount,
-                  label: '工作',
-                  color: Colors.blue,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildStatItem(
-                  count: studyCount,
-                  label: '学习',
-                  color: Colors.purple,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildStatItem(
-                  count: lifeCount,
-                  label: '生活',
-                  color: Colors.green,
-                ),
-              ),
-              Expanded(
-                child: _buildStatItem(
-                  count: otherCount,
-                  label: '其它',
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 构建统计项
-  Widget _buildStatItem(
-      {required int count, required String label, required Color color}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: [
-          Text(
-            count.toString(),
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-            ),
-          ),
-        ],
-      ),
-    );
+    return MemoStatistics(memos: _memos);
   }
 
   // 构建空状态
@@ -454,6 +333,12 @@ class _MemoScreenState extends State<MemoScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        border: Border(
+          left: BorderSide(
+            color: categoryColor,
+            width: 4,
+          ),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -468,7 +353,7 @@ class _MemoScreenState extends State<MemoScreen> {
           onTap: () => _navigateToEditMemo(memo.id),
           borderRadius: BorderRadius.circular(12),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(20, 16, 16, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -476,15 +361,27 @@ class _MemoScreenState extends State<MemoScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: Text(
-                        memo.title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF333333),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      child: Row(
+                        children: [
+                          Icon(
+                            _getCategoryIcon(memo.category ?? '其他'),
+                            size: 18,
+                            color: _getCategoryColor(memo.category ?? '其他'),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              memo.title,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF333333),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     Container(
@@ -524,12 +421,22 @@ class _MemoScreenState extends State<MemoScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '创建时间: ${_formatDate(memo.createdAt)}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                      ),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.access_time,
+                          size: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatDate(memo.createdAt),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
                     ),
                     // 编辑和删除按钮
                     Row(
@@ -538,15 +445,15 @@ class _MemoScreenState extends State<MemoScreen> {
                         GestureDetector(
                           onTap: () => _navigateToEditMemo(memo.id),
                           child: Container(
-                            width: 40,
-                            height: 40,
+                            width: 32,
+                            height: 32,
                             decoration: BoxDecoration(
                               color: Colors.grey.shade100,
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
                               Icons.edit,
-                              size: 20,
+                              size: 16,
                               color: Colors.grey.shade500,
                             ),
                           ),
@@ -556,15 +463,15 @@ class _MemoScreenState extends State<MemoScreen> {
                         GestureDetector(
                           onTap: () => _showDeleteConfirmation(memo.id),
                           child: Container(
-                            width: 40,
-                            height: 40,
+                            width: 32,
+                            height: 32,
                             decoration: BoxDecoration(
                               color: Colors.grey.shade100,
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
                               Icons.delete,
-                              size: 20,
+                              size: 16,
                               color: Colors.grey.shade500,
                             ),
                           ),
@@ -573,13 +480,28 @@ class _MemoScreenState extends State<MemoScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  // 获取类别图标
+  IconData _getCategoryIcon(String category) {
+    switch (category) {
+      case '工作':
+        return Icons.work;
+      case '学习':
+        return Icons.school;
+      case '生活':
+        return Icons.home;
+      case '健康':
+        return Icons.favorite;
+      default:
+        return Icons.note;
+    }
   }
 
   // 获取类别颜色
@@ -600,7 +522,7 @@ class _MemoScreenState extends State<MemoScreen> {
 
   // 格式化日期
   String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}:${date.second.toString().padLeft(2, '0')}';
   }
 
   // 显示删除确认对话框
@@ -632,26 +554,29 @@ class _MemoScreenState extends State<MemoScreen> {
     if (confirmed != true) {
       return;
     }
-
     try {
-      final memoProvider = Provider.of<MemoProvider>(context, listen: false);
-      final success = await memoProvider.deleteMemo(id);
+      if (mounted) {
+        final memoProvider = Provider.of<MemoProvider>(context, listen: false);
+        final success = await memoProvider.deleteMemo(id);
 
-      if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('备忘录已删除'),
-            backgroundColor: AppColors.primary,
-          ),
-        );
-        _loadMemos();
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('删除失败，请重试'),
-            backgroundColor: Colors.red.shade400,
-          ),
-        );
+        if (mounted) {
+          if (success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('备忘录已删除'),
+                backgroundColor: AppColors.primary,
+              ),
+            );
+            _loadMemos();
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('删除失败，请重试'),
+                backgroundColor: Colors.red.shade400,
+              ),
+            );
+          }
+        }
       }
     } catch (e) {
       if (mounted) {

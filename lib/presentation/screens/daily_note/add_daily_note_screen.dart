@@ -18,28 +18,28 @@ class AddDailyNoteScreen extends StatefulWidget {
 class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
   final _contentController = TextEditingController();
   final _locationController = TextEditingController();
-  
+
   final List<String> _selectedImages = [];
   bool _isLoading = false;
   DailyNote? _editingNote;
   bool _isEditMode = false;
-  
+
   // 图片选择器
   final ImagePicker _picker = ImagePicker();
   File? _selectedImage;
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args = ModalRoute.of(context)?.settings.arguments;
-      
+
       if (args is DailyNote) {
         setState(() {
           _editingNote = args;
           _isEditMode = true;
-          
+
           _contentController.text = args.content;
           if (args.location != null) {
             _locationController.text = args.location!;
@@ -61,14 +61,14 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
       }
     });
   }
-  
+
   @override
   void dispose() {
     _contentController.dispose();
     _locationController.dispose();
     super.dispose();
   }
-  
+
   // 保存日常点滴
   Future<void> _saveDailyNote() async {
     if (_contentController.text.isEmpty) {
@@ -80,16 +80,17 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
       );
       return;
     }
-    
+
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
-      final dailyNoteProvider = Provider.of<DailyNoteProvider>(context, listen: false);
-      
+      final dailyNoteProvider =
+          Provider.of<DailyNoteProvider>(context, listen: false);
+
       DailyNote? dailyNote;
-      
+
       // 根据是否为编辑模式执行不同操作
       if (_isEditMode && _editingNote != null) {
         // 更新已有点滴 - 创建新的DailyNote对象保留原始ID和时间戳
@@ -98,12 +99,14 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
           content: _contentController.text,
           author: _editingNote!.author,
           images: _selectedImages.isNotEmpty ? _selectedImages : null,
-          location: _locationController.text.isNotEmpty ? _locationController.text : null,
+          location: _locationController.text.isNotEmpty
+              ? _locationController.text
+              : null,
           isPrivate: false, // 设置为非私密
           createdAt: _editingNote!.createdAt,
           updatedAt: DateTime.now(), // 更新时间戳
         );
-        
+
         final success = await dailyNoteProvider.updateDailyNote(updatedNote);
         if (success) {
           dailyNote = updatedNote;
@@ -114,14 +117,16 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
           content: _contentController.text,
           author: '用户',
           images: _selectedImages.isNotEmpty ? _selectedImages : null,
-          location: _locationController.text.isNotEmpty ? _locationController.text : null,
+          location: _locationController.text.isNotEmpty
+              ? _locationController.text
+              : null,
           isPrivate: false, // 设置为非私密
         );
       }
-      
+
       if ((dailyNote != null || _isEditMode) && mounted) {
         Navigator.pop(context, true);
-      } else {
+      } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('保存失败'),
@@ -130,12 +135,14 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('保存失败: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('保存失败: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -144,7 +151,7 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
       }
     }
   }
-  
+
   // 选择图片
   Future<void> _pickImage() async {
     try {
@@ -152,7 +159,7 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
         source: ImageSource.gallery,
         imageQuality: 80,
       );
-      
+
       if (image != null) {
         setState(() {
           _selectedImage = File(image.path);
@@ -163,15 +170,17 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('选择图片失败: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('选择图片失败: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
-  
+
   // 拍摄照片
   Future<void> _takePhoto() async {
     try {
@@ -179,7 +188,7 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
         source: ImageSource.camera,
         imageQuality: 80,
       );
-      
+
       if (photo != null) {
         setState(() {
           _selectedImage = File(photo.path);
@@ -190,15 +199,17 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('拍照失败: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('拍照失败: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
-  
+
   // 移除图片
   void _removeImage(int index) {
     setState(() {
@@ -222,7 +233,7 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
                 onSaveTap: _saveDailyNote,
                 isLoading: _isLoading,
               ),
-              
+
               // 主体内容
               Expanded(
                 child: SingleChildScrollView(
@@ -233,11 +244,11 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
                       // 内容输入框
                       _buildContentInput(),
                       const SizedBox(height: 20),
-                      
+
                       // 图片选择区域
                       _buildImageSelector(),
                       const SizedBox(height: 20),
-                      
+
                       // 位置输入
                       _buildLocationInput(),
                     ],
@@ -246,7 +257,7 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
               ),
             ],
           ),
-          
+
           // 加载指示器
           if (_isLoading)
             Container(
@@ -259,7 +270,7 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
       ),
     );
   }
-  
+
   // 构建内容输入框
   Widget _buildContentInput() {
     return Container(
@@ -290,7 +301,7 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
       ),
     );
   }
-  
+
   // 构建图片选择区域
   Widget _buildImageSelector() {
     return Padding(
@@ -307,7 +318,7 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          
+
           // 已选择的图片
           if (_selectedImage != null)
             Container(
@@ -344,7 +355,7 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
                 ],
               ),
             ),
-          
+
           // 添加图片按钮
           if (_selectedImage == null)
             Row(
@@ -428,7 +439,7 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
       ),
     );
   }
-  
+
   // 构建位置输入
   Widget _buildLocationInput() {
     return Container(
@@ -484,4 +495,4 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
       ),
     );
   }
-} 
+}

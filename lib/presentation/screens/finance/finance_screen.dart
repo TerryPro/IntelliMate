@@ -22,13 +22,15 @@ class _FinanceScreenState extends State<FinanceScreen> {
       context.read<FinanceProvider>().loadFinances();
     });
   }
-  
+
   // 添加新的财务记录
   void _addFinance() {
     Navigator.pushNamed(context, AppRoutes.addFinance).then((value) {
       if (value != null && value is Finance) {
-        // 如果返回了新创建的财务记录，则添加到数据库
-        context.read<FinanceProvider>().addFinance(value);
+        if (mounted) {
+          // 如果返回了新创建的财务记录，则添加到数据库
+          context.read<FinanceProvider>().addFinance(value);
+        }
       }
     });
   }
@@ -37,49 +39,48 @@ class _FinanceScreenState extends State<FinanceScreen> {
   Widget build(BuildContext context) {
     // 使用Consumer监听FinanceProvider状态变化
     return Consumer<FinanceProvider>(
-      builder: (context, financeProvider, child) {
-        return Scaffold(
-          backgroundColor: Colors.grey[50],
-          body: Column(
-            children: [
-              // 自定义顶部导航栏
-              _buildCustomAppBar(),
-              
-              // 主体内容
-              Expanded(
-                child: financeProvider.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            children: [
-                              // 财务概览
-                              _buildFinanceOverview(financeProvider),
-                              
-                              // 时间筛选
-                              _buildTimeFilter(financeProvider),
-                              
-                              // 收支分析
-                              _buildFinanceAnalysis(financeProvider),
-                              
-                              // 最近交易
-                              _buildRecentTransactions(financeProvider),
-                              
-                              // 预算管理
-                              _buildBudgetManagement(financeProvider),
-                            ],
-                          ),
+        builder: (context, financeProvider, child) {
+      return Scaffold(
+        backgroundColor: Colors.grey[50],
+        body: Column(
+          children: [
+            // 自定义顶部导航栏
+            _buildCustomAppBar(),
+
+            // 主体内容
+            Expanded(
+              child: financeProvider.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          children: [
+                            // 财务概览
+                            _buildFinanceOverview(financeProvider),
+
+                            // 时间筛选
+                            _buildTimeFilter(financeProvider),
+
+                            // 收支分析
+                            _buildFinanceAnalysis(financeProvider),
+
+                            // 最近交易
+                            _buildRecentTransactions(financeProvider),
+
+                            // 预算管理
+                            _buildBudgetManagement(financeProvider),
+                          ],
                         ),
                       ),
-              ),
-            ],
-          ),
-        );
-      }
-    );
+                    ),
+            ),
+          ],
+        ),
+      );
+    });
   }
-  
+
   // 构建自定义顶部导航栏
   Widget _buildCustomAppBar() {
     return Container(
@@ -177,12 +178,12 @@ class _FinanceScreenState extends State<FinanceScreen> {
       ),
     );
   }
-  
+
   // 构建财务概览
   Widget _buildFinanceOverview(FinanceProvider provider) {
     // 格式化金额
     final NumberFormat formatter = NumberFormat("#,##0.00", "zh_CN");
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -311,7 +312,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
       ),
     );
   }
-  
+
   // 构建时间筛选
   Widget _buildTimeFilter(FinanceProvider provider) {
     return Padding(
@@ -321,7 +322,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
         child: Row(
           children: provider.filters.map((filter) {
             final isSelected = filter == provider.selectedFilter;
-            
+
             return GestureDetector(
               onTap: () {
                 provider.setSelectedFilter(filter);
@@ -347,7 +348,8 @@ class _FinanceScreenState extends State<FinanceScreen> {
                   filter,
                   style: TextStyle(
                     color: isSelected ? Colors.white : Colors.black87,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
               ),
@@ -357,7 +359,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
       ),
     );
   }
-  
+
   // 构建财务分析
   Widget _buildFinanceAnalysis(FinanceProvider provider) {
     return Container(
@@ -400,8 +402,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
             )
           else
             ...provider.expenseByCategory.entries.map((entry) {
-              final categoryPercentage = (entry.value / provider.totalExpense) * 100;
-              
+              final categoryPercentage =
+                  (entry.value / provider.totalExpense) * 100;
+
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Column(
@@ -445,7 +448,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
       ),
     );
   }
-  
+
   // 为不同的分类返回不同的颜色
   Color _getCategoryColor(String category) {
     switch (category) {
@@ -469,7 +472,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
         return Colors.grey;
     }
   }
-  
+
   // 构建最近交易
   Widget _buildRecentTransactions(FinanceProvider provider) {
     return Padding(
@@ -486,7 +489,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          
           if (provider.finances.isEmpty)
             Container(
               padding: const EdgeInsets.all(20),
@@ -512,23 +514,24 @@ class _FinanceScreenState extends State<FinanceScreen> {
               ),
             )
           else
-            ...provider.finances.map((finance) => _buildTransactionItem(finance)),
+            ...provider.finances
+                .map((finance) => _buildTransactionItem(finance)),
         ],
       ),
     );
   }
-  
+
   // 构建交易项
   Widget _buildTransactionItem(Finance finance) {
     // 格式化日期
     final date = DateFormat('MM-dd').format(finance.date);
     // 格式化金额
     final amount = NumberFormat("#,##0.00", "zh_CN").format(finance.amount);
-    
+
     // 获取图标和颜色
     IconData icon;
     Color iconColor;
-    
+
     switch (finance.category) {
       case '餐饮':
         icon = Icons.restaurant;
@@ -574,7 +577,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
         icon = Icons.more_horiz;
         iconColor = Colors.grey;
     }
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -655,13 +658,13 @@ class _FinanceScreenState extends State<FinanceScreen> {
       ),
     );
   }
-  
+
   // 构建预算管理
   Widget _buildBudgetManagement(FinanceProvider provider) {
     // 格式化金额
     final formatter = NumberFormat("#,##0.00", "zh_CN");
     final budgetPercentage = provider.budgetUsagePercentage.clamp(0.0, 100.0);
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -741,4 +744,4 @@ class _FinanceScreenState extends State<FinanceScreen> {
       ),
     );
   }
-} 
+}

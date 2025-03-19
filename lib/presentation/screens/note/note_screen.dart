@@ -108,8 +108,11 @@ class _NoteScreenState extends State<NoteScreen> {
 
     if (confirmed == true) {
       try {
-        final noteProvider = Provider.of<NoteProvider>(context, listen: false);
-        await noteProvider.deleteNote(note.id);
+        if (mounted) {
+          final noteProvider =
+              Provider.of<NoteProvider>(context, listen: false);
+          await noteProvider.deleteNote(note.id);
+        }
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

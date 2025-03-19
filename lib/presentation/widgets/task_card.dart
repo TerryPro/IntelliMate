@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intellimate/app/theme/app_theme.dart';
 import 'package:intellimate/domain/entities/task.dart';
+import 'package:intellimate/domain/core/task_config.dart';
 import 'package:intl/intl.dart';
 
 class TaskCard extends StatelessWidget {
@@ -17,21 +18,8 @@ class TaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 优先级颜色
-    Color priorityColor;
-    switch (task.priority) {
-      case 3:
-        priorityColor = AppTheme.errorColor;
-        break;
-      case 2:
-        priorityColor = AppTheme.warningColor;
-        break;
-      case 1:
-        priorityColor = AppTheme.infoColor;
-        break;
-      default:
-        priorityColor = AppTheme.secondaryColor;
-    }
+    // 获取优先级颜色
+    Color priorityColor = TaskConfig.getPriorityColor(task.priority);
 
     return GestureDetector(
       onTap: onTap,
@@ -75,7 +63,8 @@ class TaskCard extends StatelessWidget {
                         // 优先级标记
                         if (task.priority != null)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
                             margin: const EdgeInsets.only(right: 8),
                             decoration: BoxDecoration(
                               color: priorityColor.withValues(alpha: 0.1),
@@ -93,7 +82,8 @@ class TaskCard extends StatelessWidget {
                         // 分类标签
                         if (task.category != null && task.category!.isNotEmpty)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
                               color: AppTheme.primaryVeryLightColor,
                               borderRadius: BorderRadius.circular(4),
@@ -116,10 +106,13 @@ class TaskCard extends StatelessWidget {
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.textPrimaryColor,
-                        decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                        decoration: task.isCompleted
+                            ? TextDecoration.lineThrough
+                            : null,
                       ),
                     ),
-                    if (task.description != null && task.description!.isNotEmpty) ...[
+                    if (task.description != null &&
+                        task.description!.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       // 任务描述
                       Text(
@@ -127,7 +120,9 @@ class TaskCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 14,
                           color: AppTheme.textSecondaryColor,
-                          decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                          decoration: task.isCompleted
+                              ? TextDecoration.lineThrough
+                              : null,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -141,14 +136,19 @@ class TaskCard extends StatelessWidget {
                           Icon(
                             Icons.calendar_today_outlined,
                             size: 14,
-                            color: _isOverdue(task.dueDate!) ? AppTheme.errorColor : AppTheme.textSecondaryColor,
+                            color: _isOverdue(task.dueDate!)
+                                ? AppTheme.errorColor
+                                : AppTheme.textSecondaryColor,
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            DateFormat('yyyy-MM-dd HH:mm').format(task.dueDate!),
+                            DateFormat('yyyy-MM-dd HH:mm')
+                                .format(task.dueDate!),
                             style: TextStyle(
                               fontSize: 12,
-                              color: _isOverdue(task.dueDate!) ? AppTheme.errorColor : AppTheme.textSecondaryColor,
+                              color: _isOverdue(task.dueDate!)
+                                  ? AppTheme.errorColor
+                                  : AppTheme.textSecondaryColor,
                             ),
                           ),
                         ],
@@ -171,20 +171,11 @@ class TaskCard extends StatelessWidget {
 
   // 获取优先级文本
   String _getPriorityText(int? priority) {
-    switch (priority) {
-      case 3:
-        return '高';
-      case 2:
-        return '中';
-      case 1:
-        return '低';
-      default:
-        return '无';
-    }
+    return TaskConfig.getPriorityText(priority);
   }
 
   // 判断是否已过期
   bool _isOverdue(DateTime dueDate) {
     return dueDate.isBefore(DateTime.now()) && !task.isCompleted;
   }
-} 
+}

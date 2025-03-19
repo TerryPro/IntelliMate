@@ -130,9 +130,11 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
       setState(() {
         _error = e.toString();
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('保存失败: $_error')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('保存失败: $_error')),
+        );
+      }
     } finally {
       setState(() {
         _isLoading = false;

@@ -199,7 +199,7 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
   @override
   Widget build(BuildContext context) {
     final isEditing = _memo != null;
-    final title = isEditing ? '编辑备忘录' : '新建备忘录';
+    final title = isEditing ? '编辑备忘' : '新建备忘';
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -316,14 +316,6 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '类别',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

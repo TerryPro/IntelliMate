@@ -65,6 +65,9 @@ dependencies:
   font_awesome_flutter: ^10.6.0
   get_it: ^8.0.3
   flutter_secure_storage: ^9.2.4
+  
+  # 实体类相等性比较
+  equatable: ^2.0.5
 
 dev_dependencies:
   flutter_test:
