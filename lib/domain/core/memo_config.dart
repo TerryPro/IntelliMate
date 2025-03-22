@@ -1,32 +1,48 @@
 import 'package:flutter/material.dart';
 
+enum MemoCategory {
+  all('全部', Icons.all_inclusive, Color(0xFF3ECABB)),
+  work('工作', Icons.work, Color(0xFFF57C00)),
+  study('学习', Icons.school, Color(0xFF66BB6A)),
+  life('生活', Icons.home, Color(0xFF42A5F5)),
+  other('其他', Icons.note, Color(0xFF9E9E9E));
+
+  final String name;
+  final IconData icon;
+  final Color color;
+
+  const MemoCategory(this.name, this.icon, this.color);
+}
+
 class MemoConfig {
-  // 备忘录类型配置
-  static const Map<String, IconData> categoryIcons = {
-    '工作': Icons.work,
-    '学习': Icons.school,
-    '生活': Icons.home,
-    '其他': Icons.note,
-  };
+  // 获取所有类别名称
+  static List<String> get categories =>
+      MemoCategory.values.map((e) => e.name).toList();
 
-  static const Map<String, Color> categoryColors = {
-    '工作': Color(0xFFF57C00),
-    '学习': Color(0xFF66BB6A),
-    '生活': Color(0xFF42A5F5),
-    '其他': Color(0xFF9E9E9E),
-  };
+  // 获取除all之外的所有类别名称
+  static List<String> get nonAllCategories => MemoCategory.values
+      .where((e) => e != MemoCategory.all)
+      .map((e) => e.name)
+      .toList();
 
-  static const List<String> categories = ['工作', '学习', '生活', '其他'];
-
+  // 根据类别名称获取颜色
   static Color getCategoryColor(String? category) {
-    return categoryColors[category] ?? Colors.grey;
+    return MemoCategory.values
+        .firstWhere((e) => e.name == category, orElse: () => MemoCategory.other)
+        .color;
   }
 
-  static String getCategoryText(String? category) {
-    return category ?? '其他';
-  }
-
+  // 根据类别名称获取图标
   static IconData getCategoryIcon(String? category) {
-    return categoryIcons[category] ?? Icons.category;
+    return MemoCategory.values
+        .firstWhere((e) => e.name == category, orElse: () => MemoCategory.other)
+        .icon;
+  }
+
+  // 根据类别名称获取标准化名称
+  static String getCategoryText(String? category) {
+    return MemoCategory.values
+        .firstWhere((e) => e.name == category, orElse: () => MemoCategory.other)
+        .name;
   }
 }

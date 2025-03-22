@@ -1,42 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:intellimate/app/theme/app_colors.dart';
+import 'package:intellimate/domain/core/memo_config.dart';
 import 'package:intellimate/domain/entities/memo.dart';
 
 class MemoStatistics extends StatelessWidget {
   final List<Memo> memos;
+  final Function(String category)? onCategorySelected;
 
-  const MemoStatistics({super.key, required this.memos});
+  const MemoStatistics({
+    super.key,
+    required this.memos,
+    this.onCategorySelected,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // 计算各类别的备忘录数量
-    int workCount = 0;
-    int studyCount = 0;
-    int lifeCount = 0;
-    int otherCount = 0;
+    // 计算各类别的备忘录数量（基于所有数据）
+    final Map<MemoCategory, int> categoryCounts = {
+      for (var category in MemoCategory.values) category: 0
+    };
 
     for (var memo in memos) {
-      switch (memo.category) {
-        case '工作':
-          workCount++;
-          break;
-        case '学习':
-          studyCount++;
-          break;
-        case '生活':
-          lifeCount++;
-          break;
-        default:
-          otherCount++;
-          break;
-      }
+      final category = MemoCategory.values.firstWhere(
+        (e) => e.name == memo.category,
+        orElse: () => MemoCategory.other,
+      );
+      categoryCounts[category] = categoryCounts[category]! + 1;
     }
 
+    // 设置全部类别的数量
+    categoryCounts[MemoCategory.all] = memos.length;
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12), // 减少内边距
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12), // 减少圆角半径
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -48,57 +46,18 @@ class MemoStatistics extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '备忘统计',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF333333),
-            ),
-          ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 5),
           Row(
-            children: [
-              Expanded(
+            children: MemoCategory.values.map((category) {
+              return Expanded(
                 child: _buildStatItem(
-                  count: memos.length,
-                  label: '总数',
-                  color: AppColors.primary,
+                  count: categoryCounts[category]!,
+                  label: category.name,
+                  color: category.color,
+                  onTap: () => onCategorySelected?.call(category.name),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildStatItem(
-                  count: workCount,
-                  label: '工作',
-                  color: Colors.blue,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildStatItem(
-                  count: studyCount,
-                  label: '学习',
-                  color: Colors.purple,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildStatItem(
-                  count: lifeCount,
-                  label: '生活',
-                  color: Colors.green,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildStatItem(
-                  count: otherCount,
-                  label: '其它',
-                  color: Colors.grey,
-                ),
-              ),
-            ],
+              );
+            }).toList(),
           ),
         ],
       ),
@@ -109,32 +68,40 @@ class MemoStatistics extends StatelessWidget {
     required int count,
     required String label,
     required Color color,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: [
-          Text(
-            count.toString(),
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6), // 增加统计块之间的间隔
+        child: Container(
+          width: 80, // 设置固定宽度以减少统计块的宽度
+          padding: const EdgeInsets.symmetric(vertical: 8), // 减少内边距
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8), // 减少圆角半径
           ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-            ),
+          child: Column(
+            children: [
+              Text(
+                count.toString(),
+                style: TextStyle(
+                  fontSize: 16, // 减小字体大小
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10, // 减小字体大小
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

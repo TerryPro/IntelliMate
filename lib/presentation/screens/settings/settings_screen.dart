@@ -3,6 +3,7 @@ import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
 import 'package:intellimate/presentation/providers/user_provider.dart';
 import 'package:provider/provider.dart';
+import 'debug_info_screen.dart';
 import 'dart:io';
 
 class SettingsScreen extends StatefulWidget {
@@ -25,17 +26,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.initState();
     _loadUserData();
   }
-  
+
   // 加载用户数据
   Future<void> _loadUserData() async {
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       final user = userProvider.currentUser;
-      
+
       if (user != null) {
         setState(() {
           _username = user.nickname;
@@ -61,7 +62,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           // 自定义顶部导航栏
           _buildCustomAppBar(),
-          
+
           // 主体内容
           Expanded(
             child: _isLoading
@@ -74,18 +75,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         children: [
                           // 用户信息卡片
                           _buildUserInfoCard(),
-                          
+
                           // 基础设置
                           _buildSettingSection('基础设置', [
                             _buildSettingItem(
                               icon: Icons.person,
                               title: '个人信息',
-                              onTap: () => Navigator.pushNamed(context, AppRoutes.profileEdit).then((_) => _loadUserData()),
+                              onTap: () => Navigator.pushNamed(
+                                      context, AppRoutes.profileEdit)
+                                  .then((_) => _loadUserData()),
                             ),
                             _buildSettingItem(
                               icon: Icons.lock,
                               title: '密码修改',
-                              onTap: () => Navigator.pushNamed(context, AppRoutes.passwordChange),
+                              onTap: () => Navigator.pushNamed(
+                                  context, AppRoutes.passwordChange),
                             ),
                             _buildSettingItem(
                               icon: Icons.notifications,
@@ -93,7 +97,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               onTap: () {},
                             ),
                           ]),
-                          
+
                           // 数据管理
                           _buildSettingSection('数据管理', [
                             _buildSettingItem(
@@ -108,7 +112,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               onTap: () {},
                             ),
                           ]),
-                          
+
                           // 系统信息
                           _buildSettingSection('系统信息', [
                             _buildSettingItem(
@@ -129,8 +133,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               subtitle: 'v2.1.0',
                               onTap: () {},
                             ),
+                            _buildSettingItem(
+                              icon: Icons.bug_report,
+                              title: '调试信息',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const DebugInfoScreen(),
+                                  ),
+                                );
+                              },
+                            ),
                           ]),
-                          
+
                           // 账号安全
                           _buildSettingSection('账号安全', [
                             _buildSettingItem(
@@ -144,7 +161,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               onTap: () {},
                             ),
                           ]),
-                          
+
                           // 退出登录按钮
                           _buildLogoutButton(),
                         ],
@@ -156,7 +173,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-  
+
   // 构建自定义顶部导航栏
   Widget _buildCustomAppBar() {
     return Container(
@@ -228,7 +245,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-  
+
   // 获取头像图片
   ImageProvider _getAvatarImage(String url) {
     if (url.startsWith('http')) {
@@ -237,11 +254,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return FileImage(File(url));
     }
   }
-  
+
   // 构建用户信息卡片
   Widget _buildUserInfoCard() {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, AppRoutes.profileEdit).then((_) => _loadUserData()),
+      onTap: () => Navigator.pushNamed(context, AppRoutes.profileEdit)
+          .then((_) => _loadUserData()),
       child: Container(
         margin: const EdgeInsets.only(bottom: 24),
         padding: const EdgeInsets.all(16),
@@ -324,7 +342,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-  
+
   // 构建设置分区
   Widget _buildSettingSection(String title, List<Widget> items) {
     return Column(
@@ -360,7 +378,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ],
     );
   }
-  
+
   // 构建设置项
   Widget _buildSettingItem({
     required IconData icon,
@@ -426,7 +444,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-  
+
   // 构建退出登录按钮
   Widget _buildLogoutButton() {
     return Container(
@@ -456,7 +474,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-  
+
   // 显示退出登录确认对话框
   void _showLogoutConfirmDialog() {
     showDialog(
@@ -485,4 +503,4 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-} 
+}

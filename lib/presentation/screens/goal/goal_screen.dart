@@ -16,8 +16,8 @@ class GoalScreen extends StatefulWidget {
 class _GoalScreenState extends State<GoalScreen> {
   String _selectedFilter = '全部';
 
-  // 时间筛选选项
-  final List<String> _filters = ['全部', '本周', '本月', '本季度', '本年度'];
+  // 修改筛选选项为目标类型
+  final List<String> _filters = ['全部', '周目标', '月目标', '季目标', '年目标'];
 
   // 添加新目标
   void _addGoal() {
@@ -70,88 +70,13 @@ class _GoalScreenState extends State<GoalScreen> {
     );
   }
 
-  // 获取已完成目标数量
-  int _completedGoalsCount(List<Goal> goals) {
-    return goals.where((goal) => goal.status == '已完成').length;
-  }
-
-  // 获取进行中目标数量
-  int _inProgressGoalsCount(List<Goal> goals) {
-    return goals
-        .where((goal) => goal.status == '进行中' || goal.status == '落后')
-        .length;
-  }
-
-  // 计算总体完成率
-  double _overallProgress(List<Goal> goals) {
-    if (goals.isEmpty) return 0;
-
-    final totalProgress = goals.fold(0.0, (sum, goal) => sum + goal.progress);
-    return totalProgress / goals.length;
-  }
-
-  // 根据筛选获取目标列表
-  List<Goal> _getFilteredGoals(List<Goal> goals, String category) {
-    final filteredByCategory =
-        goals.where((goal) => goal.category == category).toList();
-
+  // 修改筛选逻辑
+  List<Goal> _getFilteredGoals(List<Goal> goals) {
     if (_selectedFilter == '全部') {
-      return filteredByCategory;
-    } else if (_selectedFilter == '本周') {
-      final now = DateTime.now();
-      final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-      final endOfWeek = startOfWeek.add(const Duration(days: 6));
-
-      return filteredByCategory
-          .where((goal) =>
-              (goal.startDate.isAfter(startOfWeek) ||
-                  goal.startDate.isAtSameMomentAs(startOfWeek)) &&
-              (goal.startDate.isBefore(endOfWeek) ||
-                  goal.startDate.isAtSameMomentAs(endOfWeek)))
-          .toList();
-    } else if (_selectedFilter == '本月') {
-      final now = DateTime.now();
-      final startOfMonth = DateTime(now.year, now.month, 1);
-      final endOfMonth = (now.month < 12)
-          ? DateTime(now.year, now.month + 1, 0)
-          : DateTime(now.year + 1, 1, 0);
-
-      return filteredByCategory
-          .where((goal) =>
-              (goal.startDate.isAfter(startOfMonth) ||
-                  goal.startDate.isAtSameMomentAs(startOfMonth)) &&
-              (goal.startDate.isBefore(endOfMonth) ||
-                  goal.startDate.isAtSameMomentAs(endOfMonth)))
-          .toList();
-    } else if (_selectedFilter == '本季度') {
-      final now = DateTime.now();
-      final currentQuarter = (now.month - 1) ~/ 3 + 1;
-      final startOfQuarter =
-          DateTime(now.year, (currentQuarter - 1) * 3 + 1, 1);
-      final endOfQuarter = DateTime(now.year, currentQuarter * 3 + 1, 0);
-
-      return filteredByCategory
-          .where((goal) =>
-              (goal.startDate.isAfter(startOfQuarter) ||
-                  goal.startDate.isAtSameMomentAs(startOfQuarter)) &&
-              (goal.startDate.isBefore(endOfQuarter) ||
-                  goal.startDate.isAtSameMomentAs(endOfQuarter)))
-          .toList();
-    } else if (_selectedFilter == '本年度') {
-      final now = DateTime.now();
-      final startOfYear = DateTime(now.year, 1, 1);
-      final endOfYear = DateTime(now.year, 12, 31);
-
-      return filteredByCategory
-          .where((goal) =>
-              (goal.startDate.isAfter(startOfYear) ||
-                  goal.startDate.isAtSameMomentAs(startOfYear)) &&
-              (goal.startDate.isBefore(endOfYear) ||
-                  goal.startDate.isAtSameMomentAs(endOfYear)))
-          .toList();
+      return goals;
+    } else {
+      return goals.where((goal) => goal.category == _selectedFilter).toList();
     }
-
-    return filteredByCategory;
   }
 
   @override
@@ -207,9 +132,6 @@ class _GoalScreenState extends State<GoalScreen> {
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: [
-                        // 目标概览
-                        _buildGoalOverview(goals),
-
                         // 时间周期选择
                         _buildTimeFilter(),
 
@@ -219,7 +141,10 @@ class _GoalScreenState extends State<GoalScreen> {
                         // 月目标
                         _buildMonthlyGoals(goals),
 
-                        // 年度目标
+                        // 季度目标
+                        _buildQuarterlyGoals(goals),
+
+                        // 年目标
                         _buildYearlyGoals(goals),
                       ],
                     ),
@@ -233,9 +158,10 @@ class _GoalScreenState extends State<GoalScreen> {
     );
   }
 
-  // 构建目标概览
-  Widget _buildGoalOverview(List<Goal> goals) {
+  // 修改时间筛选器为目标类型筛选器
+  Widget _buildTimeFilter() {
     return Container(
+      margin: const EdgeInsets.symmetric(vertical: 20),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -249,90 +175,14 @@ class _GoalScreenState extends State<GoalScreen> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '目标概览',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildOverviewItem(
-                icon: Icons.check_circle,
-                iconColor: Colors.green,
-                title: '已完成',
-                value: _completedGoalsCount(goals).toString(),
-              ),
-              _buildOverviewItem(
-                icon: Icons.hourglass_bottom,
-                iconColor: Colors.orange,
-                title: '进行中',
-                value: _inProgressGoalsCount(goals).toString(),
-              ),
-              _buildOverviewItem(
-                icon: Icons.insights,
-                iconColor: const Color(0xFF3ECABB),
-                title: '完成率',
-                value: '${_overallProgress(goals).toStringAsFixed(1)}%',
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 构建概览项
-  Widget _buildOverviewItem({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String value,
-  }) {
-    return Column(
-      children: [
-        Icon(
-          icon,
-          color: iconColor,
-          size: 32,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[700],
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // 构建时间筛选器
-  Widget _buildTimeFilter() {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 20),
-      height: 40,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: _filters.length,
-        itemBuilder: (context, index) {
-          final filter = _filters[index];
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: _filters.map((filter) {
           final isSelected = filter == _selectedFilter;
+          final count = Provider.of<GoalProvider>(context)
+              .goals
+              .where((goal) => filter == '全部' ? true : goal.category == filter)
+              .length;
 
           return GestureDetector(
             onTap: () {
@@ -341,40 +191,56 @@ class _GoalScreenState extends State<GoalScreen> {
               });
             },
             child: Container(
-              margin: const EdgeInsets.only(right: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              width: 60,
+              padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF3ECABB) : Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withValues(alpha: 0.1),
-                    spreadRadius: 1,
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
+                color: isSelected
+                    ? const Color(0xFF3ECABB).withValues(alpha: 0.1)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    count.toString(),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isSelected
+                          ? const Color(0xFF3ECABB)
+                          : Colors.grey[700],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    filter == '全部' ? '全部' : filter.substring(0, 1),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isSelected
+                          ? const Color(0xFF3ECABB)
+                          : Colors.grey[700],
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
                   ),
                 ],
               ),
-              child: Center(
-                child: Text(
-                  filter,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.grey[700],
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                ),
-              ),
             ),
           );
-        },
+        }).toList(),
       ),
     );
   }
 
   // 构建周目标
   Widget _buildWeeklyGoals(List<Goal> goals) {
-    final weeklyGoals = _getFilteredGoals(goals, '周目标');
+    if (_selectedFilter != '全部' && _selectedFilter != '周目标') {
+      return const SizedBox.shrink();
+    }
+
+    final weeklyGoals = _getFilteredGoals(goals)
+        .where((goal) => goal.category == '周目标')
+        .toList();
 
     return _buildGoalSection(
       title: '周目标',
@@ -384,7 +250,13 @@ class _GoalScreenState extends State<GoalScreen> {
 
   // 构建月目标
   Widget _buildMonthlyGoals(List<Goal> goals) {
-    final monthlyGoals = _getFilteredGoals(goals, '月目标');
+    if (_selectedFilter != '全部' && _selectedFilter != '月目标') {
+      return const SizedBox.shrink();
+    }
+
+    final monthlyGoals = _getFilteredGoals(goals)
+        .where((goal) => goal.category == '月目标')
+        .toList();
 
     return _buildGoalSection(
       title: '月目标',
@@ -392,12 +264,34 @@ class _GoalScreenState extends State<GoalScreen> {
     );
   }
 
-  // 构建年度目标
-  Widget _buildYearlyGoals(List<Goal> goals) {
-    final yearlyGoals = _getFilteredGoals(goals, '年度目标');
+  // 构建季度目标
+  Widget _buildQuarterlyGoals(List<Goal> goals) {
+    if (_selectedFilter != '全部' && _selectedFilter != '季目标') {
+      return const SizedBox.shrink();
+    }
+
+    final quarterlyGoals = _getFilteredGoals(goals)
+        .where((goal) => goal.category == '季目标')
+        .toList();
 
     return _buildGoalSection(
-      title: '年度目标',
+      title: '季目标',
+      goals: quarterlyGoals,
+    );
+  }
+
+  // 构建年度目标
+  Widget _buildYearlyGoals(List<Goal> goals) {
+    if (_selectedFilter != '全部' && _selectedFilter != '年目标') {
+      return const SizedBox.shrink();
+    }
+
+    final yearlyGoals = _getFilteredGoals(goals)
+        .where((goal) => goal.category == '年目标')
+        .toList();
+
+    return _buildGoalSection(
+      title: '年目标',
       goals: yearlyGoals,
     );
   }
@@ -484,8 +378,6 @@ class _GoalScreenState extends State<GoalScreen> {
 
   // 构建目标项
   Widget _buildGoalItem(Goal goal) {
-    final statusColor = _getStatusColor(goal.status);
-
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -518,20 +410,36 @@ class _GoalScreenState extends State<GoalScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  goal.status,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: statusColor,
-                    fontWeight: FontWeight.bold,
+              const SizedBox(width: 8),
+              // 完成率和状态显示在同一行
+              Row(
+                children: [
+                  Text(
+                    '完成率: ${goal.progress.toStringAsFixed(1)}%',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[700],
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color:
+                          _getStatusColor(goal.status).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      goal.status,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _getStatusColor(goal.status),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -554,88 +462,90 @@ class _GoalScreenState extends State<GoalScreen> {
             child: LinearProgressIndicator(
               value: goal.progress / 100,
               backgroundColor: Colors.grey[200],
-              valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+              valueColor:
+                  AlwaysStoppedAnimation<Color>(_getStatusColor(goal.status)),
               minHeight: 8,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '完成率: ${goal.progress.toStringAsFixed(1)}%',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[700],
+              // 时间信息放到最后一行最左边
+              Expanded(
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.access_time,
+                      size: 14,
+                      color: Colors.grey[600],
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      DateFormat('yyyy/MM/dd').format(goal.startDate),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    const Text(
+                      ' - ',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    Text(
+                      goal.endDate != null
+                          ? DateFormat('yyyy/MM/dd').format(goal.endDate!)
+                          : '无截止日期',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              // 操作按钮放到最后一行最右边，并缩小按钮尺寸
               Row(
                 children: [
-                  Text(
-                    DateFormat('yyyy/MM/dd').format(goal.startDate),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[700],
+                  // 编辑按钮
+                  GestureDetector(
+                    onTap: () => _editGoal(goal),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.edit,
+                        size: 16,
+                        color: Colors.grey.shade500,
+                      ),
                     ),
                   ),
-                  const Text(
-                    ' - ',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  Text(
-                    goal.endDate != null
-                        ? DateFormat('yyyy/MM/dd').format(goal.endDate!)
-                        : '无截止日期',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[700],
+                  const SizedBox(width: 12),
+                  // 删除按钮
+                  GestureDetector(
+                    onTap: () => _deleteGoal(goal.id),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.delete,
+                        size: 16,
+                        color: Colors.grey.shade500,
+                      ),
                     ),
                   ),
                 ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              // 编辑按钮
-              GestureDetector(
-                onTap: () => _editGoal(goal),
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.edit,
-                    size: 20,
-                    color: Colors.grey.shade500,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // 删除按钮
-              GestureDetector(
-                onTap: () => _deleteGoal(goal.id),
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.delete,
-                    size: 20,
-                    color: Colors.grey.shade500,
-                  ),
-                ),
               ),
             ],
           ),

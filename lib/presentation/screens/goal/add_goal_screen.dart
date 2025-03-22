@@ -21,6 +21,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
 
+  DateTimeRange? _dateRange;
   DateTime _startDate = DateTime.now();
   DateTime? _endDate;
   String _category = '周目标';
@@ -31,7 +32,18 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   final bool _isDeleting = false;
 
   // 分类列表
-  final List<String> _categories = ['周目标', '月目标', '年度目标'];
+  final List<String> _categories = ['周目标', '月目标', '季目标', '年目标'];
+
+  // 当前选择的周
+  DateTime _selectedWeekStart =
+      DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1));
+  // 当前选择的月
+  DateTime _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
+  // 当前选择的季度
+  int _selectedQuarter = ((DateTime.now().month - 1) ~/ 3) + 1;
+  int _selectedQuarterYear = DateTime.now().year;
+  // 当前年份
+  final int _currentYear = DateTime.now().year;
 
   // 状态选项
   final List<String> _statusOptions = ['未开始', '进行中', '已完成', '已放弃', '落后'];
@@ -44,6 +56,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     super.initState();
 
     // 如果是编辑模式，初始化数据
+    _updateDefaultDateRange();
     if (_isEditMode) {
       _titleController.text = widget.goal!.title;
       _descriptionController.text = widget.goal!.description ?? '';
@@ -52,6 +65,17 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       _status = widget.goal!.status;
       _startDate = widget.goal!.startDate;
       _endDate = widget.goal!.endDate;
+
+      // 设置选择器的初始值
+      if (_category == '周目标') {
+        _selectedWeekStart =
+            _startDate.subtract(Duration(days: _startDate.weekday - 1));
+      } else if (_category == '月目标') {
+        _selectedMonth = DateTime(_startDate.year, _startDate.month);
+      } else if (_category == '季目标') {
+        _selectedQuarter = ((_startDate.month - 1) ~/ 3) + 1;
+        _selectedQuarterYear = _startDate.year;
+      }
     }
   }
 
@@ -62,9 +86,65 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     super.dispose();
   }
 
+  // 验证时间范围
+  // 更新默认日期范围
+  void _updateDefaultDateRange() {
+    final now = DateTime.now();
+
+    if (_category == '周目标') {
+      final startOfWeek = _selectedWeekStart;
+      final endOfWeek = startOfWeek.add(const Duration(days: 6));
+      _dateRange = DateTimeRange(start: startOfWeek, end: endOfWeek);
+    } else if (_category == '月目标') {
+      final startOfMonth =
+          DateTime(_selectedMonth.year, _selectedMonth.month, 1);
+      final endOfMonth =
+          DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0);
+      _dateRange = DateTimeRange(start: startOfMonth, end: endOfMonth);
+    } else if (_category == '季目标') {
+      final quarterStartMonth = (_selectedQuarter - 1) * 3 + 1;
+      final startOfQuarter =
+          DateTime(_selectedQuarterYear, quarterStartMonth, 1);
+      final endOfQuarter =
+          DateTime(_selectedQuarterYear, quarterStartMonth + 3, 0);
+      _dateRange = DateTimeRange(start: startOfQuarter, end: endOfQuarter);
+    } else if (_category == '年目标') {
+      // 年目标设置为本年开始到本年结束
+      final startOfYear = DateTime(_currentYear, 1, 1);
+      final endOfYear = DateTime(_currentYear, 12, 31, 23, 59, 59);
+      _dateRange = DateTimeRange(start: startOfYear, end: endOfYear);
+    } else {
+      // 默认情况
+      _dateRange = DateTimeRange(
+        start: now,
+        end: now.add(const Duration(days: 7)),
+      );
+    }
+
+    _startDate = _dateRange!.start;
+    _endDate = _dateRange!.end;
+  }
+
+  // 日期格式化方法
+  String _getDateText(DateTime? date) {
+    return date != null ? DateFormat('yyyy/MM/dd').format(date) : '选择日期';
+  }
+
+  bool _validateDateRange() {
+    if (_dateRange == null) return true;
+
+    final currentYear = DateTime.now().year;
+    if (_startDate.year != currentYear || _endDate?.year != currentYear) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('时间范围必须在本年度内')));
+      return false;
+    }
+    return true;
+  }
+
   // 保存目标
   Future<void> _saveGoal() async {
-    if (!_formKey.currentState!.validate()) {
+    if (!_formKey.currentState!.validate() || !_validateDateRange()) {
       return;
     }
 
@@ -75,6 +155,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     try {
       final goalProvider = Provider.of<GoalProvider>(context, listen: false);
 
+      _updateDefaultDateRange();
       if (_isEditMode) {
         // 更新现有目标
         final updatedGoal = Goal(
@@ -148,8 +229,9 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _startDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      firstDate: DateTime(_currentYear, 1, 1), // 限制在本年
+      lastDate: DateTime(_currentYear, 12, 31), // 限制在本年
+      locale: const Locale('zh'), // 使用中文
     );
 
     if (picked != null && picked != _startDate) {
@@ -169,7 +251,8 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       context: context,
       initialDate: _endDate ?? _startDate.add(const Duration(days: 7)),
       firstDate: _startDate,
-      lastDate: DateTime(2100),
+      lastDate: DateTime(_currentYear, 12, 31), // 限制在本年
+      locale: const Locale('zh'), // 使用中文
     );
 
     if (picked != null) {
@@ -183,6 +266,32 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   void _clearEndDate() {
     setState(() {
       _endDate = null;
+    });
+  }
+
+  // 选择周
+  void _selectWeek(DateTime date) {
+    setState(() {
+      // 计算所选日期所在周的周一
+      _selectedWeekStart = date.subtract(Duration(days: date.weekday - 1));
+      _updateDefaultDateRange();
+    });
+  }
+
+  // 选择月份
+  void _selectMonth(DateTime date) {
+    setState(() {
+      _selectedMonth = DateTime(date.year, date.month);
+      _updateDefaultDateRange();
+    });
+  }
+
+  // 选择季度
+  void _selectQuarter(int quarter, int year) {
+    setState(() {
+      _selectedQuarter = quarter;
+      _selectedQuarterYear = year;
+      _updateDefaultDateRange();
     });
   }
 
@@ -244,44 +353,68 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
 
   // 构建标题输入
   Widget _buildTitleInput() {
-    return TextFormField(
-      controller: _titleController,
-      decoration: InputDecoration(
-        labelText: '目标标题',
-        hintText: '请输入目标标题',
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '目标标题',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        contentPadding: const EdgeInsets.all(16),
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return '请输入目标标题';
-        }
-        return null;
-      },
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _titleController,
+          decoration: InputDecoration(
+            hintText: '请输入目标标题',
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: const EdgeInsets.all(16),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return '请输入目标标题';
+            }
+            return null;
+          },
+        ),
+      ],
     );
   }
 
   // 构建描述输入
   Widget _buildDescriptionInput() {
-    return TextFormField(
-      controller: _descriptionController,
-      decoration: InputDecoration(
-        labelText: '目标描述',
-        hintText: '请输入目标描述',
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '目标描述',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        contentPadding: const EdgeInsets.all(16),
-      ),
-      maxLines: 4,
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _descriptionController,
+          decoration: InputDecoration(
+            hintText: '请输入目标描述',
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: const EdgeInsets.all(16),
+          ),
+          maxLines: 4,
+        ),
+      ],
     );
   }
 
@@ -312,6 +445,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                 onTap: () {
                   setState(() {
                     _category = category;
+                    _updateDefaultDateRange();
                   });
                 },
                 child: Container(
@@ -361,6 +495,19 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             ),
           ),
           const SizedBox(height: 16),
+
+          // 根据目标分类显示不同的日期选择器
+          if (_category == '周目标') ...[
+            _buildWeekSelector(),
+            const SizedBox(height: 16),
+          ] else if (_category == '月目标') ...[
+            _buildMonthSelector(),
+            const SizedBox(height: 16),
+          ] else if (_category == '季目标') ...[
+            _buildQuarterSelector(),
+            const SizedBox(height: 16),
+          ],
+
           const Text(
             '开始日期',
             style: TextStyle(
@@ -370,22 +517,50 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
           ),
           const SizedBox(height: 8),
           InkWell(
-            onTap: _selectStartDate,
+            onTap: _category == '周目标' ||
+                    _category == '月目标' ||
+                    _category == '季目标' ||
+                    _category == '年目标'
+                ? null
+                : _selectStartDate,
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey[300]!),
                 borderRadius: BorderRadius.circular(8),
+                color: _category == '周目标' ||
+                        _category == '月目标' ||
+                        _category == '季目标' ||
+                        _category == '年目标'
+                    ? Colors.grey[100]
+                    : Colors.white,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    DateFormat('yyyy年MM月dd日').format(_startDate),
-                    style: const TextStyle(fontSize: 16),
+                    _getDateText(_startDate),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: _category == '周目标' ||
+                              _category == '月目标' ||
+                              _category == '季目标' ||
+                              _category == '年目标'
+                          ? Colors.grey[700]
+                          : Colors.black,
+                    ),
                   ),
-                  const Icon(Icons.calendar_today, size: 18),
+                  Icon(
+                    Icons.calendar_today,
+                    size: 18,
+                    color: _category == '周目标' ||
+                            _category == '月目标' ||
+                            _category == '季目标' ||
+                            _category == '年目标'
+                        ? Colors.grey[400]
+                        : Colors.black,
+                  ),
                 ],
               ),
             ),
@@ -401,7 +576,11 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                   color: Colors.grey,
                 ),
               ),
-              if (_endDate != null)
+              if (_endDate != null &&
+                  !(_category == '周目标' ||
+                      _category == '月目标' ||
+                      _category == '季目标' ||
+                      _category == '年目标'))
                 TextButton(
                   onPressed: _clearEndDate,
                   style: TextButton.styleFrom(
@@ -415,30 +594,636 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
           ),
           const SizedBox(height: 8),
           InkWell(
-            onTap: _selectEndDate,
+            onTap: _category == '周目标' ||
+                    _category == '月目标' ||
+                    _category == '季目标' ||
+                    _category == '年目标'
+                ? null
+                : _selectEndDate,
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey[300]!),
                 borderRadius: BorderRadius.circular(8),
+                color: _category == '周目标' ||
+                        _category == '月目标' ||
+                        _category == '季目标' ||
+                        _category == '年目标'
+                    ? Colors.grey[100]
+                    : Colors.white,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    _endDate != null
-                        ? DateFormat('yyyy年MM月dd日').format(_endDate!)
-                        : '无截止日期',
-                    style: const TextStyle(fontSize: 16),
+                    _endDate != null ? _getDateText(_endDate!) : '无截止日期',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: _category == '周目标' ||
+                              _category == '月目标' ||
+                              _category == '季目标' ||
+                              _category == '年目标'
+                          ? Colors.grey[700]
+                          : Colors.black,
+                    ),
                   ),
-                  const Icon(Icons.calendar_today, size: 18),
+                  Icon(
+                    Icons.calendar_today,
+                    size: 18,
+                    color: _category == '周目标' ||
+                            _category == '月目标' ||
+                            _category == '季目标' ||
+                            _category == '年目标'
+                        ? Colors.grey[400]
+                        : Colors.black,
+                  ),
                 ],
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  // 构建周选择器
+  Widget _buildWeekSelector() {
+    final now = DateTime.now();
+    final currentWeekStart = now.subtract(Duration(days: now.weekday - 1));
+    final isCurrentWeek = _selectedWeekStart.year == currentWeekStart.year &&
+        _selectedWeekStart.month == currentWeekStart.month &&
+        _selectedWeekStart.day == currentWeekStart.day;
+
+    final endOfWeek = _selectedWeekStart.add(const Duration(days: 6));
+    final weekDisplay =
+        '${DateFormat('MM/dd').format(_selectedWeekStart)} - ${DateFormat('MM/dd').format(endOfWeek)}';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '选择周',
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: () {
+            _showWeekPickerDialog();
+          },
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey[300]!),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  isCurrentWeek ? '本周 ($weekDisplay)' : weekDisplay,
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const Icon(Icons.calendar_today, size: 18),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 完善 _showWeekPickerDialog 函数，按照月度选择器风格实现，只显示本月的周，并采用单列显示
+  void _showWeekPickerDialog() {
+    final year = _currentYear;
+    final selectedMonth = _selectedWeekStart.month;
+    final firstDayOfMonth = DateTime(year, selectedMonth, 1);
+    final lastDayOfMonth = DateTime(year, selectedMonth + 1, 0);
+    final firstMonday =
+        firstDayOfMonth.subtract(Duration(days: firstDayOfMonth.weekday - 1));
+    final List<DateTime> weeks = [];
+    DateTime weekStart = firstMonday;
+    // 只添加本月的周
+    while (weekStart.isBefore(lastDayOfMonth) ||
+        weekStart.isAtSameMomentAs(lastDayOfMonth)) {
+      if (weekStart.month == selectedMonth) {
+        weeks.add(weekStart);
+      }
+      weekStart = weekStart.add(const Duration(days: 7));
+    }
+
+    final now = DateTime.now();
+    final currentWeekStart = now.subtract(Duration(days: now.weekday - 1));
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              titlePadding: EdgeInsets.zero,
+              title: Container(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF3ECABB),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(28),
+                    topRight: Radius.circular(28),
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    '选择周($year年$selectedMonth月)',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  // 设置为一列显示, 并将 childAspectRatio 从 1.5 调整为 3.0 以降低每一周的高度
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 1,
+                    childAspectRatio: 5.0,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                  ),
+                  itemCount: weeks.length,
+                  itemBuilder: (context, index) {
+                    final weekStart = weeks[index];
+                    final weekEnd = weekStart.add(const Duration(days: 6));
+                    final isSelected =
+                        _selectedWeekStart.year == weekStart.year &&
+                            _selectedWeekStart.month == weekStart.month &&
+                            _selectedWeekStart.day == weekStart.day;
+                    final isCurrentWeek =
+                        currentWeekStart.year == weekStart.year &&
+                            currentWeekStart.month == weekStart.month &&
+                            currentWeekStart.day == weekStart.day;
+                    final weekText =
+                        '${DateFormat('MM/dd').format(weekStart)} - ${DateFormat('MM/dd').format(weekEnd)}';
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedWeekStart = weekStart;
+                        });
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppColors.primary : Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColors.primary
+                                : Colors.grey[300]!,
+                          ),
+                        ),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                weekText + (isCurrentWeek ? ' (本周)' : ''),
+                                style: TextStyle(
+                                  color:
+                                      isSelected ? Colors.white : Colors.black,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              actions: [
+                Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[600],
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Text('取消'),
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(right: 16),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _selectWeek(_selectedWeekStart);
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Text('确定'),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // 构建月选择器
+  Widget _buildMonthSelector() {
+    final now = DateTime.now();
+    final isCurrentMonth =
+        _selectedMonth.year == now.year && _selectedMonth.month == now.month;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '选择月份',
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: () {
+            _showMonthPickerDialog();
+          },
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey[300]!),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  isCurrentMonth
+                      ? '本月 (${_selectedMonth.year}年${_selectedMonth.month}月)'
+                      : '${_selectedMonth.year}年${_selectedMonth.month}月',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const Icon(Icons.calendar_today, size: 18),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 显示月份选择对话框
+  void _showMonthPickerDialog() {
+    final year = _currentYear;
+    final months = List.generate(12, (index) => index + 1);
+    final now = DateTime.now();
+
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return AlertDialog(
+                titlePadding: EdgeInsets.zero,
+                title: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF3ECABB),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(28),
+                      topRight: Radius.circular(28),
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '选择月份($year年)',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+                content: SizedBox(
+                  width: double.maxFinite,
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      childAspectRatio: 1.5,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                    ),
+                    itemCount: months.length,
+                    itemBuilder: (context, index) {
+                      final month = months[index];
+                      final isSelected = _selectedMonth.month == month &&
+                          _selectedMonth.year == year;
+                      final isCurrentMonth =
+                          now.month == month && now.year == year;
+
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedMonth = DateTime(year, month, 1);
+                          });
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color:
+                                isSelected ? AppColors.primary : Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : Colors.grey[300]!,
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              isCurrentMonth ? '$month月(本月)' : '$month月',
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : Colors.black,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                actions: [
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[600],
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: const Text('取消'),
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.only(right: 16),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        _selectMonth(_selectedMonth);
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: const Text('确定'),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        });
+  }
+
+  // 构建季度选择器
+  Widget _buildQuarterSelector() {
+    final now = DateTime.now();
+    final currentQuarter = ((now.month - 1) ~/ 3) + 1;
+    final isCurrentQuarter =
+        _selectedQuarterYear == now.year && _selectedQuarter == currentQuarter;
+
+    final quarterStartMonth = (_selectedQuarter - 1) * 3 + 1;
+    final quarterEndMonth = quarterStartMonth + 2;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '选择季度',
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: () {
+            _showQuarterPickerDialog();
+          },
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey[300]!),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  isCurrentQuarter
+                      ? '本季度 ($_selectedQuarterYear年Q$_selectedQuarter: $quarterStartMonth-$quarterEndMonth月)'
+                      : '$_selectedQuarterYear年Q$_selectedQuarter: $quarterStartMonth-$quarterEndMonth月',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const Icon(Icons.calendar_today, size: 18),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 完善 _showQuarterPickerDialog 函数，按照月度选择器的风格和操作实现
+  void _showQuarterPickerDialog() {
+    final year = _currentYear;
+    final now = DateTime.now();
+    final currentQuarter = ((now.month - 1) ~/ 3) + 1;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              titlePadding: EdgeInsets.zero,
+              title: Container(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF3ECABB),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(28),
+                    topRight: Radius.circular(28),
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    '选择季度($year年)',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 1.5,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                  ),
+                  itemCount: 4,
+                  itemBuilder: (context, index) {
+                    final quarter = index + 1;
+                    final isSelected = _selectedQuarter == quarter;
+                    final isCurrentQ =
+                        (quarter == currentQuarter && year == now.year);
+                    final quarterStartMonth = (quarter - 1) * 3 + 1;
+                    final quarterEndMonth = quarterStartMonth + 2;
+
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedQuarter = quarter;
+                          _selectedQuarterYear = year;
+                        });
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppColors.primary : Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColors.primary
+                                : Colors.grey[300]!,
+                          ),
+                        ),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Q$quarter',
+                                style: TextStyle(
+                                  color:
+                                      isSelected ? Colors.white : Colors.black,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '$quarterStartMonth-$quarterEndMonth月${isCurrentQ ? " (本季度)" : ""}',
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? Colors.white70
+                                      : Colors.grey[600],
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              actions: [
+                Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[600],
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Text('取消'),
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(right: 16),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _selectQuarter(_selectedQuarter, year);
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Text('确定'),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 

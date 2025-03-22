@@ -4,6 +4,7 @@ import 'package:intellimate/domain/core/memo_config.dart';
 import 'package:intellimate/domain/entities/memo.dart';
 import 'package:intellimate/presentation/providers/memo_provider.dart';
 import 'package:intellimate/presentation/widgets/custom_app_bar.dart';
+import 'package:intellimate/utils/app_logger.dart';
 import 'package:provider/provider.dart';
 
 class EditMemoScreen extends StatefulWidget {
@@ -25,8 +26,6 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
 
   Memo? _memo;
   String? _memoId;
-
-  final List<String> _categories = MemoConfig.categories;
 
   @override
   void didChangeDependencies() {
@@ -57,8 +56,8 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
         setState(() {
           _memo = memo;
           _titleController.text = memo.title;
-          _contentController.text = memo.content;
-          _selectedCategory = memo.category ?? '工作';
+          _contentController.text = memo.content ?? '';
+          _selectedCategory = memo.category ?? MemoCategory.work.name;
           _isLoading = false;
         });
       } else {
@@ -97,6 +96,7 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
     try {
       final memoProvider = Provider.of<MemoProvider>(context, listen: false);
 
+      AppLogger.log('Creating memo with title: ${_titleController.text}');
       final success = await memoProvider.createMemo(
         title: _titleController.text,
         content: _contentController.text,
@@ -320,7 +320,7 @@ class _EditMemoScreenState extends State<EditMemoScreen> {
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: MemoConfig.categories.map((category) {
+          children: MemoConfig.nonAllCategories.map((category) {
             final isSelected = category == _selectedCategory;
             return GestureDetector(
               onTap: () {

@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:provider/provider.dart';
-import 'package:intellimate/presentation/providers/task_provider.dart';
-import 'package:intellimate/presentation/providers/schedule_provider.dart';
-import 'package:intellimate/domain/entities/schedule.dart';
-import 'package:intl/intl.dart';
 
 class AssistantScreen extends StatefulWidget {
   const AssistantScreen({super.key});
@@ -15,15 +10,6 @@ class AssistantScreen extends StatefulWidget {
 }
 
 class _AssistantScreenState extends State<AssistantScreen> {
-  // 任务统计数据
-  int _totalTasks = 0;
-  int _completedTasks = 0;
-
-  // 即将到来的日程
-  List<Schedule> _upcomingEvents = [];
-
-  bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
@@ -32,68 +18,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
 
   // 加载数据
   Future<void> _loadData() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      await _loadTaskStats();
-      await _loadUpcomingEvents();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('加载数据失败: $e')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  // 加载任务统计
-  Future<void> _loadTaskStats() async {
-    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-
-    // 获取今日任务
-    final now = DateTime.now();
-    final startOfDay = DateTime(now.year, now.month, now.day);
-    final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
-
-    final todayTasks = await taskProvider.getTasksByCondition(
-      fromDate: startOfDay,
-      toDate: endOfDay,
-    );
-
-    // 获取今日已完成任务
-    final completedTodayTasks =
-        todayTasks.where((task) => task.isCompleted).toList();
-
-    if (mounted) {
-      setState(() {
-        _totalTasks = todayTasks.length;
-        _completedTasks = completedTodayTasks.length;
-      });
-    }
-  }
-
-  // 加载即将到来的日程
-  Future<void> _loadUpcomingEvents() async {
-    final scheduleProvider =
-        Provider.of<ScheduleProvider>(context, listen: false);
-
-    // 获取即将到来的日程（限制最多5个）
-    final upcomingEvents =
-        await scheduleProvider.getUpcomingSchedules(limit: 5);
-
-    if (mounted) {
-      setState(() {
-        _upcomingEvents = upcomingEvents;
-      });
-    }
+    setState(() {});
   }
 
   @override
@@ -113,16 +38,6 @@ class _AssistantScreenState extends State<AssistantScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 任务统计
-                    _buildTaskStats(),
-
-                    const SizedBox(height: 24),
-
-                    // 即将到来的日程
-                    _buildUpcomingEvents(),
-
-                    const SizedBox(height: 32),
-
                     // 快捷操作
                     _buildQuickActions(),
 
@@ -197,349 +112,36 @@ class _AssistantScreenState extends State<AssistantScreen> {
     );
   }
 
-  // 构建任务统计
-  Widget _buildTaskStats() {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '今日任务',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF6B7280), // text-gray-500
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '$_totalTasks',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1F2937), // text-gray-800
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '已完成',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF6B7280), // text-gray-500
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '$_completedTasks',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1F2937), // text-gray-800
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // 构建即将到来的日程
-  Widget _buildUpcomingEvents() {
+  // 构建快捷操作
+  Widget _buildQuickActions() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        const Row(
           children: [
-            const Text(
-              '即将到来',
+            Icon(
+              Icons.flash_on, // 快捷操作的图标
+              color: Color(0xFF3ECABB), // primary-400
+              size: 20,
+            ),
+            SizedBox(width: 8),
+            Text(
+              '快捷操作',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1F2937), // text-gray-800
               ),
             ),
-            TextButton(
-              onPressed: () {
-                // 跳转到日程页面
-                Navigator.pushNamed(context, AppRoutes.schedule);
-              },
-              child: const Text(
-                '查看全部',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF3ECABB), // primary-400
-                ),
-              ),
-            ),
           ],
         ),
-        const SizedBox(height: 16),
-        if (_isLoading)
-          const Center(
-            child: CircularProgressIndicator(),
-          )
-        else if (_upcomingEvents.isEmpty)
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: const Center(
-              child: Text(
-                '暂无即将到来的日程',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF6B7280),
-                ),
-              ),
-            ),
-          )
-        else
-          ..._upcomingEvents.map((event) => _buildEventCard(event)),
-      ],
-    );
-  }
-
-  // 构建日程卡片
-  Widget _buildEventCard(Schedule event) {
-    // 格式化时间
-    final startTime = DateFormat('HH:mm').format(event.startTime);
-    final endTime = DateFormat('HH:mm').format(event.endTime);
-    final timeDisplay = '$startTime - $endTime';
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: const Border(
-          left: BorderSide(
-            color: Color(0xFF3ECABB), // primary-400
-            width: 4,
-          ),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            timeDisplay,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF3ECABB), // primary-400
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            event.title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2937), // text-gray-800
-            ),
-          ),
-          if (event.location != null && event.location!.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                const FaIcon(
-                  FontAwesomeIcons.locationDot,
-                  size: 12,
-                  color: Color(0xFF6B7280), // text-gray-500
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  event.location!,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF6B7280), // text-gray-500
-                  ),
-                ),
-              ],
-            ),
-          ],
-          // 添加编辑和删除按钮
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              InkWell(
-                onTap: () {
-                  // 编辑日程事件
-                  Navigator.pushNamed(
-                    context,
-                    AppRoutes.addSchedule, // 使用已有的添加日程页面
-                    arguments: event,
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFECFDF5), // green-50
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.edit,
-                    size: 16,
-                    color: Color(0xFF10B981), // green-500
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              InkWell(
-                onTap: () {
-                  // 显示确认对话框
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('确认删除'),
-                      content: Text('确定要删除日程"${event.title}"吗？'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('取消'),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            // 在异步操作前获取context的引用
-                            final currentContext = context;
-                            Navigator.pop(currentContext); // 关闭对话框
-
-                            // 获取ScheduleProvider并删除日程
-                            final scheduleProvider =
-                                Provider.of<ScheduleProvider>(currentContext,
-                                    listen: false);
-
-                            try {
-                              await scheduleProvider.deleteSchedule(event.id);
-                              if (mounted) {
-                                // 使用State的context而不是捕获的context
-                                ScaffoldMessenger.of(this.context).showSnackBar(
-                                  const SnackBar(content: Text('日程已删除')),
-                                );
-                                // 重新加载数据
-                                _loadUpcomingEvents();
-                              }
-                            } catch (e) {
-                              if (mounted) {
-                                // 使用State的context而不是捕获的context
-                                ScaffoldMessenger.of(this.context).showSnackBar(
-                                  SnackBar(content: Text('删除失败: $e')),
-                                );
-                              }
-                            }
-                          },
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.red,
-                          ),
-                          child: const Text('删除'),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEF2F2), // red-50
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.delete,
-                    size: 16,
-                    color: Color(0xFFEF4444), // red-500
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 构建快捷操作
-  Widget _buildQuickActions() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '快捷操作',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1F2937), // text-gray-800
-          ),
-        ),
-        const SizedBox(height: 16),
         GridView.count(
           crossAxisCount: 4,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-          childAspectRatio: 0.8,
+          childAspectRatio: 1,
           children: [
             _buildQuickActionItem(
               icon: FontAwesomeIcons.pen,
@@ -586,7 +188,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF3ECABB).withValues(alpha: 0.2), // 浅色背景
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -627,15 +229,24 @@ class _AssistantScreenState extends State<AssistantScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '功能模块',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1F2937), // text-gray-800
-          ),
+        const Row(
+          children: [
+            Icon(
+              Icons.apps, // 功能模块的图标
+              color: Color(0xFF3ECABB), // primary-400
+              size: 20,
+            ),
+            SizedBox(width: 8),
+            Text(
+              '功能模块',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1F2937), // text-gray-800
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
         GridView.count(
           crossAxisCount: 3,
           shrinkWrap: true,

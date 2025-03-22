@@ -4,7 +4,7 @@ class MemoModel extends Memo {
   MemoModel({
     required super.id,
     required super.title,
-    required super.content,
+    super.content,
     super.category,
     required super.createdAt,
     required super.updatedAt,
@@ -64,4 +64,4 @@ class MemoModel extends Memo {
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
-} 
+}

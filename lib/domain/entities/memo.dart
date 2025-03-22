@@ -1,7 +1,7 @@
 class Memo {
   final String id;
   final String title;
-  final String content;
+  final String? content;
   final String? category;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -9,9 +9,9 @@ class Memo {
   Memo({
     required this.id,
     required this.title,
-    required this.content,
+    this.content,
     this.category,
     required this.createdAt,
     required this.updatedAt,
   });
-} 
+}

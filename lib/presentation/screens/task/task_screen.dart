@@ -113,8 +113,12 @@ class _TaskScreenState extends State<TaskScreen> {
           // 自定义顶部导航栏
           _buildCustomAppBar(),
 
-          // 过滤选项
-          _buildFilterOptions(),
+          const SizedBox(height: 20),
+
+          // 任务统计信息
+          _buildTaskStatistics(),
+
+          const SizedBox(height: 20),
 
           // 任务列表
           Expanded(
@@ -282,29 +286,44 @@ class _TaskScreenState extends State<TaskScreen> {
     );
   }
 
-  // 构建过滤选项
-  Widget _buildFilterOptions() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _buildFilterChip('全部'),
-            const SizedBox(width: 8),
-            _buildFilterChip('已完成'),
-            const SizedBox(width: 8),
-            _buildFilterChip('未完成'),
-          ],
-        ),
-      ),
+  // 构建任务统计信息
+  Widget _buildTaskStatistics() {
+    return Consumer<TaskProvider>(
+      builder: (context, taskProvider, child) {
+        final totalTasks = taskProvider.tasks.length;
+        final completedTasks =
+            taskProvider.tasks.where((task) => task.isCompleted).length;
+        final pendingTasks = totalTasks - completedTasks;
+
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 5),
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildStatisticItem('全  部', totalTasks, Colors.blue),
+              _buildStatisticItem('已完成', completedTasks, Colors.green),
+              _buildStatisticItem('未完成', pendingTasks, Colors.red),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  // 构建过滤选项按钮
-  Widget _buildFilterChip(String label) {
-    final isSelected = _selectedFilter == label;
-
+  // 构建单个统计项
+  Widget _buildStatisticItem(String label, int count, Color color) {
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -312,17 +331,32 @@ class _TaskScreenState extends State<TaskScreen> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF3ECABB) : Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(20),
+          color: _selectedFilter == label
+              ? color.withValues(alpha: 0.2)
+              : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(12),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey.shade600,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
+        child: Column(
+          children: [
+            Text(
+              '$count',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+              ),
+            ),
+          ],
         ),
       ),
     );

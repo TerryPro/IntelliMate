@@ -425,22 +425,7 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
 
   // 构建时间筛选
   Widget _buildTimeFilter() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          _buildFilterChip('全部'),
-          const SizedBox(width: 8),
-          _buildFilterChip('今天'),
-          const SizedBox(width: 8),
-          _buildFilterChip('本周'),
-          const SizedBox(width: 8),
-          _buildFilterChip('本月'),
-          const SizedBox(width: 8),
-          _buildFilterChip('本季度'),
-        ],
-      ),
-    );
+    return const SizedBox.shrink();
   }
 
   // 构建点滴统计
@@ -462,27 +447,19 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '点滴统计',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildStatItem('总计', _statistics['total'].toString(),
-                  const Color(0xFF3ECABB)),
+                  const Color(0xFF3ECABB), '全部'),
               _buildStatItem('本日', _statistics['today'].toString(),
-                  const Color(0xFF3E8ECA)),
+                  const Color(0xFF3E8ECA), '今天'),
               _buildStatItem('本周', _statistics['week'].toString(),
-                  const Color(0xFFB23ECA)),
+                  const Color(0xFFB23ECA), '本周'),
               _buildStatItem('本月', _statistics['month'].toString(),
-                  const Color(0xFF3ECA5E)),
+                  const Color(0xFF3ECA5E), '本月'),
               _buildStatItem(
-                  '本季', _statistics['quarter'].toString(), Colors.grey),
+                  '本季', _statistics['quarter'].toString(), Colors.grey, '本季度'),
             ],
           ),
         ],
@@ -491,63 +468,46 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
   }
 
   // 构建统计项
-  Widget _buildStatItem(String label, String count, Color color) {
-    return Column(
-      children: [
-        Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Center(
-            child: Text(
-              count,
-              style: TextStyle(
-                color: color,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.grey.shade600,
-            fontSize: 12,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // 构建筛选选项
-  Widget _buildFilterChip(String label) {
-    final isSelected = _selectedFilter == label;
-
+  Widget _buildStatItem(
+      String label, String count, Color color, String filter) {
+    final isSelected = _selectedFilter == filter;
     return GestureDetector(
       onTap: () {
         setState(() {
-          _selectedFilter = label;
+          _selectedFilter = filter;
         });
         _loadFilteredDailyNotes();
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF3ECABB) : Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey.shade600,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      child: Column(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: isSelected ? color : color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: Text(
+                count,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : color,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
-        ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? color : Colors.grey.shade600,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -631,8 +591,6 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
                   _buildMediaButton(Icons.camera_alt),
                   const SizedBox(width: 12),
                   _buildMediaButton(Icons.image),
-                  const SizedBox(width: 12),
-                  _buildMediaButton(Icons.attach_file),
                 ],
               ),
 

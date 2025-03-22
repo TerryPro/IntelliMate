@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:intellimate/utils/app_logger.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -31,6 +32,11 @@ class DatabaseHelper {
   static void resetInitializationState() {
     _initialized = false;
   }
+
+  // 数据库版本
+  static int get databaseVersion => _databaseVersion;
+  // 数据库名称
+  static String get databaseName => _databaseName;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -70,6 +76,7 @@ class DatabaseHelper {
       final tables = await db
           .rawQuery("SELECT name FROM sqlite_master WHERE type='table'");
       final tableNames = tables.map((t) => t['name'] as String).toList();
+      AppLogger.log('Tables: $tableNames');
 
       // 检查用户表是否存在
       final bool hasUserTable = tableNames.contains(tableUser);
@@ -124,6 +131,16 @@ class DatabaseHelper {
       _initialized = true;
     } catch (e) {
       _initialized = false;
+      rethrow;
+    }
+  }
+
+  // 删除表格
+  Future<void> dropTable(String table) async {
+    try {
+      final db = await database;
+      await db.execute('DROP TABLE IF EXISTS $table');
+    } catch (e) {
       rethrow;
     }
   }
@@ -246,6 +263,7 @@ class DatabaseHelper {
   // 创建备忘表
   Future<void> _createMemoTable(Database db) async {
     try {
+      AppLogger.log('Creating memo table...');
       await db.execute('''
         CREATE TABLE $tableMemo (
           id TEXT PRIMARY KEY,
@@ -256,7 +274,9 @@ class DatabaseHelper {
           updated_at INTEGER NOT NULL
         )
       ''');
+      AppLogger.log('Memo table created successfully!');
     } catch (e) {
+      AppLogger.log('Failed to create memo table: $e');
       rethrow;
     }
   }

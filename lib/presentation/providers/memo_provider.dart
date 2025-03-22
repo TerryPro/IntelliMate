@@ -86,12 +86,6 @@ class MemoProvider extends ChangeNotifier {
       notifyListeners();
       return null;
     }
-    if (content.trim().isEmpty) {
-      _error = '内容不能为空';
-      _isLoading = false;
-      notifyListeners();
-      return null;
-    }
 
     final result = await _createMemoUseCase(
       title: title.trim(),
