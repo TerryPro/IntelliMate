@@ -46,38 +46,11 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
   @override
   void initState() {
     super.initState();
-    _loadInitialDailyNotes();
+    // 设置默认筛选为"本周"
+    _selectedFilter = '本周';
+    // 加载筛选后的数据，而不是调用_loadInitialDailyNotes
+    _loadFilteredDailyNotes();
     _loadStatistics();
-  }
-
-  // 加载初始日常点滴数据（今天、昨天、前天）
-  Future<void> _loadInitialDailyNotes() async {
-    setState(() {
-      _isLoading = true;
-      _currentPage = 0;
-      _hasMoreNotes = true;
-    });
-
-    try {
-      final provider = Provider.of<DailyNoteProvider>(context, listen: false);
-      await provider.getAllDailyNotes();
-
-      // 获取最近三天的点滴
-      _displayedNotes = await provider.getRecentThreeDaysDailyNotes();
-    } catch (e) {
-      // 显示错误提示
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('加载日常点滴失败: $e')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
   }
 
   // 根据筛选条件加载日常点滴
@@ -114,11 +87,15 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
           filteredNotes = provider.dailyNotes;
       }
 
-      _displayedNotes = filteredNotes;
-
-      // 如果筛选后的记录数小于页面大小，则没有更多记录
-      if (filteredNotes.length < _pageSize) {
-        _hasMoreNotes = false;
+      if (mounted) {
+        setState(() {
+          _displayedNotes = filteredNotes;
+          
+          // 如果筛选后的记录数小于页面大小，则没有更多记录
+          if (filteredNotes.length < _pageSize) {
+            _hasMoreNotes = false;
+          }
+        });
       }
     } catch (e) {
       // 显示错误提示
@@ -249,6 +226,7 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
 
     if (result == true) {
       _loadFilteredDailyNotes();
+      _loadStatistics(); // 添加重新加载统计数据的调用
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -280,6 +258,10 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
       );
 
       _quickNoteController.clear();
+      
+      // 重新加载数据和统计信息
+      await _loadFilteredDailyNotes();
+      await _loadStatistics();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -352,7 +334,7 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
                   );
                 }
 
-                if (dailyNoteProvider.dailyNotes.isEmpty) {
+                if (_displayedNotes.isEmpty) {
                   return SingleChildScrollView(
                     child: Padding(
                       padding: const EdgeInsets.all(20),
@@ -530,40 +512,6 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
       ),
       child: Column(
         children: [
-          // 用户信息
-          Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                margin: const EdgeInsets.only(right: 12),
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                    image: NetworkImage(
-                        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde'),
-                    fit: BoxFit.cover,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.blackWithOpacity10,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-              ),
-              const Text(
-                '此刻有什么想法？',
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
           // 输入框
           TextField(
             controller: _quickNoteController,
@@ -585,14 +533,9 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // 媒体按钮
-              Row(
-                children: [
-                  _buildMediaButton(Icons.camera_alt),
-                  const SizedBox(width: 12),
-                  _buildMediaButton(Icons.image),
-                ],
-              ),
+              // 删除媒体按钮部分
+              // 保留右侧空间占位
+              const Spacer(),
 
               // 发布按钮
               ElevatedButton(
@@ -611,23 +554,6 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  // 构建媒体按钮
-  Widget _buildMediaButton(IconData icon) {
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        shape: BoxShape.circle,
-      ),
-      child: Icon(
-        icon,
-        size: 16,
-        color: Colors.grey.shade500,
       ),
     );
   }
@@ -997,6 +923,8 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
 
     if (result == true && mounted) {
       _loadFilteredDailyNotes();
+      _loadStatistics(); // 添加重新加载统计数据调用
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('点滴已更新'),
@@ -1011,22 +939,126 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('确认删除'),
-        content: const Text('确定要删除这条点滴吗？此操作不可恢复。'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.shade100,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.delete_outline,
+                color: Colors.red.shade700,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 16),
+            const Text(
+              '确认删除',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '你确定要删除这条点滴吗？',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '此操作不可恢复，点滴内容将永久删除。',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '点滴内容预览：',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade700,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    note.content.length > 100 
+                        ? '${note.content.substring(0, 100)}...' 
+                        : note.content,
+                    style: const TextStyle(
+                      fontSize: 14,
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         actions: [
-          TextButton(
+          OutlinedButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: Colors.grey.shade300),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+            child: const Text(
+              '取消',
+              style: TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               _deleteDailyNote(note.id);
             },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
-            child: const Text('删除'),
+            child: const Text(
+              '确认删除',
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
         ],
       ),
@@ -1046,6 +1078,8 @@ class _DailyNoteScreenState extends State<DailyNoteScreen> {
 
       if (success && mounted) {
         _loadFilteredDailyNotes();
+        _loadStatistics(); // 添加重新加载统计数据调用
+        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('点滴已删除'),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intellimate/domain/entities/photo.dart';
 import 'package:intellimate/domain/entities/travel.dart';
 import 'package:intellimate/domain/entities/goal.dart';
 import 'package:intellimate/presentation/screens/login/login_screen.dart';
@@ -104,8 +103,8 @@ class AppRoutes {
       addFinance: (context) => const AddFinanceScreen(),
       photoGallery: (context) => const PhotoGalleryScreen(),
       albumDetail: (context) {
-        final album = ModalRoute.of(context)?.settings.arguments as PhotoAlbum;
-        return AlbumDetailScreen(album: album);
+        final albumId = ModalRoute.of(context)?.settings.arguments as String;
+        return AlbumDetailScreen(albumId: albumId);
       },
       goal: (context) => const GoalScreen(),
       addGoal: (context) => const AddGoalScreen(),

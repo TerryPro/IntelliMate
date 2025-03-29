@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:intellimate/utils/app_logger.dart';
 
 /// 图片存储帮助类
 class ImageStorageHelper {
@@ -43,7 +44,7 @@ class ImageStorageHelper {
       return savedFile.path;
     } catch (e) {
       // 发生错误时返回原图路径
-      print('保存图片到daily_notes目录失败: $e');
+      AppLogger.log('保存图片到daily_notes目录失败: $e');
       return imageFile.path;
     }
   }
@@ -68,7 +69,7 @@ class ImageStorageHelper {
       
       return false;
     } catch (e) {
-      print('删除日常点滴图片失败: $e');
+      AppLogger.log('删除日常点滴图片失败: $e');
       return false;
     }
   }
@@ -100,7 +101,7 @@ class ImageStorageHelper {
       
       return deletedCount;
     } catch (e) {
-      print('清理旧图片失败: $e');
+      AppLogger.log('清理旧图片失败: $e');
       return 0;
     }
   }

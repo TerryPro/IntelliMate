@@ -7,7 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:cross_file/cross_file.dart';
+import 'package:intellimate/utils/app_logger.dart';
 
 class BackupService {
   static final BackupService _instance = BackupService._internal();
@@ -26,14 +26,14 @@ class BackupService {
       // 先请求存储权限
       final hasPermission = await PermissionHelper.requestStoragePermission();
       if (!hasPermission) {
-        print('未获得存储权限，将使用应用内部存储作为备份目录');
+        AppLogger.log('未获得存储权限，将使用应用内部存储作为备份目录');
         // 使用应用内部存储目录
         final appDir = await getApplicationDocumentsDirectory();
         final backupDir = Directory('${appDir.path}/backup');
         if (!await backupDir.exists()) {
           await backupDir.create(recursive: true);
         }
-        print('使用内部存储作为备份目录: ${backupDir.path}');
+        AppLogger.log('使用内部存储作为备份目录: ${backupDir.path}');
         return backupDir;
       }
       
@@ -46,31 +46,31 @@ class BackupService {
           if (!await backupDir.exists()) {
             await backupDir.create(recursive: true);
           }
-          print('使用外部存储目录作为备份目录: ${backupDir.path}');
+          AppLogger.log('使用外部存储目录作为备份目录: ${backupDir.path}');
           return backupDir;
         } else {
           throw Exception('无法获取外部存储目录');
         }
       } catch (e) {
-        print('获取外部存储目录失败: $e');
+        AppLogger.log('获取外部存储目录失败: $e');
         // 回退到应用文档目录
         final appDir = await getApplicationDocumentsDirectory();
         final backupDir = Directory('${appDir.path}/backup');
         if (!await backupDir.exists()) {
           await backupDir.create(recursive: true);
         }
-        print('使用内部存储作为备份目录: ${backupDir.path}');
+        AppLogger.log('使用内部存储作为备份目录: ${backupDir.path}');
         return backupDir;
       }
     } catch (e) {
-      print('获取备份目录出错: $e');
+      AppLogger.log('获取备份目录出错: $e');
       // 出错时使用应用文档目录
       final appDir = await getApplicationDocumentsDirectory();
       final backupDir = Directory('${appDir.path}/backup');
       if (!await backupDir.exists()) {
         await backupDir.create(recursive: true);
       }
-      print('因出错使用内部存储作为备份目录: ${backupDir.path}');
+      AppLogger.log('因出错使用内部存储作为备份目录: ${backupDir.path}');
       return backupDir;
     }
   }
@@ -99,7 +99,7 @@ class BackupService {
         throw Exception('数据库文件不存在');
       }
     } catch (e) {
-      print('备份数据库出错: $e');
+      AppLogger.log('备份数据库出错: $e');
       rethrow;
     }
   }
@@ -123,7 +123,7 @@ class BackupService {
       
       return backupFiles;
     } catch (e) {
-      print('获取备份文件列表出错: $e');
+      AppLogger.log('获取备份文件列表出错: $e');
       rethrow;
     }
   }
@@ -151,7 +151,7 @@ class BackupService {
         throw Exception('备份文件不存在');
       }
     } catch (e) {
-      print('恢复数据库出错: $e');
+      AppLogger.log('恢复数据库出错: $e');
       rethrow;
     }
   }
@@ -186,10 +186,10 @@ class BackupService {
       final exportFile = File(exportPath);
       await exportFile.writeAsString(jsonEncode(allData));
       
-      print('数据已导出到: $exportPath');
+      AppLogger.log('数据已导出到: $exportPath');
       return exportPath;
     } catch (e) {
-      print('导出数据出错: $e');
+      AppLogger.log('导出数据出错: $e');
       rethrow;
     }
   }
@@ -215,7 +215,7 @@ class BackupService {
           // 检查表是否存在
           final tableExists = await _tableExists(txn, tableName);
           if (!tableExists) {
-            print('警告: 表 $tableName 不存在，跳过导入');
+            AppLogger.log('警告: 表 $tableName 不存在，跳过导入');
             continue;
           }
           
@@ -230,17 +230,17 @@ class BackupService {
             }
           }
           
-          print('已导入表 $tableName 的 ${tableData.length} 条记录');
+          AppLogger.log('已导入表 $tableName 的 ${tableData.length} 条记录');
         }
       });
       
       // 重置数据库初始化状态，确保下次使用时重新加载
       DatabaseHelper.resetInitializationState();
       
-      print('数据导入成功');
+      AppLogger.log('数据导入成功');
       return true;
     } catch (e) {
-      print('导入数据出错: $e');
+      AppLogger.log('导入数据出错: $e');
       rethrow;
     }
   }
@@ -258,12 +258,12 @@ class BackupService {
       if (await file.exists()) {
         // 使用新版的share_plus API
         final result = await Share.shareXFiles([XFile(filePath)], subject: '分享IntelliMate备份文件');
-        print('分享结果: $result');
+        AppLogger.log('分享结果: $result');
       } else {
         throw Exception('要分享的文件不存在');
       }
     } catch (e) {
-      print('分享备份文件出错: $e');
+      AppLogger.log('分享备份文件出错: $e');
       rethrow;
     }
   }
@@ -298,7 +298,7 @@ class BackupService {
       
       return importedFiles;
     } catch (e) {
-      print('导入备份文件出错: $e');
+      AppLogger.log('导入备份文件出错: $e');
       rethrow;
     }
   }
@@ -313,7 +313,7 @@ class BackupService {
       }
       return false;
     } catch (e) {
-      print('删除备份文件出错: $e');
+      AppLogger.log('删除备份文件出错: $e');
       rethrow;
     }
   }

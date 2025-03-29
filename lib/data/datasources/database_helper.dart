@@ -25,6 +25,9 @@ class DatabaseHelper {
   static const String tableFinance = 'finances';
   static const String tableMemo = 'memos';
   static const String tableTravel = 'travels';
+  static const String tablePhoto = 'photos';
+  static const String tablePhotoAlbum = 'photo_albums';
+  static const String tablePhotoAlbumMap = 'photo_album_map';
 
   DatabaseHelper._internal();
 
@@ -126,6 +129,21 @@ class DatabaseHelper {
       final bool hasTravelTable = tableNames.contains(tableTravel);
       if (!hasTravelTable) {
         await _createTravelTable(db);
+      } else {}
+
+      final bool hasPhotoTable = tableNames.contains(tablePhoto);
+      if (!hasPhotoTable) {
+        await _createPhotoTable(db);
+      } else {}
+
+      final bool hasPhotoAlbumTable = tableNames.contains(tablePhotoAlbum);
+      if (!hasPhotoAlbumTable) {
+        await _createPhotoAlbumTable(db);
+      } else {}
+
+      final bool hasPhotoAlbumMapTable = tableNames.contains(tablePhotoAlbumMap);
+      if (!hasPhotoAlbumMapTable) {
+        await _createPhotoAlbumMapTable(db);
       } else {}
 
       _initialized = true;
@@ -362,6 +380,69 @@ class DatabaseHelper {
     ''');
   }
 
+  // 创建照片表
+  Future<void> _createPhotoTable(Database db) async {
+    try {
+      await db.execute('''
+        CREATE TABLE $tablePhoto (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          path TEXT NOT NULL,
+          name TEXT,
+          description TEXT,
+          date_created INTEGER NOT NULL,
+          date_modified INTEGER NOT NULL,
+          is_favorite INTEGER NOT NULL DEFAULT 0,
+          album_id TEXT,
+          size INTEGER NOT NULL,
+          location TEXT,
+          metadata TEXT
+        )
+      ''');
+    } catch (e) {
+      AppLogger.log('Failed to create photo table: $e');
+      rethrow;
+    }
+  }
+
+  // 创建相册表
+  Future<void> _createPhotoAlbumTable(Database db) async {
+    try {
+      await db.execute('''
+        CREATE TABLE $tablePhotoAlbum (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          cover_photo_path TEXT,
+          date_created INTEGER NOT NULL,
+          date_modified INTEGER NOT NULL,
+          photo_count INTEGER DEFAULT 0,
+          description TEXT
+        )
+      ''');
+    } catch (e) {
+      AppLogger.log('Failed to create photo album table: $e');
+      rethrow;
+    }
+  }
+
+  // 创建照片-相册映射表（用于多对多关系）
+  Future<void> _createPhotoAlbumMapTable(Database db) async {
+    try {
+      await db.execute('''
+        CREATE TABLE $tablePhotoAlbumMap (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          photo_id INTEGER NOT NULL,
+          album_id TEXT NOT NULL,
+          date_added INTEGER NOT NULL,
+          FOREIGN KEY (photo_id) REFERENCES $tablePhoto (id) ON DELETE CASCADE,
+          FOREIGN KEY (album_id) REFERENCES $tablePhotoAlbum (id) ON DELETE CASCADE
+        )
+      ''');
+    } catch (e) {
+      AppLogger.log('Failed to create photo album map table: $e');
+      rethrow;
+    }
+  }
+
   // 数据库创建回调
   Future<void> _onCreate(Database db, int version) async {
     try {
@@ -374,6 +455,9 @@ class DatabaseHelper {
       await _createFinanceTable(db);
       await _createGoalTable(db); // 添加创建目标表
       await _createTravelTable(db); // 添加创建旅游表
+      await _createPhotoTable(db); // 添加创建照片表
+      await _createPhotoAlbumTable(db); // 添加创建相册表
+      await _createPhotoAlbumMapTable(db); // 添加创建照片-相册映射表
     } catch (e) {
       rethrow;
     }

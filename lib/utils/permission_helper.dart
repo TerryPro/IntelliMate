@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:intellimate/utils/app_logger.dart';
+
 
 class PermissionHelper {
   static final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
@@ -10,7 +12,7 @@ class PermissionHelper {
     // Android 13+ (API 33) 需要使用新的媒体权限
     if (Platform.isAndroid) {
       final sdkVersion = await _getAndroidSDKVersion();
-      print('Android SDK 版本: $sdkVersion');
+      AppLogger.log('Android SDK 版本: $sdkVersion');
       
       if (sdkVersion >= 33) {
         // 请求Android 13+的媒体权限
@@ -57,7 +59,7 @@ class PermissionHelper {
         return androidInfo.version.sdkInt;
       }
     } catch (e) {
-      print('获取Android SDK版本失败: $e');
+      AppLogger.log('获取Android SDK版本失败: $e');
     }
     return 29; // 默认为Android 10
   }

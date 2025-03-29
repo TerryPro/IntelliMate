@@ -5,6 +5,7 @@ import 'package:intellimate/data/datasources/database_helper.dart';
 import 'package:intellimate/data/datasources/goal_datasource.dart';
 import 'package:intellimate/data/datasources/memo_datasource.dart';
 import 'package:intellimate/data/datasources/note_datasource.dart';
+import 'package:intellimate/data/datasources/photo_datasource.dart';
 import 'package:intellimate/data/datasources/schedule_datasource.dart';
 import 'package:intellimate/data/datasources/task_datasource.dart';
 import 'package:intellimate/data/datasources/travel_datasource.dart';
@@ -13,6 +14,7 @@ import 'package:intellimate/data/repositories/daily_note_repository_impl.dart';
 import 'package:intellimate/data/repositories/goal_repository_impl.dart';
 import 'package:intellimate/data/repositories/memo_repository_impl.dart';
 import 'package:intellimate/data/repositories/note_repository_impl.dart';
+import 'package:intellimate/data/repositories/photo_repository_impl.dart';
 import 'package:intellimate/data/repositories/schedule_repository_impl.dart';
 import 'package:intellimate/data/repositories/task_repository_impl.dart';
 import 'package:intellimate/data/repositories/travel_repository_impl.dart';
@@ -21,6 +23,7 @@ import 'package:intellimate/domain/repositories/daily_note_repository.dart';
 import 'package:intellimate/domain/repositories/goal_repository.dart';
 import 'package:intellimate/domain/repositories/memo_repository.dart';
 import 'package:intellimate/domain/repositories/note_repository.dart';
+import 'package:intellimate/domain/repositories/photo_repository.dart';
 import 'package:intellimate/domain/repositories/schedule_repository.dart';
 import 'package:intellimate/domain/repositories/task_repository.dart';
 import 'package:intellimate/domain/repositories/travel_repository.dart';
@@ -64,10 +67,22 @@ import 'package:intellimate/domain/usecases/task/get_all_tasks_usecase.dart';
 import 'package:intellimate/domain/usecases/task/get_task_by_id_usecase.dart';
 import 'package:intellimate/domain/usecases/task/get_tasks_by_condition_usecase.dart';
 import 'package:intellimate/domain/usecases/task/update_task_usecase.dart';
+import 'package:intellimate/domain/usecases/photo/add_photo.dart';
+import 'package:intellimate/domain/usecases/photo/create_album.dart';
+import 'package:intellimate/domain/usecases/photo/get_all_albums.dart';
+import 'package:intellimate/domain/usecases/photo/get_all_photos.dart';
+import 'package:intellimate/domain/usecases/photo/get_photos_by_album.dart';
+import 'package:intellimate/domain/usecases/photo/import_photos.dart';
+import 'package:intellimate/domain/usecases/photo/update_photo.dart';
+import 'package:intellimate/domain/usecases/photo/delete_photo.dart';
+import 'package:intellimate/domain/usecases/photo/toggle_favorite.dart';
+import 'package:intellimate/domain/usecases/photo/update_album.dart';
+import 'package:intellimate/domain/usecases/photo/delete_album.dart';
 import 'package:intellimate/presentation/providers/daily_note_provider.dart';
 import 'package:intellimate/presentation/providers/goal_provider.dart';
 import 'package:intellimate/presentation/providers/memo_provider.dart';
 import 'package:intellimate/presentation/providers/note_provider.dart';
+import 'package:intellimate/presentation/providers/photo_provider.dart';
 import 'package:intellimate/presentation/providers/schedule_provider.dart';
 import 'package:intellimate/presentation/providers/task_provider.dart';
 import 'package:intellimate/presentation/providers/travel_provider.dart';
@@ -84,6 +99,7 @@ Future<void> setupServiceLocator() async {
   sl.registerLazySingleton<ScheduleDataSource>(() => ScheduleDataSource());
   sl.registerLazySingleton<MemoDataSource>(() => MemoDataSource());
   sl.registerLazySingleton<TravelDataSource>(() => TravelDataSource(DatabaseHelper.instance));
+  sl.registerLazySingleton<PhotoDataSource>(() => PhotoDataSource(DatabaseHelper.instance));
 
   // 仓库
   sl.registerLazySingleton<GoalRepository>(() => GoalRepositoryImpl(sl<GoalDataSource>()));
@@ -107,6 +123,9 @@ Future<void> setupServiceLocator() async {
   );
   sl.registerLazySingleton<TravelRepository>(
     () => TravelRepositoryImpl(sl<TravelDataSource>()),
+  );
+  sl.registerLazySingleton<PhotoRepository>(
+    () => PhotoRepositoryImpl(sl<PhotoDataSource>()),
   );
 
   // 笔记用例
@@ -157,6 +176,19 @@ Future<void> setupServiceLocator() async {
   sl.registerLazySingleton(() => GetAllMemos(sl<MemoRepository>()));
   sl.registerLazySingleton(() => SearchMemos(sl<MemoRepository>()));
   sl.registerLazySingleton(() => GetMemosByCategory(sl<MemoRepository>()));
+
+  // 照片用例
+  sl.registerLazySingleton(() => GetAllPhotos(sl<PhotoRepository>()));
+  sl.registerLazySingleton(() => GetPhotosByAlbum(sl<PhotoRepository>()));
+  sl.registerLazySingleton(() => GetAllAlbums(sl<PhotoRepository>()));
+  sl.registerLazySingleton(() => CreateAlbum(sl<PhotoRepository>()));
+  sl.registerLazySingleton(() => AddPhoto(sl<PhotoRepository>()));
+  sl.registerLazySingleton(() => ImportPhotos(sl<PhotoRepository>()));
+  sl.registerLazySingleton(() => UpdatePhoto(sl<PhotoRepository>()));
+  sl.registerLazySingleton(() => DeletePhoto(sl<PhotoRepository>()));
+  sl.registerLazySingleton(() => ToggleFavorite(sl<PhotoRepository>()));
+  sl.registerLazySingleton(() => UpdateAlbum(sl<PhotoRepository>()));
+  sl.registerLazySingleton(() => DeleteAlbum(sl<PhotoRepository>()));
 
   // Provider
   sl.registerFactory(() => GoalProvider(sl<GoalRepository>()));
@@ -210,6 +242,19 @@ Future<void> setupServiceLocator() async {
     getMemosByCategoryUseCase: sl<GetMemosByCategory>(),
   ));
   sl.registerFactory(() => TravelProvider(sl<TravelRepository>()));
+  sl.registerFactory(() => PhotoProvider(
+    getAllPhotos: sl<GetAllPhotos>(),
+    getPhotosByAlbum: sl<GetPhotosByAlbum>(),
+    getAllAlbums: sl<GetAllAlbums>(),
+    createAlbum: sl<CreateAlbum>(),
+    addPhoto: sl<AddPhoto>(),
+    importPhotos: sl<ImportPhotos>(),
+    updatePhoto: sl<UpdatePhoto>(),
+    deletePhoto: sl<DeletePhoto>(),
+    toggleFavorite: sl<ToggleFavorite>(),
+    updateAlbum: sl<UpdateAlbum>(),
+    deleteAlbum: sl<DeleteAlbum>(),
+  ));
   
   // 注册备忘相关依赖
   await setupMemoServiceLocator();

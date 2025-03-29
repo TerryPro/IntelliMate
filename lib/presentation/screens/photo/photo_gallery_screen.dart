@@ -1,6 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:intellimate/app/theme/app_colors.dart';
+import 'package:intellimate/app/theme/app_theme.dart';
 import 'package:intellimate/domain/entities/photo.dart';
+import 'package:intellimate/presentation/providers/photo_provider.dart';
+import 'package:intellimate/presentation/screens/photo/album_detail_screen.dart';
 import 'package:intellimate/presentation/widgets/custom_app_bar.dart';
 
 class PhotoGalleryScreen extends StatefulWidget {
@@ -11,48 +16,30 @@ class PhotoGalleryScreen extends StatefulWidget {
 }
 
 class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
-  // 当前选中的标签索引
-  int _selectedTabIndex = 0;
+  // 用于新建相册的控制器
+  final TextEditingController _albumNameController = TextEditingController();
+  final TextEditingController _albumDescController = TextEditingController();
   
-  // 标签列表
-  final List<String> _tabs = ['全部图片', '最近添加', '收藏', '已分享'];
+  @override
+  void initState() {
+    super.initState();
+    // 加载照片和相册数据
+    _loadData();
+  }
   
-  // 模拟相册数据
-  final List<PhotoAlbum> _albums = [
-    PhotoAlbum(
-      id: '1',
-      name: '旅行',
-      coverPhotoPath: 'https://images.unsplash.com/photo-1527631746610-bca00a040d60',
-      dateCreated: DateTime.now().subtract(const Duration(days: 30)),
-      dateModified: DateTime.now().subtract(const Duration(days: 5)),
-      photoCount: 86,
-    ),
-    PhotoAlbum(
-      id: '2',
-      name: '美食',
-      coverPhotoPath: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836',
-      dateCreated: DateTime.now().subtract(const Duration(days: 60)),
-      dateModified: DateTime.now().subtract(const Duration(days: 10)),
-      photoCount: 42,
-    ),
-    PhotoAlbum(
-      id: '3',
-      name: '家人',
-      coverPhotoPath: 'https://images.unsplash.com/photo-1511895426328-dc8714191300',
-      dateCreated: DateTime.now().subtract(const Duration(days: 90)),
-      dateModified: DateTime.now().subtract(const Duration(days: 2)),
-      photoCount: 128,
-    ),
-  ];
+  @override
+  void dispose() {
+    _albumNameController.dispose();
+    _albumDescController.dispose();
+    super.dispose();
+  }
   
-  // 模拟最近照片数据
-  final List<String> _recentPhotos = [
-    'https://images.unsplash.com/photo-1682687220063-4742bd7fd538',
-    'https://images.unsplash.com/photo-1682687220208-22d7a2543e88',
-    'https://images.unsplash.com/photo-1682687220923-c58b9a4592ea',
-    'https://images.unsplash.com/photo-1695765386912-e419c3dd4921',
-    'https://images.unsplash.com/photo-1695765386912-e419c3dd4921',
-  ];
+  // 加载数据
+  Future<void> _loadData() async {
+    final provider = Provider.of<PhotoProvider>(context, listen: false);
+    await provider.loadAllPhotos();
+    await provider.loadAllAlbums();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,15 +50,20 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
           UnifiedAppBar(
             title: '图片管理',
             actions: [
-              AppBarSearchButton(
+              AppBarRefreshButton(
                 onTap: () {
-                  // 搜索图片
+                  // 刷新功能
+                  _loadData();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('正在刷新...'))
+                  );
                 },
               ),
               const SizedBox(width: 8),
               AppBarAddButton(
                 onTap: () {
-                  // 添加图片
+                  // 创建相册功能
+                  _showCreateAlbumDialog(context);
                 },
               ),
             ],
@@ -79,29 +71,51 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
           
           // 内容区域
           Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 统计信息卡片
-                    _buildStatsCard(),
-                    
-                    // 分类标签
-                    _buildCategoryTabs(),
-                    
-                    // 相册列表
-                    _buildAlbumSection(),
-                    
-                    // 最近照片
-                    _buildRecentPhotosSection(),
-                    
-                    // 底部间距
-                    const SizedBox(height: 80),
-                  ],
-                ),
-              ),
+            child: Consumer<PhotoProvider>(
+              builder: (context, provider, child) {
+                if (provider.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                
+                if (provider.error != null) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(provider.error!, style: const TextStyle(color: Colors.red)),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _loadData,
+                          child: const Text('重新加载'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                
+                return RefreshIndicator(
+                  onRefresh: _loadData,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 统计信息卡片
+                          _buildStatsCard(provider),
+                          
+                          // 相册列表
+                          _buildAlbumSection(provider),
+                          
+                          // 底部间距
+                          const SizedBox(height: 80),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -110,7 +124,13 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
   }
   
   // 构建统计信息卡片
-  Widget _buildStatsCard() {
+  Widget _buildStatsCard(PhotoProvider provider) {
+    // 计算存储空间
+    final int totalSize = provider.photos.fold(0, (sum, photo) => sum + photo.size);
+    final double usedMB = totalSize / (1024 * 1024); // 转换为MB
+    const double totalMB = 1024; // 假设总空间为1GB
+    final double usageRatio = usedMB / totalMB;
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(16),
@@ -159,7 +179,7 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(2),
                       child: LinearProgressIndicator(
-                        value: 0.35,
+                        value: usageRatio.clamp(0.0, 1.0),
                         backgroundColor: Colors.grey[200],
                         valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
                         minHeight: 8,
@@ -170,14 +190,14 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '350MB',
+                          '${usedMB.toStringAsFixed(2)}MB',
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 12,
                           ),
                         ),
                         Text(
-                          '1GB',
+                          '${totalMB.toStringAsFixed(0)}MB',
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 12,
@@ -197,13 +217,18 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
           Row(
             children: [
               Expanded(
-                child: _buildStatItem('256', '总图片'),
+                child: _buildStatItem('${provider.photos.length}', '总图片'),
               ),
               Expanded(
-                child: _buildStatItem('12', '相册'),
+                child: _buildStatItem('${provider.albums.length}', '相册'),
               ),
               Expanded(
-                child: _buildStatItem('28', '本月新增'),
+                child: _buildStatItem(
+                  '${provider.photos.where((p) => 
+                    p.dateCreated.isAfter(DateTime.now().subtract(const Duration(days: 30)))
+                  ).length}', 
+                  '本月新增'
+                ),
               ),
             ],
           ),
@@ -243,56 +268,18 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
     );
   }
   
-  // 构建分类标签
-  Widget _buildCategoryTabs() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      height: 40,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: _tabs.length,
-        itemBuilder: (context, index) {
-          final isSelected = _selectedTabIndex == index;
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedTabIndex = index;
-              });
-            },
-            child: Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary : Colors.grey[200],
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Center(
-                child: Text(
-                  _tabs[index],
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.grey[600],
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-  
   // 构建相册部分
-  Widget _buildAlbumSection() {
+  Widget _buildAlbumSection(PhotoProvider provider) {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       child: Column(
         children: [
-          // 标题栏
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
+          // 标题栏 - 删除管理功能和图标
+          const Padding(
+            padding: EdgeInsets.only(bottom: 16.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
                 '我的相册',
                 style: TextStyle(
                   fontSize: 18,
@@ -300,94 +287,54 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
                   color: Colors.black87,
                 ),
               ),
-              TextButton.icon(
-                onPressed: () {
-                  // 管理相册
-                },
-                icon: const Icon(
-                  Icons.settings,
-                  size: 16,
-                  color: AppColors.primary,
-                ),
-                label: const Text(
-                  '管理',
-                  style: TextStyle(
-                    color: AppColors.primary,
-                    fontSize: 14,
+            ),
+          ),
+          
+          // 相册网格 - 删除创建相册的大面板
+          if (provider.albums.isEmpty)
+            // 空状态显示
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.photo_album_outlined,
+                    size: 64,
+                    color: Colors.grey,
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    '暂无相册',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: () => _showCreateAlbumDialog(context),
+                    icon: const Icon(Icons.add),
+                    label: const Text('创建相册'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryColor,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // 相册网格
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            childAspectRatio: 1,
-            children: [
-              // 创建新相册
-              _buildCreateAlbumItem(),
-              
-              // 相册列表
-              ..._albums.map((album) => _buildAlbumItem(album)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-  
-  // 构建创建相册项
-  Widget _buildCreateAlbumItem() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.blackWithOpacity05,
-            blurRadius: 10,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () {
-          // 创建相册
-        },
-        borderRadius: BorderRadius.circular(8),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: AppColors.primaryLight,
-                borderRadius: BorderRadius.circular(28),
-              ),
-              child: const Icon(
-                Icons.add,
-                color: AppColors.primary,
-                size: 28,
-              ),
+            )
+          else
+            // 相册网格
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              childAspectRatio: 1,
+              children: provider.albums.map((album) => _buildAlbumItem(album)).toList(),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              '创建相册',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -397,56 +344,66 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
     return GestureDetector(
       onTap: () {
         // 导航到相册详情页面
-        Navigator.pushNamed(
+        Navigator.push(
           context,
-          '/photo_gallery/album',
-          arguments: album,
+          MaterialPageRoute(
+            builder: (context) => AlbumDetailScreen(albumId: album.id),
+          ),
         );
       },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: const [
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
             BoxShadow(
-              color: AppColors.blackWithOpacity05,
-              blurRadius: 10,
-              offset: Offset(0, 2),
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           child: Stack(
             fit: StackFit.expand,
             children: [
               // 相册封面
-              Image.network(
-                album.coverPhotoPath ?? '',
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[300],
+              album.coverPhotoPath != null 
+                ? Image.file(
+                    File(album.coverPhotoPath!),
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: AppTheme.primaryVeryLightColor,
+                        child: const Icon(
+                          Icons.image_not_supported,
+                          color: AppTheme.primaryColor,
+                          size: 40,
+                        ),
+                      );
+                    },
+                  )
+                : Container(
+                    color: AppTheme.primaryVeryLightColor,
                     child: const Icon(
-                      Icons.image_not_supported,
-                      color: Colors.grey,
+                      Icons.photo_album,
+                      color: AppTheme.primaryColor,
                       size: 40,
                     ),
-                  );
-                },
-              ),
+                  ),
               
               // 渐变遮罩
               Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      AppColors.blackWithOpacity50,
+                      Colors.black.withOpacity(0.5),
                     ],
-                    stops: [0.6, 1.0],
+                    stops: const [0.6, 1.0],
                   ),
                 ),
               ),
@@ -465,15 +422,41 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black45,
+                            offset: Offset(0, 1),
+                            blurRadius: 2,
+                          ),
+                        ],
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${album.photoCount}张照片',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                      ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.photo,
+                          color: Colors.white70,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${album.photoCount}张照片',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black45,
+                                offset: Offset(0, 1),
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -485,111 +468,150 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
     );
   }
   
-  // 构建最近照片部分
-  Widget _buildRecentPhotosSection() {
-    return Column(
-      children: [
-        // 标题栏
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              '最近照片',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                // 查看全部
-              },
-              child: const Text(
-                '查看全部',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ],
+  // 显示创建相册对话框 - 优化UI风格
+  void _showCreateAlbumDialog(BuildContext context) {
+    _albumNameController.clear();
+    _albumDescController.clear();
+       
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
         ),
-        
-        const SizedBox(height: 16),
-        
-        // 照片网格
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            childAspectRatio: 1,
+        title: const Text(
+          '创建相册',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.textPrimaryColor,
           ),
-          itemCount: _recentPhotos.length + 1, // 加1是为了显示"更多"项
-          itemBuilder: (context, index) {
-            if (index < _recentPhotos.length) {
-              return _buildPhotoItem(_recentPhotos[index]);
-            } else {
-              return _buildMorePhotosItem();
-            }
-          },
         ),
-      ],
-    );
-  }
-  
-  // 构建照片项
-  Widget _buildPhotoItem(String photoUrl) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Image.network(
-        photoUrl,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: Colors.grey[300],
-            child: const Icon(
-              Icons.image_not_supported,
-              color: Colors.grey,
-              size: 30,
+        content: Container(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _albumNameController,
+                decoration: InputDecoration(
+                  labelText: '相册名称',
+                  hintText: '请输入相册名称',
+                  prefixIcon: const Icon(Icons.photo_album_outlined, color: AppTheme.primaryColor),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                ),
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _albumDescController,
+                decoration: InputDecoration(
+                  labelText: '相册描述 (可选)',
+                  hintText: '请输入相册描述',
+                  prefixIcon: const Icon(Icons.description_outlined, color: AppTheme.primaryColor),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                ),
+                style: const TextStyle(fontSize: 16),
+                maxLines: 3,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.grey[600],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
-          );
-        },
-      ),
-    );
-  }
-  
-  // 构建更多照片项
-  Widget _buildMorePhotosItem() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.network(
-            _recentPhotos.last,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return Container(color: Colors.grey[300]);
+            child: const Text(
+              '取消',
+              style: TextStyle(fontSize: 16),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (_albumNameController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  const SnackBar(
+                    content: Text('请输入相册名称'),
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: AppTheme.errorColor,
+                  )
+                );
+                return;
+              }
+              
+              final provider = Provider.of<PhotoProvider>(context, listen: false);
+              final albumName = _albumNameController.text.trim();
+              final albumDesc = _albumDescController.text.trim().isNotEmpty
+                  ? _albumDescController.text.trim()
+                  : null;
+              
+              Navigator.pop(dialogContext);
+              
+              final albumId = await provider.createNewAlbum(
+                albumName,
+                description: albumDesc,
+              );
+              
+              if (!mounted) return;
+              
+              if (albumId != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('相册 "$albumName" 创建成功'),
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: AppTheme.successColor,
+                  )
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('创建相册失败，请重试'),
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: AppTheme.errorColor,
+                  )
+                );
+              }
             },
-          ),
-          Container(
-            color: AppColors.blackWithOpacity50,
-            child: const Center(
-              child: Text(
-                '+42',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryColor,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+            child: const Text(
+              '创建',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
         ],
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
     );
   }

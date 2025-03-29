@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:intellimate/app/di/service_locator.dart';
 import 'package:intellimate/app/routes/app_routes.dart';
 import 'package:intellimate/app/theme/app_theme.dart';
@@ -14,6 +16,7 @@ import 'package:intellimate/presentation/providers/goal_provider.dart';
 import 'package:intellimate/presentation/providers/memo_provider.dart';
 import 'package:intellimate/presentation/providers/note_provider.dart';
 import 'package:intellimate/presentation/providers/password_provider.dart';
+import 'package:intellimate/presentation/providers/photo_provider.dart';
 import 'package:intellimate/presentation/providers/schedule_provider.dart';
 import 'package:intellimate/presentation/providers/task_provider.dart';
 import 'package:intellimate/presentation/providers/travel_provider.dart';
@@ -27,6 +30,9 @@ void main() async {
 
   // 初始化数据库
   await _initializeDatabase();
+
+  // 创建必要的目录
+  await _createRequiredDirectories();
 
   // 初始化日期格式化（支持中文日期）
   await initializeDateFormatting('zh_CN', null);
@@ -68,6 +74,24 @@ Future<void> _initializeDatabase() async {
   await databaseHelper.ensureInitialized();
 }
 
+// 创建应用必要的目录
+Future<void> _createRequiredDirectories() async {
+  try {
+    // 获取应用文档目录
+    final appDir = await getApplicationDocumentsDirectory();
+    
+    // 创建照片存储目录
+    final photosDir = Directory('${appDir.path}/files/photos');
+    if (!await photosDir.exists()) {
+      await photosDir.create(recursive: true);
+    }
+    
+    // 这里可以添加其他需要创建的目录
+  } catch (e) {
+    print('创建目录失败: $e');
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -75,10 +99,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-            create: (_) => UserProvider(sl<UserRepository>())),
-        ChangeNotifierProvider(
-            create: (_) => GoalProvider(sl<GoalRepository>())),
+        ChangeNotifierProvider(create: (_) => UserProvider(sl<UserRepository>())),
+        ChangeNotifierProvider(create: (_) => GoalProvider(sl<GoalRepository>())),
         ChangeNotifierProvider(create: (_) => sl<NoteProvider>()),
         ChangeNotifierProvider(create: (_) => sl<TaskProvider>()),
         ChangeNotifierProvider(create: (_) => sl<DailyNoteProvider>()),
@@ -86,8 +108,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => sl<MemoProvider>()),
         ChangeNotifierProvider(create: (_) => FinanceProvider()),
         ChangeNotifierProvider(create: (_) => PasswordProvider()),
-        ChangeNotifierProvider(
-            create: (_) => TravelProvider(sl<TravelRepository>())),
+        ChangeNotifierProvider(create: (_) => sl<PhotoProvider>()),
+        ChangeNotifierProvider(create: (_) => TravelProvider(sl<TravelRepository>())),
       ],
       child: MaterialApp(
         title: 'IntelliMate',

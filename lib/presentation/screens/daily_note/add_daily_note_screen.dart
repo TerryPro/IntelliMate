@@ -304,7 +304,7 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
         controller: _contentController,
         maxLines: 5,
         decoration: const InputDecoration(
-          hintText: '记录你的点滴...',
+          hintText: '此刻有什么想法...',
           border: InputBorder.none,
           hintStyle: TextStyle(color: Colors.grey),
         ),
