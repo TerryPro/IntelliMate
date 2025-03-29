@@ -5,6 +5,8 @@ import 'package:intellimate/presentation/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'debug_info_screen.dart';
 import 'dart:io';
+import 'data_backup_screen.dart';
+import 'data_export_import_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -102,14 +104,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           _buildSettingSection('数据管理', [
                             _buildSettingItem(
                               icon: Icons.file_upload,
-                              title: '数据导入导出',
-                              onTap: () {},
+                              title: '数据导出',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const DataExportImportScreen(initialTab: 0),
+                                  ),
+                                );
+                              },
+                            ),
+                            _buildSettingItem(
+                              icon: Icons.file_download,
+                              title: '数据导入',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const DataExportImportScreen(initialTab: 1),
+                                  ),
+                                );
+                              },
                             ),
                             _buildSettingItem(
                               icon: Icons.cloud_upload,
                               title: '数据备份',
                               subtitle: '自动备份已开启',
-                              onTap: () {},
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const DataBackupScreen(),
+                                  ),
+                                );
+                              },
                             ),
                           ]),
 

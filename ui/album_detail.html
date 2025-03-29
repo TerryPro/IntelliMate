@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>相册详情</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="status-bar text-gray-800">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <!-- 头部 -->
+        <div class="bg-primary-400 text-white p-5 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="photo_gallery.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-arrow-left text-white"></i>
+                </a>
+                <h1 class="text-xl font-bold">旅行</h1>
+            </div>
+            <div class="flex items-center">
+                <button class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-2">
+                    <i class="fas fa-search text-white"></i>
+                </button>
+                <button class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-2">
+                    <i class="fas fa-share-alt text-white"></i>
+                </button>
+                <a href="album_settings.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-ellipsis-v text-white"></i>
+                </a>
+            </div>
+        </div>
+        
+        <!-- 内容区域 -->
+        <div class="p-5">
+            <!-- 相册信息 -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm mb-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full bg-cover bg-center mr-4" style="background-image: url('https://images.unsplash.com/photo-1527631746610-bca00a040d60?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></div>
+                    <div class="flex-1">
+                        <div class="text-lg font-bold text-gray-800">旅行</div>
+                        <div class="text-sm text-gray-500">86张照片 · 最近更新于2023年10月15日</div>
+                    </div>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <button class="flex items-center text-gray-600">
+                        <i class="fas fa-heart mr-1 text-primary-400"></i>
+                        <span>收藏</span>
+                    </button>
+                    <button class="flex items-center text-gray-600">
+                        <i class="fas fa-download mr-1"></i>
+                        <span>下载</span>
+                    </button>
+                    <button class="flex items-center text-gray-600">
+                        <i class="fas fa-share-alt mr-1"></i>
+                        <span>分享</span>
+                    </button>
+                    <button class="flex items-center text-gray-600">
+                        <i class="fas fa-trash-alt mr-1"></i>
+                        <span>删除</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 照片筛选 -->
+            <div class="mb-5 overflow-x-auto scrollbar-hide">
+                <div class="flex space-x-2 pb-2">
+                    <div class="bg-primary-400 text-white px-4 py-2 rounded-full whitespace-nowrap">
+                        全部照片
+                    </div>
+                    <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">
+                        2023年
+                    </div>
+                    <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">
+                        2022年
+                    </div>
+                    <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full whitespace-nowrap">
+                        2021年
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 照片网格 -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">所有照片</h2>
+                    <div class="flex items-center">
+                        <button class="w-8 h-8 bg-gray-200 rounded-l-lg flex items-center justify-center">
+                            <i class="fas fa-th text-gray-600"></i>
+                        </button>
+                        <button class="w-8 h-8 bg-gray-100 rounded-r-lg flex items-center justify-center">
+                            <i class="fas fa-list text-gray-400"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-2">
+                    <a href="photo_detail.html" class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1527631746610-bca00a040d60?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></a>
+                    <a href="photo_detail.html" class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1488085061387-422e29b40080?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></a>
+                    <a href="photo_detail.html" class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></a>
+                    <a href="photo_detail.html" class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1504150558240-0b4fd8946624?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></a>
+                    <a href="photo_detail.html" class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></a>
+                    <a href="photo_detail.html" class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1499678329028-101435549a4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></a>
+                    <a href="photo_detail.html" class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1503220317375-aaad61436b1b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></a>
+                    <a href="photo_detail.html" class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></a>
+                    <a href="photo_detail.html" class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1516483638261-f4dbaf036963?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></a>
+                </div>
+            </div>
+            
+            <!-- 日期分组 -->
+            <div class="mb-10">
+                <div class="text-sm font-medium text-gray-500 mb-3">2023年10月</div>
+                <div class="grid grid-cols-3 gap-2 mb-6">
+                    <a href="photo_detail.html" class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1527631746610-bca00a040d60?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></a>
+                    <a href="photo_detail.html" class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1488085061387-422e29b40080?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></a>
+                    <a href="photo_detail.html" class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></a>
+                </div>
+                
+                <div class="text-sm font-medium text-gray-500 mb-3">2023年9月</div>
+                <div class="grid grid-cols-3 gap-2">
+                    <a href="photo_detail.html" class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1504150558240-0b4fd8946624?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></a>
+                    <a href="photo_detail.html" class="aspect-square bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash

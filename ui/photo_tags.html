@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>照片标签</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="status-bar text-gray-800">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <!-- 头部 -->
+        <div class="bg-primary-400 text-white p-5 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="photo_gallery.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-arrow-left text-white"></i>
+                </a>
+                <h1 class="text-xl font-bold">照片标签</h1>
+            </div>
+            <div class="flex items-center">
+                <button class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-2">
+                    <i class="fas fa-search text-white"></i>
+                </button>
+                <button class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-plus text-white"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 内容区域 -->
+        <div class="p-5">
+            <!-- 常用标签 -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">常用标签</h2>
+                    <a href="tag_management.html" class="text-primary-400 text-sm">管理</a>
+                </div>
+                
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <div class="bg-primary-400 text-white px-4 py-2 rounded-full flex items-center">
+                        <span>旅行</span>
+                        <span class="ml-2 bg-white/20 text-xs px-2 py-0.5 rounded-full">86</span>
+                    </div>
+                    <div class="bg-primary-400 text-white px-4 py-2 rounded-full flex items-center">
+                        <span>家人</span>
+                        <span class="ml-2 bg-white/20 text-xs px-2 py-0.5 rounded-full">128</span>
+                    </div>
+                    <div class="bg-primary-400 text-white px-4 py-2 rounded-full flex items-center">
+                        <span>美食</span>
+                        <span class="ml-2 bg-white/20 text-xs px-2 py-0.5 rounded-full">42</span>
+                    </div>
+                    <div class="bg-primary-400 text-white px-4 py-2 rounded-full flex items-center">
+                        <span>风景</span>
+                        <span class="ml-2 bg-white/20 text-xs px-2 py-0.5 rounded-full">53</span>
+                    </div>
+                    <div class="bg-primary-400 text-white px-4 py-2 rounded-full flex items-center">
+                        <span>建筑</span>
+                        <span class="ml-2 bg-white/20 text-xs px-2 py-0.5 rounded-full">37</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 所有标签 -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">所有标签</h2>
+                    <div class="relative">
+                        <input type="text" placeholder="搜索标签" class="bg-gray-100 rounded-full py-1.5 px-4 text-sm pr-8 focus:outline-none focus:ring-2 focus:ring-primary-400">
+                        <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                    <!-- 标签列表 -->
+                    <div class="divide-y divide-gray-100">
+                        <!-- 标签项 -->
+                        <div class="p-4 flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                    <i class="fas fa-tag"></i>
+                                </div>
+                                <div>
+                                    <div class="text-gray-800 font-medium">旅行</div>
+                                    <div class="text-xs text-gray-500">86张照片</div>
+                                </div>
+                            </div>
+                            <button class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="p-4 flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                    <i class="fas fa-tag"></i>
+                                </div>
+                                <div>
+                                    <div class="text-gray-800 font-medium">家人</div>
+                                    <div class="text-xs text-gray-500">128张照片</div>
+                                </div>
+                            </div>
+                            <button class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="p-4 flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                    <i class="fas fa-tag"></i>
+                                </div>
+                                <div>
+                                    <div class="text-gray-800 font-medium">美食</div>
+                                    <div class="text-xs text-gray-500">42张照片</div>
+                                </div>
+                            </div>
+                            <button class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="p-4 flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                    <i class="fas fa-tag"></i>
+                                </div>
+                                <div>
+                                    <div class="text-gray-800 font-medium">风景</div>
+                                    <div class="text-xs text-gray-500">53张照片</div>
+                                </div>
+                            </div>
+                            <button class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="p-4 flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                    <i class="fas fa-tag"></i>
+                                </div>
+                                <div>
+                                    <div class="text-gray-800 font-medium">建筑</div>
+                                    <div class="text-xs text-gray-500">37张照片</div>
+                                </div>
+                            </div>
+                            <button class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="p-4 flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                    <i class="fas fa-tag"></i>
+                                </div>
+                                <div>
+                                    <div class="text-gray-800 font-medium">宠物</div>
+                                    <div class="text-xs text-gray-500">24张照片</div>
+                                </div>
+                            </div>
+                            <button class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="p-4 flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center text-primary-400 mr-3">
+                                    <i class="fas fa-tag"></i>
+                                </div>
+                                <div>
+                                    <div class="text-gray-800 font-medium">朋友</div>
+                                    <div class="text-xs text-gray-500">68张照片</div>
+                                </div>
+                            </div>
+                            <button class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 创建新标签 -->
+            <div class="fixed bottom-20 right-5 w-14 h-14 bg-primary-400 rounded-full shadow-lg flex items-center justify-center text-white text-xl">
+                <i class="fas fa-plus"></i>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

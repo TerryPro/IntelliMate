@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>相册设置</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="status-bar text-gray-800">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <!-- 头部 -->
+        <div class="bg-primary-400 text-white p-5 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="album_detail.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-arrow-left text-white"></i>
+                </a>
+                <h1 class="text-xl font-bold">相册设置</h1>
+            </div>
+            <div class="flex items-center">
+                <button class="bg-white/20 px-4 py-1.5 rounded-full text-sm">
+                    保存
+                </button>
+            </div>
+        </div>
+        
+        <!-- 内容区域 -->
+        <div class="p-5">
+            <!-- 相册封面 -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm mb-6">
+                <div class="text-gray-800 font-medium mb-4">相册封面</div>
+                <div class="flex items-center">
+                    <div class="w-20 h-20 rounded-lg bg-cover bg-center mr-4" style="background-image: url('https://images.unsplash.com/photo-1527631746610-bca00a040d60?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></div>
+                    <div class="flex-1">
+                        <button class="w-full bg-gray-100 text-gray-600 rounded-lg py-2 mb-2 text-sm">
+                            <i class="fas fa-camera mr-1"></i> 更换封面
+                        </button>
+                        <button class="w-full bg-gray-100 text-gray-600 rounded-lg py-2 text-sm">
+                            <i class="fas fa-random mr-1"></i> 随机封面
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 基本信息 -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm mb-6">
+                <div class="text-gray-800 font-medium mb-4">基本信息</div>
+                <div class="mb-4">
+                    <label class="block text-gray-600 text-sm mb-1">相册名称</label>
+                    <input type="text" value="旅行" class="w-full bg-gray-100 border-0 rounded-lg p-3 text-gray-800 focus:ring-2 focus:ring-primary-400 focus:bg-white">
+                </div>
+                <div>
+                    <label class="block text-gray-600 text-sm mb-1">相册描述</label>
+                    <textarea class="w-full bg-gray-100 border-0 rounded-lg p-3 text-gray-800 focus:ring-2 focus:ring-primary-400 focus:bg-white h-24 resize-none">记录我的旅行足迹，分享旅途中的美好瞬间。</textarea>
+                </div>
+            </div>
+            
+            <!-- 隐私设置 -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm mb-6">
+                <div class="text-gray-800 font-medium mb-4">隐私设置</div>
+                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                    <div>
+                        <div class="text-gray-800">私密相册</div>
+                        <div class="text-xs text-gray-500">仅自己可见</div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" value="" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-400"></div>
+                    </label>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                    <div>
+                        <div class="text-gray-800">允许评论</div>
+                        <div class="text-xs text-gray-500">他人可以评论你

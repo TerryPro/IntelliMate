@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>照片详情</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-black">
+    <div class="status-bar text-white">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <!-- 头部 -->
+        <div class="bg-black text-white p-5 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="album_detail.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-arrow-left text-white"></i>
+                </a>
+                <h1 class="text-xl font-bold">照片详情</h1>
+            </div>
+            <div class="flex items-center">
+                <a href="photo_edit.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-2">
+                    <i class="fas fa-edit text-white"></i>
+                </a>
+                <button class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-ellipsis-v text-white"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 照片展示 -->
+        <div class="relative">
+            <div class="w-full aspect-square bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1527631746610-bca00a040d60?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')">
+            </div>
+            
+            <!-- 照片导航 -->
+            <div class="absolute top-1/2 left-0 right-0 flex justify-between px-4 -translate-y-1/2">
+                <button class="w-10 h-10 bg-black/30 rounded-full flex items-center justify-center text-white">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="w-10 h-10 bg-black/30 rounded-full flex items-center justify-center text-white">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 照片信息 -->
+        <div class="p-5">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h2 class="text-white text-lg font-medium">巴黎埃菲尔铁塔</h2>
+                    <div class="text-gray-400 text-sm">2023年10月15日 · 旅行相册</div>
+                </div>
+                <div class="flex">
+                    <button class="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center mr-2">
+                        <i class="fas fa-heart text-primary-400"></i>
+                    </button>
+                    <div class="text-white text-sm flex items-center">128</div>
+                </div>
+            </div>
+            
+            <!-- 照片标签 -->
+            <div class="mb-5">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="text-gray-400 text-sm">标签</div>
+                    <a href="photo_tag_edit.html" class="text-primary-400 text-sm">编辑</a>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <a href="tag_detail.html" class="bg-white/10 text-white px-3 py-1 rounded-full text-sm">旅行</a>
+                    <a href="tag_detail.html" class="bg-white/10 text-white px-3 py-1 rounded-full text-sm">建筑</a>
+                    <a href="tag_detail.html" class="bg-white/10 text-white px-3 py-1 rounded-full text-sm">巴黎</a>
+                </div>
+            </div>
+            
+            <!-- 照片元数据 -->
+            <div class="bg-white/10 rounded-xl p-4 mb-6">
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <div class="text-gray-400 text-xs mb-1">相机</div>
+                        <div class="text-white text-sm">iPhone 13 Pro</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-400 text-xs mb-1">尺寸</div>
+                        <div class="text-white text-sm">4032 x 3024</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-400 text-xs mb-1">大小</div>
+                        <div class="text-white text-sm">3.2 MB</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-400 text-xs mb-1">光圈</div>
+                        <div class="text-white text-sm">f/1.8</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-400 text-xs mb-1">快门速度</div>
+                        <div class="text-white text-sm">1/125s</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-400 text-xs mb-1">ISO</div>
+                        <div class="text-white text-sm">100</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 位置信息 -->
+            <div class="mb-6">
+                <div class="text-white font-medium mb-2">位置信息</div>
+                <div class="bg-white/10 rounded-xl p-4 flex items-center">
+                    <div class="w-10 h-10 bg-primary-400/20 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-map-marker-alt text-primary-400"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-white text-sm">法国巴黎埃菲尔铁塔</div>
+                        <div class="text-gray-400 text-xs">48.8584° N, 2.2945° E</div>
+                    </div>
+                    <button class="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
+                        <i class="fas fa-map text-white"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 操作按钮 -->
+            <div class="grid grid-cols-4 gap-3 mb-6">
+                <button class="flex flex-col items-center">
+                    <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-1">
+                        <i class="fas fa-share-alt text-white"></i>
+                    </div>
+                    <div class="text-white text-xs">分享</div>
+                </button>
+                <button class="flex flex-col items-center">
+                    <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-1">
+                        <i class="fas fa-download text-white"></i>
+                    </div>
+                    <div class="text-white text-xs">下载</div>
+                </button>
+                <button class="flex flex-col items-center">
+                    <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-1">
+                        <i class="fas fa-folder-plus text-white"></i>
+                    </div>
+                    <div class="text-white text-xs">添加到</div>
+                </button>
+                <button class="flex flex-col items-center">
+                    <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-1">
+                        <i class="fas fa-trash-alt text-white"></i>
+                    </div>
+                    <div class="text-white text-xs">删除</div>
+                </button>
+            </div>
+            
+            <!-- 相似照片 -->
+            <div class="mb-10">
+                <div class="text-white font-medium mb-3">相似照片</div>
+                <div class="overflow-x-auto scrollbar-hide">
+                    <div class="flex space-x-3 pb-2">
+                        <div class="w-24 h-24 bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></div>
+                        <div class="w-24 h-24 bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></div>
+                        <div class="w-24 h-24 bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1499856871958-5b9627545d1a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></div>
+                        <div class="w-24 h-24 bg-cover bg-center rounded-lg" style="background-image: url('https://images.unsplash.com/photo-1503917988258-f87a78e3c995?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

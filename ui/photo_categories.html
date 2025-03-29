@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>照片分类</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eefbfa',
+                            100: '#d5f5f2',
+                            200: '#aeebe5',
+                            300: '#76dcd2',
+                            400: '#3ecabb',
+                            500: '#26b0a1',
+                            600: '#1d8c81',
+                            700: '#1c706a',
+                            800: '#1b5955',
+                            900: '#1a4a47',
+                            950: '#0a2c2a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="status-bar text-gray-800">
+        <div>9:41</div>
+        <div class="flex gap-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+    <div class="h-[calc(100%-44px)] overflow-y-auto scrollbar-thin">
+        <!-- 头部 -->
+        <div class="bg-primary-400 text-white p-5 flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="photo_gallery.html" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-arrow-left text-white"></i>
+                </a>
+                <h1 class="text-xl font-bold">照片分类</h1>
+            </div>
+            <div class="flex items-center">
+                <button class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-2">
+                    <i class="fas fa-search text-white"></i>
+                </button>
+                <button class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-plus text-white"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 内容区域 -->
+        <div class="p-5">
+            <!-- 智能分类 -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">智能分类</h2>
+                    <a href="#" class="text-primary-400 text-sm">查看全部</a>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- 人物分类 -->
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="aspect-square bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')">
+                            <div class="w-full h-full bg-black/30 p-3 flex flex-col justify-end">
+                                <div class="text-white font-medium">人物</div>
+                                <div class="text-white/80 text-xs">124张照片</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 风景分类 -->
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="aspect-square bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')">
+                            <div class="w-full h-full bg-black/30 p-3 flex flex-col justify-end">
+                                <div class="text-white font-medium">风景</div>
+                                <div class="text-white/80 text-xs">86张照片</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 建筑分类 -->
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="aspect-square bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1511818966892-d7d671e672a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')">
+                            <div class="w-full h-full bg-black/30 p-3 flex flex-col justify-end">
+                                <div class="text-white font-medium">建筑</div>
+                                <div class="text-white/80 text-xs">53张照片</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 美食分类 -->
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="aspect-square bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80')">
+                            <div class="w-full h-full bg-black/30 p-3 flex flex-col justify-end">
+                                <div class="text-white font-medium">美食</div>
+                                <div class="text-white/80 text-xs">42张照片</div>
+                            </div>
+                        </div>
+                    </div>

@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:intellimate/utils/app_logger.dart';
+import 'package:intellimate/utils/image_storage_helper.dart';
 
 class AddDailyNoteScreen extends StatefulWidget {
   const AddDailyNoteScreen({super.key});
@@ -91,6 +92,9 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
 
       DailyNote? dailyNote;
 
+      // 由于之前在选取图片时已经处理了图片存储，这里直接使用_selectedImages中的路径
+      final List<String>? images = _selectedImages.isNotEmpty ? _selectedImages : null;
+
       // 根据是否为编辑模式执行不同操作
       if (_isEditMode && _editingNote != null) {
         // 更新已有点滴 - 创建新的DailyNote对象保留原始ID和时间戳
@@ -98,7 +102,7 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
           id: _editingNote!.id,
           content: _contentController.text,
           author: _editingNote!.author,
-          images: _selectedImages.isNotEmpty ? _selectedImages : null,
+          images: images,
           location: _locationController.text.isNotEmpty
               ? _locationController.text
               : null,
@@ -116,7 +120,7 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
         dailyNote = await dailyNoteProvider.createDailyNote(
           content: _contentController.text,
           author: '用户',
-          images: _selectedImages.isNotEmpty ? _selectedImages : null,
+          images: images,
           location: _locationController.text.isNotEmpty
               ? _locationController.text
               : null,
@@ -161,12 +165,17 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
       );
 
       if (image != null) {
+        // 创建临时文件对象
+        final imageFile = File(image.path);
+        // 使用ImageStorageHelper保存到daily_notes目录
+        final savedPath = await ImageStorageHelper.instance.saveDailyNoteImage(imageFile);
+        
         setState(() {
-          _selectedImage = File(image.path);
+          _selectedImage = File(savedPath);
           // 清空之前的图片列表，因为我们只允许一张图片
           _selectedImages.clear();
-          // 存储图片路径
-          _selectedImages.add(image.path);
+          // 存储保存后的图片路径
+          _selectedImages.add(savedPath);
         });
       }
     } catch (e) {
@@ -190,12 +199,17 @@ class _AddDailyNoteScreenState extends State<AddDailyNoteScreen> {
       );
 
       if (photo != null) {
+        // 创建临时文件对象
+        final photoFile = File(photo.path);
+        // 使用ImageStorageHelper保存到daily_notes目录
+        final savedPath = await ImageStorageHelper.instance.saveDailyNoteImage(photoFile);
+        
         setState(() {
-          _selectedImage = File(photo.path);
+          _selectedImage = File(savedPath);
           // 清空之前的图片列表，因为我们只允许一张图片
           _selectedImages.clear();
-          // 存储图片路径
-          _selectedImages.add(photo.path);
+          // 存储保存后的图片路径
+          _selectedImages.add(savedPath);
         });
       }
     } catch (e) {
