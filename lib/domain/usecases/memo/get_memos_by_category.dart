@@ -1,13 +1,13 @@
 import 'package:intellimate/domain/repositories/memo_repository.dart';
 import 'package:intellimate/domain/core/result.dart';
-import 'package:intellimate/data/models/memo_model.dart';
+import 'package:intellimate/domain/entities/memo.dart';
 
 class GetMemosByCategory {
   final MemoRepository repository;
 
   GetMemosByCategory(this.repository);
 
-  Future<Result<List<MemoModel>>> call(String category) async {
+  Future<Result<List<Memo>>> call(String category) async {
     try {
       return await repository.getMemosByCategory(category);
     } catch (e) {

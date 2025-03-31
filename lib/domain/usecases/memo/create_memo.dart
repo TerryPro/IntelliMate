@@ -9,7 +9,7 @@ class CreateMemo {
 
   Future<Result<Memo>> call({
     required String title,
-    required String content,
+    String? content,
     String? category,
   }) async {
     try {

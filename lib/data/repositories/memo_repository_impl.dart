@@ -5,53 +5,67 @@ import 'package:intellimate/domain/repositories/memo_repository.dart';
 import 'package:intellimate/domain/core/result.dart';
 
 class MemoRepositoryImpl implements MemoRepository {
+  // 将MemoModel转换为Memo实体
+  Memo _convertToEntity(MemoModel model) {
+    return Memo(
+      id: model.id,
+      title: model.title,
+      content: model.content,
+      category: model.category,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+    );
+  }
   final MemoDataSource _dataSource;
 
   MemoRepositoryImpl(this._dataSource);
 
   @override
-  Future<Result<MemoModel>> getMemoById(String id) async {
+  Future<Result<Memo>> getMemoById(String id) async {
     try {
-      final memo = await _dataSource.getMemoById(id);
-      if (memo == null) {
+      final memoModel = await _dataSource.getMemoById(id);
+      if (memoModel == null) {
         return Result.failure('备忘不存在');
       }
-      return Result.success(memo);
+      // 返回领域实体而非数据模型
+      return Result.success(_convertToEntity(memoModel));
     } catch (e) {
       return Result.failure('获取备忘失败: ${e.toString()}');
     }
   }
 
   @override
-  Future<Result<MemoModel>> createMemo({
+  Future<Result<Memo>> createMemo({
     required String title,
-    required String content,
+    String? content,
     String? category,
   }) async {
     try {
       final memo = MemoModel(
         id: '', // 会在数据源中生成
         title: title.trim(),
-        content: content.trim(),
+        content: content?.trim(),
         category: category?.trim(),
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
 
       final result = await _dataSource.createMemo(memo);
-      return Result.success(result);
+      // 返回领域实体而非数据模型
+      return Result.success(_convertToEntity(result));
     } catch (e) {
       return Result.failure('创建备忘失败: ${e.toString()}');
     }
   }
 
   @override
-  Future<Result<MemoModel>> updateMemo(Memo memo) async {
+  Future<Result<Memo>> updateMemo(Memo memo) async {
     try {
       final memoModel = MemoModel.fromEntity(memo);
       final result = await _dataSource.updateMemo(memoModel);
       if (result > 0) {
-        return Result.success(memoModel);
+        // 返回领域实体而非数据模型
+        return Result.success(_convertToEntity(memoModel));
       }
       return Result.failure('更新备忘失败：未找到对应记录');
     } catch (e) {
@@ -73,7 +87,7 @@ class MemoRepositoryImpl implements MemoRepository {
   }
 
   @override
-  Future<Result<List<MemoModel>>> getAllMemos({
+  Future<Result<List<Memo>>> getAllMemos({
     int? limit,
     int? offset,
     String? orderBy,
@@ -86,27 +100,29 @@ class MemoRepositoryImpl implements MemoRepository {
         orderBy: orderBy,
         descending: descending,
       );
-      return Result.success(memos.map((m) => m).toList());
+      // 返回领域实体列表而非数据模型列表
+      return Result.success(memos.map((memo) => _convertToEntity(memo)).toList());
     } catch (e) {
       return Result.failure('获取所有备忘失败: ${e.toString()}');
     }
   }
 
   @override
-  Future<Result<List<MemoModel>>> searchMemos(String query) async {
+  Future<Result<List<Memo>>> searchMemos(String query) async {
     try {
       final memos = await _dataSource.searchMemos(query);
-      return Result.success(memos.map((m) => m).toList());
+      // 返回领域实体列表而非数据模型列表
+      return Result.success(memos.map((memo) => _convertToEntity(memo)).toList());
     } catch (e) {
       return Result.failure('搜索备忘失败: ${e.toString()}');
     }
   }
 
   @override
-  Future<Result<List<MemoModel>>> getMemosByCategory(String category) async {
+  Future<Result<List<Memo>>> getMemosByCategory(String category) async {
     try {
       final memos = await _dataSource.getMemosByCategory(category);
-      return Result.success(memos.map((m) => m).toList());
+      return Result.success(memos.map((memo) => _convertToEntity(memo)).toList());
     } catch (e) {
       return Result.failure('获取分类备忘失败: ${e.toString()}');
     }

@@ -72,4 +72,24 @@ class PhotoAlbum {
     this.photoCount = 0,
     this.description,
   });
+  
+  PhotoAlbum copyWith({
+    String? id,
+    String? name,
+    String? coverPhotoPath,
+    DateTime? dateCreated,
+    DateTime? dateModified,
+    int? photoCount,
+    String? description,
+  }) {
+    return PhotoAlbum(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      coverPhotoPath: coverPhotoPath ?? this.coverPhotoPath,
+      dateCreated: dateCreated ?? this.dateCreated,
+      dateModified: dateModified ?? this.dateModified,
+      photoCount: photoCount ?? this.photoCount,
+      description: description ?? this.description,
+    );
+  }
 } 

@@ -1,13 +1,13 @@
 import 'package:intellimate/domain/repositories/memo_repository.dart';
 import 'package:intellimate/domain/core/result.dart';
-import 'package:intellimate/data/models/memo_model.dart';
+import 'package:intellimate/domain/entities/memo.dart';
 
 class GetAllMemos {
   final MemoRepository repository;
 
   GetAllMemos(this.repository);
 
-  Future<Result<List<MemoModel>>> call({
+  Future<Result<List<Memo>>> call({
     int? limit,
     int? offset,
     String? orderBy,

@@ -1,26 +1,25 @@
 import 'package:intellimate/domain/entities/memo.dart';
 import 'package:intellimate/domain/core/result.dart';
-import 'package:intellimate/data/models/memo_model.dart';
 
 abstract class MemoRepository {
   // 获取单个备忘
-  Future<Result<MemoModel>> getMemoById(String id);
+  Future<Result<Memo>> getMemoById(String id);
 
   // 创建备忘
-  Future<Result<MemoModel>> createMemo({
+  Future<Result<Memo>> createMemo({
     required String title,
-    required String content,
+    String? content,
     String? category,
   });
 
   // 更新备忘
-  Future<Result<MemoModel>> updateMemo(Memo memo);
+  Future<Result<Memo>> updateMemo(Memo memo);
 
   // 删除备忘
   Future<Result<bool>> deleteMemo(String id);
 
   // 获取所有备忘
-  Future<Result<List<MemoModel>>> getAllMemos({
+  Future<Result<List<Memo>>> getAllMemos({
     int? limit,
     int? offset,
     String? orderBy,
@@ -28,8 +27,8 @@ abstract class MemoRepository {
   });
 
   // 搜索备忘
-  Future<Result<List<MemoModel>>> searchMemos(String query);
+  Future<Result<List<Memo>>> searchMemos(String query);
 
   // 按类别获取备忘
-  Future<Result<List<MemoModel>>> getMemosByCategory(String category);
+  Future<Result<List<Memo>>> getMemosByCategory(String category);
 }

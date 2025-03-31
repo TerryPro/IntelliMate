@@ -1,13 +1,13 @@
 import 'package:intellimate/domain/repositories/memo_repository.dart';
 import 'package:intellimate/domain/core/result.dart';
-import 'package:intellimate/data/models/memo_model.dart';
+import 'package:intellimate/domain/entities/memo.dart';
 
 class GetMemoById {
   final MemoRepository repository;
 
   GetMemoById(this.repository);
 
-  Future<Result<MemoModel>> call(String id) async {
+  Future<Result<Memo>> call(String id) async {
     if (id.isEmpty) {
       return Result.failure('备忘录ID不能为空');
     }

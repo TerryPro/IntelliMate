@@ -107,6 +107,18 @@ class PhotoProvider extends ChangeNotifier {
       _currentAlbum = _albums.firstWhere((album) => album.id == albumId);
       // 加载相册中的照片
       _currentAlbumPhotos = await _getPhotosByAlbum(albumId);
+      
+      // 如果相册中有照片但没有封面，使用第一张照片作为封面
+      if (_currentAlbum != null && 
+          (_currentAlbum!.coverPhotoPath == null || _currentAlbum!.coverPhotoPath!.isEmpty) && 
+          _currentAlbumPhotos.isNotEmpty) {
+        final updatedAlbum = _currentAlbum!.copyWith(
+          coverPhotoPath: _currentAlbumPhotos[0].path,
+          dateModified: DateTime.now(),
+        );
+        await updateAlbum(updatedAlbum);
+      }
+      
       _error = null;
     } catch (e) {
       _error = '加载相册照片失败: $e';
@@ -217,23 +229,53 @@ class PhotoProvider extends ChangeNotifier {
         }
         
         final List<String> savedPaths = [];
+        final List<Photo> importedPhotos = [];
         
         // 保存所有选中的照片到指定目录
-        for (final image in images) {
-          final fileName = '${DateTime.now().millisecondsSinceEpoch}_${path.basename(image.path)}';
+        for (int i = 0; i < images.length; i++) {
+          final image = images[i];
+          final timestamp = DateTime.now().millisecondsSinceEpoch + i; // 添加索引避免时间戳相同
+          final fileName = '${timestamp}_${path.basename(image.path)}';
           final savedImage = await File(image.path).copy('${photosDir.path}/$fileName');
           savedPaths.add(savedImage.path);
+          
+          // 获取照片信息
+          final fileStats = await savedImage.stat();
+          
+          // 创建照片对象
+          final photo = Photo(
+            path: savedImage.path,
+            name: fileName,
+            dateCreated: DateTime.now(),
+            dateModified: DateTime.now(),
+            size: fileStats.size,
+            albumId: albumId, // 直接设置相册ID
+          );
+          
+          // 保存到数据库
+          final id = await _addPhoto(photo);
+          if (id > 0) {
+            importedPhotos.add(photo.copyWith(id: id));
+          }
         }
-        
-        // 导入照片
-        final importedPhotos = await _importPhotos(savedPaths);
         
         // 重新加载照片列表以确保UI更新
         await loadAllPhotos();
         
-        // 如果属于特定相册，也更新相册中的照片
-        if (albumId != null && albumId == _currentAlbum?.id) {
+        // 如果属于特定相册，也更新相册中的照片和相册封面
+        if (albumId != null) {
           await loadAlbumPhotos(albumId);
+          
+          // 如果相册中还没有封面图片，则将第一张图片设为封面
+          final album = _albums.firstWhere((a) => a.id == albumId, orElse: () => null as PhotoAlbum);
+          if (album != null && (album.coverPhotoPath == null || album.coverPhotoPath!.isEmpty) && importedPhotos.isNotEmpty) {
+            // 更新相册封面
+            final updatedAlbum = album.copyWith(
+              coverPhotoPath: importedPhotos[0].path,
+              dateModified: DateTime.now(),
+            );
+            await updateAlbum(updatedAlbum);
+          }
         }
         
         return importedPhotos;
@@ -387,6 +429,51 @@ class PhotoProvider extends ChangeNotifier {
       return false;
     } finally {
       _setLoading(false);
+    }
+  }
+  
+  // 添加照片到相册
+  Future<bool> addPhotoToAlbum(int photoId, String albumId) async {
+    try {
+      if (photoId <= 0 || albumId.isEmpty) {
+        return false;
+      }
+      
+      // 首先查询照片是否存在
+      final photo = _photos.firstWhere((p) => p.id == photoId, orElse: () => null as Photo);
+      if (photo == null) {
+        return false;
+      }
+      
+      // 更新照片所属相册
+      final updatedPhoto = photo.copyWith(
+        albumId: albumId,
+        dateModified: DateTime.now(),
+      );
+      
+      final result = await _updatePhoto(updatedPhoto);
+      if (result > 0) {
+        // 获取相册信息
+        await loadAllPhotos();
+        await loadAlbumPhotos(albumId);
+        
+        // 如果相册没有封面，设置当前照片为封面
+        final album = _albums.firstWhere((a) => a.id == albumId, orElse: () => null as PhotoAlbum);
+        if (album != null && (album.coverPhotoPath == null || album.coverPhotoPath!.isEmpty)) {
+          final updatedAlbum = album.copyWith(
+            coverPhotoPath: updatedPhoto.path,
+            dateModified: DateTime.now(),
+          );
+          await updateAlbum(updatedAlbum);
+        }
+        
+        return true;
+      }
+      return false;
+    } catch (e) {
+      _error = '添加照片到相册失败: $e';
+      AppLogger.log(_error!);
+      return false;
     }
   }
   
